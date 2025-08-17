@@ -4,8 +4,19 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Search, Menu, X, BookOpen } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function Header() {
+const router = useRouter();
+
+  const handleClick = () => {
+    router.push("/login"); // navigates to /login
+  };
+
+  const handlesign = () => {
+    // alert("hello")
+    router.push("/signup");
+  }
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -50,10 +61,10 @@ export function Header() {
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" className="text-foreground hover:text-primary">
+            <Button variant="ghost" className="text-foreground hover:text-primary" onClick={() => handleClick()}>
               Login
             </Button>
-            <Button className="bg-primary hover:bg-primary/90 text-white">Sign Up</Button>
+            <Button className="bg-primary hover:bg-primary/90 text-white"onClick={() => handlesign()}>Sign Up</Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -85,10 +96,10 @@ export function Header() {
                 </a>
               </nav>
               <div className="flex flex-col space-y-2 pt-4 border-t">
-                <Button variant="ghost" className="justify-start">
+                <Button variant="ghost" className="justify-start" onClick={() => handleClick()}>
                   Login
                 </Button>
-                <Button className="bg-primary hover:bg-primary/90 text-white">Sign Up</Button>
+                <Button className="bg-primary hover:bg-primary/90 text-white" onClick={() => handlesign()}>Sign Up</Button>
               </div>
             </div>
           </div>
