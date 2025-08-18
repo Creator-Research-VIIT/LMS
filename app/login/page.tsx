@@ -4,29 +4,47 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { BookOpen, Eye, EyeOff } from "lucide-react"
+import { AlertCircle, BookOpen, Eye, EyeOff } from "lucide-react"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
-    // Simulate login process
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    try {
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+      
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      })
 
-    // For demo purposes, redirect to dashboard
-    router.push("/dashboard")
+      if (result?.error) {
+        setError("Invalid email or password")
+      } else if (result?.ok) {
+        router.push(callbackUrl)
+      }
+    } catch (error) {
+      setError("An error occurred during sign in")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -50,6 +68,13 @@ export default function LoginPage() {
             <CardDescription>Sign in to continue your learning journey</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <span className="text-sm text-red-600">{error}</span>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

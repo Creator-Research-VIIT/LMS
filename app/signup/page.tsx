@@ -4,29 +4,33 @@ import type React from "react"
 
 import { useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Checkbox } from "@/components/ui/checkbox"
-import { BookOpen, Eye, EyeOff, Check } from "lucide-react"
+import { AlertCircle, BookOpen, Check, Eye, EyeOff } from "lucide-react"
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    role: "STUDENT" as "STUDENT" | "TEACHER"
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [agreeToTerms, setAgreeToTerms] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
   const router = useRouter()
+  const searchParams = useSearchParams()
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
@@ -36,17 +40,67 @@ export default function SignupPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match")
+      setError("Passwords do not match")
+      return
+    }
+
+    if (!agreeToTerms) {
+      setError("Please agree to the terms and conditions")
       return
     }
 
     setIsLoading(true)
+    setError("")
+    setSuccess("")
 
-    // Simulate signup process
-    await new Promise((resolve) => setTimeout(resolve, 2000))
+    try {
+      // Register user via API
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role,
+        }),
+      })
 
-    // For demo purposes, redirect to dashboard
-    router.push("/dashboard")
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (data.error === "User with this email already exists") {
+          setError("An account with this email already exists")
+        } else if (data.error === "Validation failed") {
+          setError("Please check your input and try again")
+        } else {
+          setError(data.error || "Registration failed")
+        }
+        return
+      }
+
+      setSuccess("Account created successfully! Signing you in...")
+
+      // Auto-login after successful registration
+      const signInResult = await signIn("credentials", {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+      })
+
+      if (signInResult?.error) {
+        setError("Account created but automatic login failed. Please sign in manually.")
+      } else if (signInResult?.ok) {
+        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+        router.push(callbackUrl)
+      }
+    } catch (error) {
+      setError("An error occurred during registration")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const passwordStrength = formData.password.length >= 8 ? "strong" : formData.password.length >= 6 ? "medium" : "weak"
@@ -72,32 +126,32 @@ export default function SignupPage() {
             <CardDescription>Create your account and start learning today</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <span className="text-sm text-red-600">{error}</span>
+              </div>
+            )}
+            
+            {success && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md flex items-center space-x-2">
+                <Check className="h-4 w-4 text-green-500" />
+                <span className="text-sm text-green-600">{success}</span>
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    name="firstName"
-                    placeholder="John"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
-                    required
-                    className="transition-all duration-200 focus:scale-[1.02]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    name="lastName"
-                    placeholder="Doe"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
-                    required
-                    className="transition-all duration-200 focus:scale-[1.02]"
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input
+                  id="name"
+                  name="name"
+                  placeholder="John Doe"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  className="transition-all duration-200 focus:scale-[1.02]"
+                />
               </div>
 
               <div className="space-y-2">
@@ -112,6 +166,20 @@ export default function SignupPage() {
                   required
                   className="transition-all duration-200 focus:scale-[1.02]"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                >
+                  <option value="STUDENT">Student</option>
+                  <option value="TEACHER">Teacher</option>
+                </select>
               </div>
 
               <div className="space-y-2">

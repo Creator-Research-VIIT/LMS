@@ -1,8 +1,8 @@
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
+import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { randomUUID } from 'crypto';
 
 // Validation schema for registration
 const registerSchema = z.object({
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // Validate input
     const validatedData = registerSchema.parse(body);
 
-    // Check if user with same email exists
+    // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { email: validatedData.email },
     });
@@ -35,27 +35,15 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
-    // Handle referral code logic
+    // Referral code logic
     let referredBy = null;
-
-    if (validatedData.referralCode && validatedData.referralCode.trim() !== '') {
-      try {
-        // Find user with the provided referral code
-        const referrer = await prisma.user.findUnique({
-          where: { referralCode: validatedData.referralCode.trim() },
-        });
-
-        if (referrer) {
-          referredBy = referrer.id;
-        }
-        // If referral code is invalid, we just ignore it and continue with registration
-      } catch (error) {
-        console.log('Referral code lookup error:', error);
-        // Continue with registration even if referral code lookup fails
-      }
+    if (validatedData.referralCode?.trim()) {
+      const referrer = await prisma.user.findUnique({
+        where: { referralCode: validatedData.referralCode.trim() },
+      });
+      if (referrer) referredBy = referrer.id;
     }
 
-    // Generate a unique referral code for the new user
     const newReferralCode = randomUUID();
 
     // Create new user
@@ -67,8 +55,8 @@ export async function POST(request: NextRequest) {
         role: validatedData.role,
         referralCode: newReferralCode,
         referredBy: referredBy,
-        emailVerified: new Date(), // Mark as verified for NextAuth
-        isApproved: validatedData.role === "STUDENT" || validatedData.role === "ADMIN", // Auto-approve students and admins
+        emailVerified: new Date(),
+        isApproved: validatedData.role === "STUDENT" || validatedData.role === "ADMIN",
       },
       select: {
         id: true,
@@ -81,10 +69,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Return success with a safe redirect URL
     return NextResponse.json(
       {
         message: 'User registered successfully',
         user: newUser,
+        redirectUrl: '/dashboard', // <-- safe page after registration
       },
       { status: 201 }
     );

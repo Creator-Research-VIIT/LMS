@@ -1,12 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-
 }
 
 datasource db {
@@ -14,32 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  STUDENT
-  TEACHER
-  ADMIN
-}
-
 model Course {
-  id          String         @id @default(uuid())
+  id          String          @id @default(uuid())
   title       String
   description String
   thumbnail   String
   price       Float
   teacherId   String
-  createdAt   DateTime      @default(now())
-
-  teacher     User           @relation("CourseTeacher", fields: [teacherId], references: [id])
+  createdAt   DateTime        @default(now())
+  teacher     User            @relation("CourseTeacher", fields: [teacherId], references: [id])
   contents    CourseContent[]
   enrollments Enrollment[]
   feedbacks   Feedback[]
-  quizzes     Quiz[]
   progresses  Progress[]
-}
-
-enum ContentType {
-  VIDEO
-  NOTE
+  quizzes     Quiz[]
 }
 
 model CourseContent {
@@ -49,7 +30,6 @@ model CourseContent {
   url        String
   courseId   String
   orderIndex Int
-
   course     Course      @relation(fields: [courseId], references: [id])
 }
 
@@ -58,14 +38,8 @@ model Enrollment {
   studentId  String
   courseId   String
   enrolledAt DateTime @default(now())
-
-  student    User     @relation(fields: [studentId], references: [id])
   course     Course   @relation(fields: [courseId], references: [id])
-}
-
-enum QuizType {
-  MID
-  FINAL
+  student    User     @relation(fields: [studentId], references: [id])
 }
 
 model Quiz {
@@ -73,10 +47,9 @@ model Quiz {
   title     String
   type      QuizType
   courseId  String
-
   course    Course         @relation(fields: [courseId], references: [id])
-  questions QuizQuestion[]
   attempts  QuizAttempt[]
+  questions QuizQuestion[]
 }
 
 model QuizQuestion {
@@ -85,31 +58,28 @@ model QuizQuestion {
   questionText  String
   options       String[]
   correctAnswer String
-
   quiz          Quiz     @relation(fields: [quizId], references: [id])
 }
 
 model QuizAttempt {
-  id         String   @id @default(uuid())
-  studentId  String
-  quizId     String
-  score      Float
-  answers    String[]
+  id          String   @id @default(uuid())
+  studentId   String
+  quizId      String
+  score       Float
+  answers     String[]
   submittedAt DateTime @default(now())
-
-  student    User     @relation(fields: [studentId], references: [id])
-  quiz       Quiz     @relation(fields: [quizId], references: [id])
+  quiz        Quiz     @relation(fields: [quizId], references: [id])
+  student     User     @relation(fields: [studentId], references: [id])
 }
 
 model Progress {
-  id              String   @id @default(uuid())
+  id              String  @id @default(uuid())
   studentId       String
   courseId        String
   progressPercent Float
   completed       Boolean
-
-  student         User     @relation(fields: [studentId], references: [id])
-  course          Course   @relation(fields: [courseId], references: [id])
+  course          Course  @relation(fields: [courseId], references: [id])
+  student         User    @relation(fields: [studentId], references: [id])
 }
 
 model Feedback {
@@ -119,26 +89,40 @@ model Feedback {
   rating    Int
   comment   String
   createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id])
   course    Course   @relation(fields: [courseId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
 }
 
-// Update User model with relations
 model User {
-  id        String        @id @default(uuid())
-  name      String
-  email     String        @unique
-  password  String
-  role      Role
-  createdAt DateTime      @default(now())
-  referralCode String? @unique // nullable and unique
+  id            String        @id @default(uuid())
+  name          String
+  email         String        @unique
+  password      String
+  role          Role
+  createdAt     DateTime      @default(now())
   emailVerified DateTime?
-  isApproved Boolean @default(false)
-  referredBy String?
-  courses      Course[]   @relation("CourseTeacher")
-  feedbacks    Feedback[]
-  enrollments  Enrollment[]
-  quizAttempts QuizAttempt[]
-  progresses   Progress[]
+  isApproved    Boolean       @default(false)
+  referralCode  String?       @unique
+  referredBy    String?
+  courses       Course[]      @relation("CourseTeacher")
+  enrollments   Enrollment[]
+  feedbacks     Feedback[]
+  progresses    Progress[]
+  quizAttempts  QuizAttempt[]
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
+}
+
+enum ContentType {
+  VIDEO
+  NOTE
+}
+
+enum QuizType {
+  MID
+  FINAL
 }
