@@ -55,7 +55,7 @@ export function NewCourses() {
     <section id="courses" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-4">New Courses</h2>
+          <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-4">All the Skills you need in one Place </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Discover our latest courses designed by industry experts to help you stay ahead in your career
           </p>

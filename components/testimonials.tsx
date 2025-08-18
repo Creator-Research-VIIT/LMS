@@ -6,44 +6,40 @@ import { Star, ChevronLeft, ChevronRight } from "lucide-react"
 
 const testimonials = [
   {
-    id: 1,
-    name: "Sarah Mitchell",
-    role: "Software Developer",
-    image: "/professional-woman-headshot.png",
+    name: "Sarah Martinez",
+    role: "Full Stack Developer",
+    company: "Tech Innovations Inc.",
+    image: "https://images.pexels.com/photos/3586798/pexels-photo-3586798.jpeg",
+    content:
+      "LearnHub completely transformed my career. The hands-on projects and expert instruction helped me transition from marketing to software development in just 8 months.",
     rating: 5,
-    text: "EduPlatform transformed my career! The React course was incredibly comprehensive and the instructor was always available to help. I landed my dream job just 3 months after completing the program.",
   },
   {
-    id: 2,
     name: "David Chen",
-    role: "Marketing Manager",
-    image: "/professional-man-headshot.png",
+    role: "Data Scientist",
+    company: "Analytics Pro",
+    image: "https://images.pexels.com/photos/3783471/pexels-photo-3783471.jpeg",
+    content:
+      "The data science courses are incredibly comprehensive. I went from knowing basic Excel to building machine learning models. The career support was exceptional.",
     rating: 5,
-    text: "The digital marketing course exceeded my expectations. The practical projects and real-world examples helped me implement strategies that increased our company's ROI by 150%.",
   },
   {
-    id: 3,
     name: "Emily Rodriguez",
     role: "UX Designer",
-    image: "/professional-woman-designer-headshot.png",
+    company: "Design Studio",
+    image: "https://images.pexels.com/photos/3756681/pexels-photo-3756681.jpeg",
+    content:
+      "As someone with no design background, I was amazed at how well-structured the UX courses were. The portfolio projects helped me land my dream job.",
     rating: 5,
-    text: "Amazing platform with top-notch instructors! The UI/UX design course was perfectly structured and the feedback from mentors was invaluable. Highly recommend to anyone looking to upskill.",
   },
   {
-    id: 4,
-    name: "Michael Johnson",
-    role: "Data Scientist",
-    image: "/professional-data-scientist.png",
+    name: "Michael Thompson",
+    role: "Digital Marketing Manager",
+    company: "Growth Marketing Co.",
+    image: "https://images.pexels.com/photos/3778876/pexels-photo-3778876.jpeg",
+    content:
+      "The marketing courses are taught by actual practitioners, not just theorists. I immediately applied what I learned and saw a 300% increase in campaign performance.",
     rating: 5,
-    text: "The machine learning course was exactly what I needed to transition into data science. The hands-on projects and industry insights made all the difference in my learning journey.",
-  },
-  {
-    id: 5,
-    name: "Lisa Thompson",
-    role: "Entrepreneur",
-    image: "/professional-woman-entrepreneur-headshot.png",
-    rating: 5,
-    text: "EduPlatform's business courses gave me the confidence and knowledge to start my own company. The practical advice and networking opportunities were game-changers for my entrepreneurial journey.",
   },
 ]
 
@@ -53,13 +49,9 @@ export function Testimonials() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setVisibleCount(1)
-      } else if (window.innerWidth < 1024) {
-        setVisibleCount(2)
-      } else {
-        setVisibleCount(3)
-      }
+      if (window.innerWidth < 768) setVisibleCount(1)
+      else if (window.innerWidth < 1024) setVisibleCount(2)
+      else setVisibleCount(3)
     }
 
     handleResize()
@@ -70,7 +62,7 @@ export function Testimonials() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % testimonials.length)
-    }, 5000)
+    }, 6000)
     return () => clearInterval(timer)
   }, [])
 
@@ -92,71 +84,84 @@ export function Testimonials() {
   }
 
   return (
-    <section className="py-20 bg-muted/30">
+    <section className="py-20 bg-gradient-to-b from-muted/20 to-muted/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
         <div className="text-center mb-16 animate-fade-in-up">
-          <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-4">What Our Students Say</h2>
+          <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-4">
+            What Our Students Say
+          </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Don't just take our word for it. Here's what our successful students have to say about their learning
-            experience
+            Don&apos;t just take our word for it. Hear directly from students who
+            advanced their careers with LearnHub.
           </p>
         </div>
 
+        {/* Cards */}
         <div className="relative">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {getVisibleTestimonials().map((testimonial, index) => (
               <Card
-                key={`${testimonial.id}-${currentIndex}`}
-                className="animate-fade-in-up border-0 shadow-md hover:shadow-lg transition-shadow duration-300"
-                style={{ animationDelay: `${index * 0.1}s` }}
+                key={`${testimonial.name}-${index}`}
+                className="animate-fade-in-up border-0 shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 bg-white/80 backdrop-blur rounded-2xl"
+                style={{ animationDelay: `${index * 0.15}s` }}
               >
                 <CardContent className="p-6">
+                  {/* Avatar & Info */}
                   <div className="flex items-center mb-4">
                     <img
-                      src={testimonial.image || "/placeholder.svg"}
+                      src={testimonial.image}
                       alt={testimonial.name}
-                      className="w-12 h-12 rounded-full object-cover mr-4"
+                      className="w-14 h-14 rounded-full object-cover border-2 border-primary/30 shadow-md mr-4"
                     />
                     <div>
-                      <h3 className="font-semibold text-foreground">{testimonial.name}</h3>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
+                      <h3 className="font-semibold text-lg text-foreground">{testimonial.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {testimonial.role} @ {testimonial.company}
+                      </p>
                     </div>
                   </div>
 
+                  {/* Stars */}
                   <div className="flex items-center mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 text-accent fill-current" />
+                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-yellow-400" />
                     ))}
                   </div>
 
-                  <p className="text-muted-foreground leading-relaxed">"{testimonial.text}"</p>
+                  {/* Content */}
+                  <p className="text-muted-foreground leading-relaxed italic">
+                    “{testimonial.content}”
+                  </p>
                 </CardContent>
               </Card>
             ))}
           </div>
 
+          {/* Navigation Arrows */}
           <button
             onClick={prevTestimonial}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-4 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 bg-white/80 backdrop-blur rounded-full p-3 shadow-md hover:bg-white transition"
           >
             <ChevronLeft className="h-5 w-5 text-foreground" />
           </button>
 
           <button
             onClick={nextTestimonial}
-            className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-4 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors"
+            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 bg-white/80 backdrop-blur rounded-full p-3 shadow-md hover:bg-white transition"
           >
             <ChevronRight className="h-5 w-5 text-foreground" />
           </button>
         </div>
 
+        {/* Dots */}
         <div className="flex justify-center mt-8 space-x-2">
           {testimonials.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentIndex ? "bg-primary" : "bg-gray-300"
+              className={`w-3 h-3 rounded-full transition-all ${
+                index === currentIndex ? "bg-primary scale-125" : "bg-gray-300"
               }`}
             />
           ))}

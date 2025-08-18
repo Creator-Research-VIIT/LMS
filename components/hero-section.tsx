@@ -52,21 +52,38 @@ export function HeroSection() {
             </div>
           </div>
           <div className="animate-fade-in-up">
-            <div className="relative">
-              <img src="/online-learning-hero.png" alt="Students learning online" className="rounded-2xl shadow-2xl" />
-              <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                    <Play className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Live Classes</p>
-                    <p className="text-sm text-muted-foreground">Interactive Learning</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+  <div className="relative">
+    <div className="relative rounded-2xl shadow-2xl overflow-hidden">
+      {/* Animated Image */}
+      <img 
+        src="https://images.pexels.com/photos/3184357/pexels-photo-3184357.jpeg"
+        alt="Online Learning"
+        className="w-full h-80 object-cover rounded-2xl shadow-lg animate-float"
+      />
+
+      {/* Progress Badge */}
+      <div className="absolute bottom-4 left-4 bg-purple-600 text-white p-4 rounded-lg shadow-lg">
+        <div className="text-sm font-semibold">Course Progress</div>
+        <div className="text-2xl font-bold">87%</div>
+      </div>
+
+      {/* Play Badge */}
+      <div className="absolute top-5 right-4 bg-green-500 text-white p-3 rounded-full shadow-lg">
+        <Play className="h-6 w-6" />
+      </div>
+    </div>
+
+    {/* Floating elements */}
+    <div className="absolute top-1/4 -left-8 bg-blue-500 text-white p-3 rounded-lg shadow-lg animate-bounce">
+      <div className="text-sm font-semibold">AI-Powered</div>
+    </div>
+
+    <div className="absolute bottom-1/4 -right-8 bg-orange-500 text-white p-3 rounded-lg shadow-lg animate-pulse">
+      <div className="text-sm font-semibold">Certificate</div>
+    </div>
+  </div>
+</div>
+
         </div>
       </div>
     </section>
