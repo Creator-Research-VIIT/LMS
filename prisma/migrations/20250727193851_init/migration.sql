@@ -4,8 +4,13 @@ CREATE TYPE "Role" AS ENUM ('STUDENT', 'TEACHER', 'ADMIN');
 -- CreateEnum
 CREATE TYPE "ContentType" AS ENUM ('VIDEO', 'NOTE');
 
--- CreateEnum
-CREATE TYPE "QuizType" AS ENUM ('MID', 'FINAL');
+-- CreateTable for QuizType (SQL Server does not support ENUM types)
+CREATE TABLE "QuizType" (
+    "id" INT IDENTITY(1,1) PRIMARY KEY,
+    "type" NVARCHAR(20) NOT NULL UNIQUE
+);
+
+INSERT INTO "QuizType" ("type") VALUES ('MID'), ('FINAL');
 
 -- CreateTable
 CREATE TABLE "Course" (
