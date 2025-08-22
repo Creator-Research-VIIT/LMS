@@ -84,3 +84,4 @@ DATABASE_URL="postgresql://postgres:password@localhost:5433/lms_db"
 # With SSL
 DATABASE_URL="postgresql://postgres:password@localhost:5432/lms_db?sslmode=require"
 ```
+

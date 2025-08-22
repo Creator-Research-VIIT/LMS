@@ -77,3 +77,4 @@ node test-auth-complete.js
 2. Check the terminal for server errors
 3. Verify your database connection string
 4. Make sure all environment variables are set
+
