@@ -15,7 +15,7 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
+    console.log('Registration request body:', body);
     // Validate input
     const validatedData = registerSchema.parse(body);
 
@@ -46,27 +46,28 @@ export async function POST(request: NextRequest) {
     const newReferralCode = randomUUID();
 
     // Create new user
-    const newUser = await prisma.user.create({
-      data: {
-        name: validatedData.name,
-        email: validatedData.email,
-        password: validatedData.password,
-        role: validatedData.role,
-        referralCode: newReferralCode,
-        referredBy: referredBy,
-        emailVerified: new Date(),
-        isApproved: validatedData.role === "STUDENT" || validatedData.role === "ADMIN",
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        referralCode: true,
-        isApproved: true,
-        createdAt: true,
-      },
-    });
+   const newUser = await prisma.user.create({
+  data: {
+    name: validatedData.name,      // ✅ string
+    email: validatedData.email,    // ✅ string
+    password: validatedData.password,      // ✅ string
+    role: validatedData.role,      // ✅ enum Role
+    referralCode: newReferralCode,        // ✅ string
+    referredBy: null,              // ✅ string | null
+    emailVerified: new Date(),     // ✅ Date
+    approvalStatus: "approved"     // ✅ string
+  },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    referralCode: true,
+    approvalStatus: true,
+    createdAt: true
+  }
+});
+
 
     // Return success with a safe redirect URL
     return NextResponse.json(
