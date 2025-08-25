@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
@@ -33,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(validatedData.password, 12);
+    // const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
     // Referral code logic
     let referredBy = null;
@@ -51,7 +50,7 @@ export async function POST(request: NextRequest) {
       data: {
         name: validatedData.name,
         email: validatedData.email,
-        password: hashedPassword,
+        password: validatedData.password,
         role: validatedData.role,
         referralCode: newReferralCode,
         referredBy: referredBy,
