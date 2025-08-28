@@ -19,7 +19,7 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "STUDENT" as "STUDENT" | "TEACHER"
+    role: "STUDENT" as "STUDENT" | "TEACHER" | "ADMIN"
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)

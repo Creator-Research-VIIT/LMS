@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
         referralCode: newReferralCode,
         referredBy: referredBy,
         emailVerified: new Date(),
-        isApproved: validatedData.role === "STUDENT" || validatedData.role === "ADMIN",
+        approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved"
       },
       select: {
         id: true,
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         email: true,
         role: true,
         referralCode: true,
-        isApproved: true,
+        approvalStatus: true,
         createdAt: true,
       },
     });

@@ -14,7 +14,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   try {
     const course = await prisma.course.update({
       where: { id: params.id },
-      data: { isApproved: true }
+      data: { approvalStatus: "APPROVED" }
     });
     return NextResponse.json({ course }, { status: 200 });
   } catch (error) {
