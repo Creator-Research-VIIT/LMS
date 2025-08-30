@@ -28,50 +28,51 @@ export async function PATCH(
 
     const teacherId = params.id;
 
-    // Check if teacher exists and is a teacher
-    const teacher = await prisma.user.findUnique({
-      where: { id: teacherId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isApproved: true,
-      },
-    });
+// Check if teacher exists and is a teacher
+const teacher = await prisma.user.findUnique({
+  where: { id: teacherId },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    approvalStatus: true,
+    createdAt: true,
+    referralCode: true
+  }
+});
 
-    if (!teacher) {
-      return NextResponse.json(
-        { error: "Teacher not found" },
-        { status: 404 }
-      );
-    }
+if (!teacher) {
+  return NextResponse.json(
+    { error: "Teacher not found" },
+    { status: 404 }
+  );
+}
 
-    if (teacher.role !== "TEACHER") {
-      return NextResponse.json(
-        { error: "User is not a teacher" },
-        { status: 400 }
-      );
-    }
+if (teacher.role !== "TEACHER") {
+  return NextResponse.json(
+    { error: "User is not a teacher" },
+    { status: 400 }
+  );
+}
 
-    if (teacher.isApproved) {
-      return NextResponse.json(
-        { error: "Teacher is already approved" },
-        { status: 400 }
-      );
-    }
+if (teacher.approvalStatus === "approved") {
+  return NextResponse.json(
+    { error: "Teacher is already approved" },
+    { status: 400 }
+  );
+}
 
     // Approve the teacher
     const approvedTeacher = await prisma.user.update({
       where: { id: teacherId },
-      data: { isApproved: true },
+      data: { approvalStatus: "approved" },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        isApproved: true,
-        updatedAt: true,
+        approvalStatus: true,
       },
     });
 

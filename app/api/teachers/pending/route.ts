@@ -23,18 +23,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get pending teachers (TEACHER role with isApproved = false)
+    // Get pending teachers (TEACHER role with approvalStatus = "pending")
     const pendingTeachers = await prisma.user.findMany({
       where: {
         role: "TEACHER",
-        isApproved: false,
+        approvalStatus: "pending",
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        isApproved: true,
+        approvalStatus: true,
         createdAt: true,
         referralCode: true,
       },

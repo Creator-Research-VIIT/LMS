@@ -4,7 +4,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 
-export const authOptions: NextAuthOptions = {
+export const  authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as any,
   providers: [
     CredentialsProvider({
@@ -25,6 +25,11 @@ export const authOptions: NextAuthOptions = {
         });
 
         if (!user || !user.password) {
+          return null;
+        }
+
+        // Only allow teachers to log in if they are approved
+        if (user.role === "TEACHER" && user.approvalStatus !== "approved") {
           return null;
         }
 
@@ -62,6 +67,8 @@ export const authOptions: NextAuthOptions = {
       if (token && session.user) {
         (session.user as any).id = token.id;
         (session.user as any).role = (token as any).role;
+    // Expose the JWT token in the session object for API clients
+    (session as any).accessToken = token;
       }
       return session;
     }
@@ -70,4 +77,4 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   secret: process.env.NEXTAUTH_SECRET,
-}; 
+};

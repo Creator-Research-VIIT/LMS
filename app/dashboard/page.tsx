@@ -1,4 +1,13 @@
+"use client";
 export default function DashboardPage() {
+  // ...existing code...
+  // Import useAuth hook
+  // @ts-ignore
+  const { user, isAuthenticated, logout } = require("../../hooks/useAuth").useAuth();
+
+  // Only show button if user is admin
+  const isAdmin = user?.role === "ADMIN";
+
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="bg-white shadow">
@@ -9,8 +18,16 @@ export default function DashboardPage() {
                 <h1 className="text-xl font-semibold text-gray-900">LMS Dashboard</h1>
               </div>
             </div>
-            <div className="flex items-center">
-              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <button
+                  className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium"
+                  onClick={() => window.location.href = "/admin/pending-teachers"}
+                >
+                  Pending Teachers
+                </button>
+              )}
+              <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium" onClick={logout}>
                 Logout
               </button>
             </div>

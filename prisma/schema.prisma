@@ -15,7 +15,7 @@ model Course {
   price       Float
   teacherId   String
   createdAt   DateTime        @default(now())
-  approvalStatus String       @default("pending") // "pending", "approved", "rejected"// For admin approval
+  isApproved  Boolean         @default(false)
   teacher     User            @relation("CourseTeacher", fields: [teacherId], references: [id])
   contents    CourseContent[]
   enrollments Enrollment[]
@@ -95,21 +95,21 @@ model Feedback {
 }
 
 model User {
-  id            String        @id @default(uuid())
-  name          String
-  email         String        @unique
-  password      String
-  role          Role
-  approvalStatus String       @default("pending") // "pending", "approved", "rejected"
-  createdAt     DateTime      @default(now())
-  emailVerified DateTime?
-  referralCode  String?       @unique
-  referredBy    String?
-  courses       Course[]      @relation("CourseTeacher")
-  enrollments   Enrollment[]
-  feedbacks     Feedback[]
-  progresses    Progress[]
-  quizAttempts  QuizAttempt[]
+  id             String        @id @default(uuid())
+  name           String
+  email          String        @unique
+  password       String
+  role           Role
+  approvalStatus String        @default("pending")
+  createdAt      DateTime      @default(now())
+  emailVerified  DateTime?
+  referralCode   String?       @unique
+  referredBy     String?
+  courses        Course[]      @relation("CourseTeacher")
+  enrollments    Enrollment[]
+  feedbacks      Feedback[]
+  progresses     Progress[]
+  quizAttempts   QuizAttempt[]
 }
 
 enum Role {

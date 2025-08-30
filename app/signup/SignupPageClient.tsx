@@ -179,6 +179,7 @@ export default function SignupPage() {
                 >
                   <option value="STUDENT">Student</option>
                   <option value="TEACHER">Teacher</option>
+                  <option value="ADMIN">Admin</option>
                 </select>
               </div>
 
