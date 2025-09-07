@@ -94,6 +94,89 @@ async function main() {
     },
   })
 
+  // Create sample quizzes for the approved course
+  const quiz1 = await prisma.quiz.upsert({
+    where: { id: 'quiz-1' },
+    update: {},
+    create: {
+      id: 'quiz-1',
+      title: 'React Basics Quiz',
+      description: 'Test your understanding of React fundamentals',
+      type: 'PRACTICE',
+      courseId: course1.id,
+    },
+  })
+
+  // Create questions for the quiz
+  await prisma.question.upsert({
+    where: { id: 'question-1' },
+    update: {},
+    create: {
+      id: 'question-1',
+      quizId: quiz1.id,
+      questionText: 'What is JSX?',
+      questionType: 'multiple_choice',
+      points: 2,
+      orderIndex: 0,
+    },
+  })
+
+  // Create answers for the question
+  await prisma.answer.createMany({
+    data: [
+      {
+        id: 'answer-1-1',
+        questionId: 'question-1',
+        answerText: 'A syntax extension for JavaScript',
+        isCorrect: true,
+      },
+      {
+        id: 'answer-1-2',
+        questionId: 'question-1',
+        answerText: 'A new programming language',
+        isCorrect: false,
+      },
+      {
+        id: 'answer-1-3',
+        questionId: 'question-1',
+        answerText: 'A CSS framework',
+        isCorrect: false,
+      },
+    ],
+    skipDuplicates: true,
+  })
+
+  await prisma.question.upsert({
+    where: { id: 'question-2' },
+    update: {},
+    create: {
+      id: 'question-2',
+      quizId: quiz1.id,
+      questionText: 'React components must always return JSX.',
+      questionType: 'true_false',
+      points: 1,
+      orderIndex: 1,
+    },
+  })
+
+  await prisma.answer.createMany({
+    data: [
+      {
+        id: 'answer-2-1',
+        questionId: 'question-2',
+        answerText: 'True',
+        isCorrect: false,
+      },
+      {
+        id: 'answer-2-2',
+        questionId: 'question-2',
+        answerText: 'False',
+        isCorrect: true,
+      },
+    ],
+    skipDuplicates: true,
+  })
+
   // Create enrollment for student
   await prisma.enrollment.upsert({
     where: { id: 'enrollment-1' },

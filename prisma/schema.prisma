@@ -20,7 +20,7 @@ model Course {
   contents    CourseContent[]
   enrollments Enrollment[]
   feedbacks   Feedback[]
-  progresses  Progress[]
+  progresses  CourseProgress[] @relation("CourseProgress")
   quizzes     Quiz[]
 }
 
@@ -44,43 +44,62 @@ model Enrollment {
 }
 
 model Quiz {
-  id        String         @id @default(uuid())
-  title     String
-  type      QuizType
-  courseId  String
-  course    Course         @relation(fields: [courseId], references: [id])
-  attempts  QuizAttempt[]
-  questions QuizQuestion[]
+  id          String           @id @default(uuid())
+  title       String
+  description String?
+  type        QuizType
+  courseId    String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  course      Course           @relation(fields: [courseId], references: [id])
+  questions   Question[]
+  submissions QuizSubmission[]
 }
 
-model QuizQuestion {
+model Question {
   id            String   @id @default(uuid())
   quizId        String
   questionText  String
-  options       String[]
-  correctAnswer String
-  quiz          Quiz     @relation(fields: [quizId], references: [id])
+  questionType  String   @default("multiple_choice") // multiple_choice, true_false, short_answer
+  points        Int      @default(1)
+  orderIndex    Int
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  answers       Answer[]
 }
 
-model QuizAttempt {
+model Answer {
+  id         String  @id @default(uuid())
+  questionId String
+  answerText String
+  isCorrect  Boolean @default(false)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model QuizSubmission {
   id          String   @id @default(uuid())
   studentId   String
   quizId      String
   score       Float
-  answers     String[]
+  maxScore    Float
+  answers     Json     // Store student answers as JSON
   submittedAt DateTime @default(now())
   quiz        Quiz     @relation(fields: [quizId], references: [id])
   student     User     @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, quizId]) // One submission per student per quiz
 }
 
-model Progress {
+model CourseProgress {
   id              String  @id @default(uuid())
   studentId       String
   courseId        String
-  progressPercent Float
-  completed       Boolean
-  course          Course  @relation(fields: [courseId], references: [id])
-  student         User    @relation(fields: [studentId], references: [id])
+  progressPercent Float   @default(0)
+  completed       Boolean @default(false)
+  lastAccessedAt  DateTime @default(now())
+  course          Course  @relation("CourseProgress", fields: [courseId], references: [id])
+  student         User    @relation("StudentProgress", fields: [studentId], references: [id])
+
+  @@unique([studentId, courseId])
 }
 
 model Feedback {
@@ -95,21 +114,21 @@ model Feedback {
 }
 
 model User {
-  id             String        @id @default(uuid())
+  id             String           @id @default(uuid())
   name           String
-  email          String        @unique
+  email          String           @unique
   password       String
   role           Role
-  approvalStatus String        @default("pending")
-  createdAt      DateTime      @default(now())
+  approvalStatus String           @default("pending")
+  createdAt      DateTime         @default(now())
   emailVerified  DateTime?
-  referralCode   String?       @unique
+  referralCode   String?          @unique
   referredBy     String?
-  courses        Course[]      @relation("CourseTeacher")
+  courses        Course[]         @relation("CourseTeacher")
   enrollments    Enrollment[]
   feedbacks      Feedback[]
-  progresses     Progress[]
-  quizAttempts   QuizAttempt[]
+  progresses     CourseProgress[] @relation("StudentProgress")
+  quizSubmissions QuizSubmission[]
 }
 
 enum Role {
@@ -124,6 +143,11 @@ enum ContentType {
 }
 
 enum QuizType {
-  MID
-  FINAL
+  PRACTICE
+  ASSIGNMENT
+  MID_TERM
+  FINAL_EXAM
+  CHAPTER_TEST
+  POP_QUIZ
+  REVIEW
 }
