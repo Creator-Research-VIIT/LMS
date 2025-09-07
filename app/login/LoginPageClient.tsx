@@ -1,4 +1,3 @@
-
 "use client"
 export const dynamic = "force-dynamic";
 
@@ -7,9 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, BookOpen, Eye, EyeOff } from "lucide-react";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import type React from "react";
 import { Suspense, useState } from "react";
 
@@ -20,8 +19,8 @@ export default function LoginPageClient() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
+  const { data: session } = useSession();
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,8 +28,6 @@ export default function LoginPageClient() {
     setError("")
 
     try {
-      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
-      
       const result = await signIn("credentials", {
         email,
         password,
@@ -40,9 +37,15 @@ export default function LoginPageClient() {
       if (result?.error) {
         setError("Invalid email or password")
       } else if (result?.ok) {
-        router.push(callbackUrl)
+        // Get the session again to access the user role
+        const sessionRes = await fetch("/api/auth/session");
+        const sessionData = await sessionRes.json();
+        const role = sessionData?.user?.role;
+        if (role === "ADMIN") router.push("/admin");
+        else if (role === "TEACHER") router.push("/teacher");
+        else router.push("/student");
       }
-    } catch (error) {
+    } catch (error: any) {
       setError("An error occurred during sign in")
     } finally {
       setIsLoading(false)

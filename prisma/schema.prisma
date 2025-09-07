@@ -15,7 +15,7 @@ model Course {
   price       Float
   teacherId   String
   createdAt   DateTime        @default(now())
-  isApproved  Boolean         @default(false)
+  approvalStatus String        @default("pending")
   teacher     User            @relation("CourseTeacher", fields: [teacherId], references: [id])
   contents    CourseContent[]
   enrollments Enrollment[]

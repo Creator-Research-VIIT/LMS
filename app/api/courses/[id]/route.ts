@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
-    const course = await prisma.course.findUnique({
-      where: { id: params.id, isApproved: true },
+    const course = await prisma.course.findFirst({
+      where: { id: params.id, approvalStatus: "APPROVED" },
       include: { teacher: { select: { name: true, id: true } } }
     });
     if (!course) {
