@@ -33,10 +33,10 @@ export async function POST(req: Request) {
         thumbnail,
         price: parseFloat(price),
         teacherId: session.user.id,
-        approvalStatus: "pending"
+        approvalStatus: "PENDING"
       }
     });
-    return NextResponse.json({ course }, { status: 201 });
+    return NextResponse.json({ course, message: "Course submitted for admin approval" }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: "Failed to create course" }, { status: 500 });
   }
