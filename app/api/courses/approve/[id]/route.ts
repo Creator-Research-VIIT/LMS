@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendCourseApprovalNotification } from "@/lib/email";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -11,7 +12,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
   }
 
   try {
-    const { action } = await req.json(); // action can be "APPROVE" or "REJECT"
+    const { action, message } = await req.json(); // action can be "APPROVE" or "REJECT", message is optional admin feedback
     const courseId = params.id;
 
     if (!action || !["APPROVE", "REJECT"].includes(action)) {
@@ -29,6 +30,20 @@ export async function POST(req: Request, { params }: { params: { id: string } })
         } 
       }
     });
+
+    // Send email notification to teacher about course approval/rejection
+    try {
+      await sendCourseApprovalNotification(
+        updatedCourse.title,
+        updatedCourse.teacher.email || '',
+        updatedCourse.teacher.name || 'Unknown Teacher',
+        action === "APPROVE" ? 'approved' : 'rejected',
+        message || undefined
+      );
+    } catch (emailError) {
+      console.error('Failed to send course approval notification:', emailError);
+      // Don't fail the approval process if email fails
+    }
 
     return NextResponse.json({ 
       course: updatedCourse, 

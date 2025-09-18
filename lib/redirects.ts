@@ -1,0 +1,27 @@
+export function getRoleBasedDashboard(role: string, approvalStatus?: string): string {
+  switch (role) {
+    case 'ADMIN':
+      return '/admin/dashboard'
+    case 'TEACHER':
+      // Teachers need approval before accessing full dashboard
+      return approvalStatus === 'approved' ? '/dashboard' : '/teacher-approval'
+    case 'STUDENT':
+    default:
+      return '/dashboard'
+  }
+}
+
+export function getWelcomeMessage(role: string, approvalStatus?: string): string {
+  switch (role) {
+    case 'ADMIN':
+      return 'Welcome to the admin dashboard!'
+    case 'TEACHER':
+      if (approvalStatus === 'pending') {
+        return 'Your teacher account is pending approval. You will be notified once approved.'
+      }
+      return 'Welcome to your teaching dashboard!'
+    case 'STUDENT':
+    default:
+      return 'Welcome to your learning dashboard!'
+  }
+}

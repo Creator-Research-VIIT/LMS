@@ -1,12 +1,20 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcrypt";
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
 import { prisma } from "./prisma";
 
 export const  authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID!,
+      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+    }),
     CredentialsProvider({
       name: "credentials",
       credentials: {
@@ -24,7 +32,7 @@ export const  authOptions: NextAuthOptions = {
           }
         });
 
-        if (!user || !user.password) {
+        if (!user?.password || user.password === "") {
           return null;
         }
 
@@ -55,7 +63,25 @@ export const  authOptions: NextAuthOptions = {
     strategy: "jwt"
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === "google" || account?.provider === "github") {
+        // Check if user already exists
+        const existingUser = await prisma.user.findUnique({
+          where: { email: user.email || "" }
+        });
+
+        if (existingUser) {
+          // User exists, allow sign in
+          return true;
+        } else {
+          // New OAuth user - need role selection
+          // Store temporary data in URL for role selection page
+          return `/oauth-role-selection?email=${encodeURIComponent(user.email || "")}&name=${encodeURIComponent(user.name || "")}&provider=${account.provider}&image=${encodeURIComponent(user.image || "")}`;
+        }
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
         (token as any).role = (user as any).role;
         token.id = user.id;

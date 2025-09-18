@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendCourseSubmissionNotification } from "@/lib/email";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -36,6 +37,20 @@ export async function POST(req: Request) {
         approvalStatus: "PENDING"
       }
     });
+
+    // Send email notification to admin about new course submission
+    try {
+      await sendCourseSubmissionNotification(
+        title,
+        session.user.name || 'Unknown Teacher',
+        session.user.email || '',
+        course.id
+      );
+    } catch (emailError) {
+      console.error('Failed to send course submission notification:', emailError);
+      // Don't fail the course creation if email fails
+    }
+
     return NextResponse.json({ course, message: "Course submitted for admin approval" }, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: "Failed to create course" }, { status: 500 });

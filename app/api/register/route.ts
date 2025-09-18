@@ -2,6 +2,8 @@ import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
+import { getRoleBasedDashboard } from '@/lib/redirects';
 import { z } from 'zod';
 
 // Validation schema for registration
@@ -69,12 +71,31 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Return success with a safe redirect URL
+    // Send emails if user is a teacher
+    if (newUser.role === 'TEACHER') {
+      try {
+        // Send confirmation email to teacher
+        await sendTeacherApplicationConfirmation(newUser.email, newUser.name)
+        
+        // Send notification email to admin
+        await sendTeacherApplicationNotification(newUser.email, newUser.name)
+        
+        console.log(`✅ Teacher application emails sent for: ${newUser.name}`)
+      } catch (emailError) {
+        console.error('❌ Failed to send teacher application emails:', emailError)
+        // Don't fail the registration if emails fail - just log it
+      }
+    }
+
+    // Get appropriate redirect URL based on role
+    const redirectUrl = getRoleBasedDashboard(newUser.role, newUser.approvalStatus)
+
+    // Return success with role-based redirect URL
     return NextResponse.json(
       {
         message: 'User registered successfully',
         user: newUser,
-        redirectUrl: '/dashboard', // <-- safe page after registration
+        redirectUrl,
       },
       { status: 201 }
     );

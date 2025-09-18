@@ -114,21 +114,36 @@ model Feedback {
 }
 
 model User {
-  id             String           @id @default(uuid())
-  name           String
-  email          String           @unique
-  password       String
-  role           Role
-  approvalStatus String           @default("pending")
-  createdAt      DateTime         @default(now())
-  emailVerified  DateTime?
-  referralCode   String?          @unique
-  referredBy     String?
-  courses        Course[]         @relation("CourseTeacher")
-  enrollments    Enrollment[]
-  feedbacks      Feedback[]
-  progresses     CourseProgress[] @relation("StudentProgress")
-  quizSubmissions QuizSubmission[]
+  id                String              @id @default(uuid())
+  name              String
+  email             String              @unique
+  password          String
+  role              Role
+  approvalStatus    String              @default("pending")
+  createdAt         DateTime            @default(now())
+  emailVerified     DateTime?
+  image             String?
+  referralCode      String?             @unique
+  referredBy        String?
+  courses           Course[]            @relation("CourseTeacher")
+  progresses        CourseProgress[]    @relation("StudentProgress")
+  EmailVerification EmailVerification[]
+  enrollments       Enrollment[]
+  feedbacks         Feedback[]
+  quizSubmissions   QuizSubmission[]
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String
+  otp       String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email, otp])
 }
 
 enum Role {
