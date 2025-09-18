@@ -8,9 +8,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, BookOpen, Check, Eye, EyeOff } from "lucide-react";
-import { signIn } from "next-auth/react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function SignupPage() {
@@ -28,7 +27,6 @@ export default function SignupPage() {
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const router = useRouter()
-  const searchParams = useSearchParams()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData((prev) => ({
@@ -81,29 +79,50 @@ export default function SignupPage() {
         return
       }
 
-      setSuccess("Account created successfully! Signing you in...")
+      setSuccess("Account created successfully! Please check your email for verification.")
 
-      // Auto-login after successful registration
-      const signInResult = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      })
-
-      if (signInResult?.error) {
-        setError("Account created but automatic login failed. Please sign in manually.")
-      } else if (signInResult?.ok) {
-        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
-        router.push(callbackUrl)
-      }
+      // Redirect to email verification page
+      setTimeout(() => {
+        if (data.redirectUrl) {
+          router.push(data.redirectUrl)
+        } else {
+          router.push(`/verify-email?userId=${data.user.id}&email=${encodeURIComponent(data.user.email)}`)
+        }
+      }, 2000)
+      
     } catch (error) {
+      console.error('Signup error:', error)
       setError("An error occurred during registration")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const passwordStrength = formData.password.length >= 8 ? "strong" : formData.password.length >= 6 ? "medium" : "weak"
+  const getPasswordStrength = (password: string) => {
+    if (password.length >= 8) return "strong"
+    if (password.length >= 6) return "medium"
+    return "weak"
+  }
+
+  const passwordStrength = getPasswordStrength(formData.password)
+  
+  const getPasswordBarColor = (strength: string) => {
+    if (strength === "strong") return "bg-green-500"
+    if (strength === "medium") return "bg-yellow-500"
+    return "bg-red-500"
+  }
+  
+  const getPasswordTextColor = (strength: string) => {
+    if (strength === "strong") return "text-green-600"
+    if (strength === "medium") return "text-yellow-600"
+    return "text-red-600"
+  }
+  
+  const getPasswordStrengthText = (strength: string) => {
+    if (strength === "strong") return "Strong password"
+    if (strength === "medium") return "Medium strength"
+    return "Weak password"
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
@@ -213,28 +232,10 @@ export default function SignupPage() {
                 {formData.password && (
                   <div className="flex items-center space-x-2 text-sm">
                     <div
-                      className={`w-2 h-2 rounded-full ${
-                        passwordStrength === "strong"
-                          ? "bg-green-500"
-                          : passwordStrength === "medium"
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
-                      }`}
+                      className={`w-2 h-2 rounded-full ${getPasswordBarColor(passwordStrength)}`}
                     />
-                    <span
-                      className={
-                        passwordStrength === "strong"
-                          ? "text-green-600"
-                          : passwordStrength === "medium"
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                      }
-                    >
-                      {passwordStrength === "strong"
-                        ? "Strong password"
-                        : passwordStrength === "medium"
-                          ? "Medium strength"
-                          : "Weak password"}
+                    <span className={getPasswordTextColor(passwordStrength)}>
+                      {getPasswordStrengthText(passwordStrength)}
                     </span>
                   </div>
                 )}

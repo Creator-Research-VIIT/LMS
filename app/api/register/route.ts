@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { createEmailVerification, sendVerificationEmail } from '@/lib/email';
 
 // Validation schema for registration
 const registerSchema = z.object({
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest) {
         role: validatedData.role,
         referralCode: newReferralCode,
         referredBy: referredBy,
-        emailVerified: new Date(),
+        emailVerified: null, // User needs to verify email
         approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved"
       },
       select: {
@@ -69,12 +70,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Return success with a safe redirect URL
+    // Send verification email
+    try {
+      const otp = await createEmailVerification(newUser.id, newUser.email);
+      await sendVerificationEmail(newUser.email, otp);
+    } catch (emailError) {
+      console.error('Failed to send verification email:', emailError);
+      // Don't fail registration if email sending fails
+    }
+
+    // Return success with verification redirect
     return NextResponse.json(
       {
-        message: 'User registered successfully',
+        message: 'User registered successfully. Please check your email for verification.',
         user: newUser,
-        redirectUrl: '/dashboard', // <-- safe page after registration
+        redirectUrl: `/verify-email?userId=${newUser.id}&email=${encodeURIComponent(newUser.email)}`,
       },
       { status: 201 }
     );

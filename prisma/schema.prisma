@@ -8,20 +8,20 @@ datasource db {
 }
 
 model Course {
-  id          String          @id @default(uuid())
-  title       String
-  description String
-  thumbnail   String
-  price       Float
-  teacherId   String
-  createdAt   DateTime        @default(now())
-  approvalStatus String        @default("pending")
-  teacher     User            @relation("CourseTeacher", fields: [teacherId], references: [id])
-  contents    CourseContent[]
-  enrollments Enrollment[]
-  feedbacks   Feedback[]
-  progresses  CourseProgress[] @relation("CourseProgress")
-  quizzes     Quiz[]
+  id             String           @id @default(uuid())
+  title          String
+  description    String
+  thumbnail      String
+  price          Float
+  teacherId      String
+  createdAt      DateTime         @default(now())
+  approvalStatus String           @default("pending")
+  teacher        User             @relation("CourseTeacher", fields: [teacherId], references: [id])
+  contents       CourseContent[]
+  progresses     CourseProgress[] @relation("CourseProgress")
+  enrollments    Enrollment[]
+  feedbacks      Feedback[]
+  quizzes        Quiz[]
 }
 
 model CourseContent {
@@ -46,58 +46,58 @@ model Enrollment {
 model Quiz {
   id          String           @id @default(uuid())
   title       String
-  description String?
-  type        QuizType
   courseId    String
   createdAt   DateTime         @default(now())
+  description String?
   updatedAt   DateTime         @updatedAt
-  course      Course           @relation(fields: [courseId], references: [id])
+  type        QuizType
   questions   Question[]
+  course      Course           @relation(fields: [courseId], references: [id])
   submissions QuizSubmission[]
 }
 
 model Question {
-  id            String   @id @default(uuid())
-  quizId        String
-  questionText  String
-  questionType  String   @default("multiple_choice") // multiple_choice, true_false, short_answer
-  points        Int      @default(1)
-  orderIndex    Int
-  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  answers       Answer[]
+  id           String   @id @default(uuid())
+  quizId       String
+  questionText String
+  questionType String   @default("multiple_choice")
+  points       Int      @default(1)
+  orderIndex   Int
+  answers      Answer[]
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
 }
 
 model Answer {
-  id         String  @id @default(uuid())
+  id         String   @id @default(uuid())
   questionId String
   answerText String
-  isCorrect  Boolean @default(false)
+  isCorrect  Boolean  @default(false)
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model QuizSubmission {
   id          String   @id @default(uuid())
-  studentId   String
   quizId      String
+  studentId   String
+  answers     Json
   score       Float
   maxScore    Float
-  answers     Json     // Store student answers as JSON
   submittedAt DateTime @default(now())
   quiz        Quiz     @relation(fields: [quizId], references: [id])
   student     User     @relation(fields: [studentId], references: [id])
 
-  @@unique([studentId, quizId]) // One submission per student per quiz
+  @@unique([studentId, quizId])
 }
 
 model CourseProgress {
-  id              String  @id @default(uuid())
+  id              String   @id @default(uuid())
   studentId       String
   courseId        String
-  progressPercent Float   @default(0)
-  completed       Boolean @default(false)
+  progressPercent Float    @default(0)
   lastAccessedAt  DateTime @default(now())
-  course          Course  @relation("CourseProgress", fields: [courseId], references: [id])
-  student         User    @relation("StudentProgress", fields: [studentId], references: [id])
+  completed       Boolean  @default(false)
+  course          Course   @relation("CourseProgress", fields: [courseId], references: [id])
+  student         User     @relation("StudentProgress", fields: [studentId], references: [id])
 
   @@unique([studentId, courseId])
 }
@@ -114,21 +114,35 @@ model Feedback {
 }
 
 model User {
-  id             String           @id @default(uuid())
-  name           String
-  email          String           @unique
-  password       String
-  role           Role
-  approvalStatus String           @default("pending")
-  createdAt      DateTime         @default(now())
-  emailVerified  DateTime?
-  referralCode   String?          @unique
-  referredBy     String?
-  courses        Course[]         @relation("CourseTeacher")
-  enrollments    Enrollment[]
-  feedbacks      Feedback[]
-  progresses     CourseProgress[] @relation("StudentProgress")
-  quizSubmissions QuizSubmission[]
+  id                String              @id @default(uuid())
+  name              String
+  email             String              @unique
+  password          String?
+  role              Role
+  approvalStatus    String              @default("pending")
+  createdAt         DateTime            @default(now())
+  emailVerified     DateTime?
+  referralCode      String?             @unique
+  referredBy        String?
+  courses           Course[]            @relation("CourseTeacher")
+  progresses        CourseProgress[]    @relation("StudentProgress")
+  EmailVerification EmailVerification[]
+  enrollments       Enrollment[]
+  feedbacks         Feedback[]
+  quizSubmissions   QuizSubmission[]
+}
+
+model EmailVerification {
+  id        String   @id
+  userId    String
+  email     String
+  otp       String
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([email, otp])
 }
 
 enum Role {
