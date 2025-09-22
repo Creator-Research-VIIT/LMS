@@ -1,9 +1,8 @@
+import { sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
-import { sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
-import { getRoleBasedDashboard } from '@/lib/redirects';
 import { z } from 'zod';
 
 // Validation schema for registration
@@ -48,7 +47,11 @@ export async function POST(request: NextRequest) {
 
     const newReferralCode = randomUUID();
 
-    // Create new user
+    // Generate email verification OTP
+    const emailOtp = Math.floor(100000 + Math.random() * 900000).toString()
+    const otpExpiresAt = new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
+
+    // Create new user (without email verification initially)
     const newUser = await prisma.user.create({
       data: {
         name: validatedData.name,
@@ -57,7 +60,7 @@ export async function POST(request: NextRequest) {
         role: validatedData.role,
         referralCode: newReferralCode,
         referredBy: referredBy,
-        emailVerified: new Date(),
+        emailVerified: null, // Not verified initially
         approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved"
       },
       select: {
@@ -70,6 +73,19 @@ export async function POST(request: NextRequest) {
         createdAt: true,
       },
     });
+
+    // Create email verification record
+    await prisma.emailVerification.create({
+      data: {
+        userId: newUser.id,
+        email: newUser.email,
+        otp: emailOtp,
+        expiresAt: otpExpiresAt
+      }
+    })
+
+    // Log OTP for development (remove in production)
+    console.log(`📧 EMAIL VERIFICATION OTP for ${newUser.email}: ${emailOtp}`)
 
     // Send emails if user is a teacher
     if (newUser.role === 'TEACHER') {
@@ -87,15 +103,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get appropriate redirect URL based on role
-    const redirectUrl = getRoleBasedDashboard(newUser.role, newUser.approvalStatus)
-
-    // Return success with role-based redirect URL
+    // Return success with verification redirect
     return NextResponse.json(
       {
-        message: 'User registered successfully',
+        message: 'User registered successfully. Please check your email for verification code.',
         user: newUser,
-        redirectUrl,
+        redirectUrl: `/verify-email?userId=${newUser.id}&email=${encodeURIComponent(newUser.email)}`,
       },
       { status: 201 }
     );

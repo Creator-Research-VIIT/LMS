@@ -1,5 +1,8 @@
+"use client"
+
 import { Card, CardContent } from "@/components/ui/card"
 import { Code, Palette, TrendingUp, Camera, Music, Globe, Cpu, Heart } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const categories = [
   {
@@ -61,6 +64,11 @@ const categories = [
 ]
 
 export function ExploreCourses() {
+  const router = useRouter()
+
+  const handleCategoryClick = (categoryTitle: string) => {
+    router.push(`/courses?category=${encodeURIComponent(categoryTitle.toLowerCase())}`)
+  }
   return (
     <section className="py-20 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,6 +87,7 @@ export function ExploreCourses() {
                 key={category.title}
                 className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer animate-fade-in-up border-0 shadow-sm"
                 style={{ animationDelay: `${index * 0.1}s` }}
+                onClick={() => handleCategoryClick(category.title)}
               >
                 <CardContent className="p-6 text-center">
                   <div

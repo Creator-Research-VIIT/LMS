@@ -6,16 +6,15 @@ import { NextResponse } from 'next/server';
 // GET /api/progress/[studentId]/[courseId] - Get student progress for a course
 export async function GET(
   request: Request,
-  { params }: { params: { studentId: string; courseId: string } }
+  { params }: { params: Promise<{ studentId: string; courseId: string }> }
 ) {
   try {
+    const { studentId, courseId } = await params;
     const session = await getServerSession(authOptions)
     
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const { studentId, courseId } = params
 
     // Check permissions
     if (session.user.role === 'STUDENT' && session.user.id !== studentId) {

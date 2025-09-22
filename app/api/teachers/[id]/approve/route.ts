@@ -1,13 +1,15 @@
 import { authOptions } from "@/lib/auth";
+import { sendTeacherApprovalNotification } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check authentication
     const session = await getServerSession(authOptions);
     
@@ -26,7 +28,7 @@ export async function PATCH(
       );
     }
 
-    const teacherId = params.id;
+    const teacherId = id;
 
 // Check if teacher exists and is a teacher
 const teacher = await prisma.user.findUnique({
@@ -75,6 +77,19 @@ if (teacher.approvalStatus === "approved") {
         approvalStatus: true,
       },
     });
+
+    // Send approval email notification to teacher
+    try {
+      await sendTeacherApprovalNotification(
+        approvedTeacher.email, 
+        approvedTeacher.name, 
+        'approved'
+      );
+      console.log(`✅ Teacher approval notification sent to: ${approvedTeacher.email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send teacher approval email:', emailError);
+      // Don't fail the approval if email fails - just log it
+    }
 
     return NextResponse.json({
       message: "Teacher approved successfully",

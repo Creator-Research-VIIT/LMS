@@ -12,7 +12,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized. Only students can access this endpoint.' }, { status: 401 })
     }
 
-    // Get student's enrolled courses
+    // Get student's enrolled courses with progress
     const enrollments = await prisma.enrollment.findMany({
       where: {
         studentId: session.user.id
@@ -26,6 +26,11 @@ export async function GET(request: Request) {
                 name: true,
                 email: true
               }
+            },
+            progresses: {
+              where: {
+                studentId: session.user.id
+              }
             }
           }
         }
@@ -35,7 +40,15 @@ export async function GET(request: Request) {
       }
     })
 
-    const courses = enrollments.map(enrollment => enrollment.course)
+    const courses = enrollments.map(enrollment => {
+      const progress = enrollment.course.progresses[0];
+      return {
+        ...enrollment.course,
+        progress: progress ? progress.progressPercent : 0,
+        lastAccessed: progress ? progress.lastAccessedAt : null,
+        nextClass: "Today, 2:00 PM" // Mock data - would come from actual schedule
+      };
+    });
 
     return NextResponse.json({ courses })
 

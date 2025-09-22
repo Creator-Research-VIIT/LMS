@@ -3,7 +3,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
 
   // Only allow admin to approve courses
@@ -13,11 +14,12 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
 
   try {
     const course = await prisma.course.update({
-      where: { id: params.id },
+      where: { id: id },
       data: { approvalStatus: "APPROVED" }
     });
     return NextResponse.json({ course }, { status: 200 });
   } catch (error) {
+    console.error('Error approving course:', error);
     return NextResponse.json({ error: "Failed to approve course" }, { status: 500 });
   }
 }

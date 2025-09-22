@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer'
 import { prisma } from '@/lib/prisma'
+import nodemailer from 'nodemailer'
 
 // Create reusable transporter object using SMTP transport
 const createTransporter = () => {
@@ -575,6 +575,182 @@ If you have any questions, contact us at support@learnhub.com
 To: ${teacherEmail}
 Teacher: ${teacherName}
 Course: ${courseTitle}
+Status: ${status}
+Message: ${adminMessage || 'No message provided'}
+Error: ${error instanceof Error ? error.message : 'Unknown error'}
+    `)
+    return false
+  }
+}
+
+/**
+ * Send teacher approval notification to teacher
+ */
+export async function sendTeacherApprovalNotification(
+  teacherEmail: string,
+  teacherName: string,
+  status: 'approved' | 'rejected',
+  adminMessage?: string
+): Promise<boolean> {
+  const transporter = createTransporter()
+  
+  // If no email configuration, fall back to console logging for development
+  if (!transporter) {
+    console.log(`
+📧 TEACHER ${status.toUpperCase()} NOTIFICATION (Development Mode)
+To: ${teacherEmail}
+Teacher: ${teacherName}
+Status: ${status}
+Message: ${adminMessage || 'No message provided'}
+    `)
+    return true
+  }
+
+  try {
+    const isApproved = status === 'approved'
+    const statusColor = isApproved ? '#28a745' : '#dc3545'
+    const statusIcon = isApproved ? '✅' : '❌'
+    const statusText = isApproved ? 'Approved' : 'Rejected'
+    const mainHeading = isApproved ? 'Welcome to LearnHub!' : 'Application Update'
+    const mainMessage = isApproved 
+      ? 'Congratulations! Your teacher application has been approved and you can now start creating courses.'
+      : 'Thank you for your interest in becoming a teacher. Unfortunately, your application has not been approved at this time.'
+
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: teacherEmail,
+      subject: `Teacher Application ${statusText} - LearnHub`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, ${statusColor} 0%, ${isApproved ? '#20a029' : '#c82333'} 100%); padding: 30px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 28px;">📚 LearnHub</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">Teacher Application ${statusText}</p>
+          </div>
+          
+          <div style="padding: 40px 30px; background: #f8f9fa;">
+            <h2 style="color: #333; margin-bottom: 20px;">${statusIcon} ${mainHeading}</h2>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
+              Dear ${teacherName},
+            </p>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
+              ${mainMessage}
+            </p>
+            
+            <div style="background: white; border-left: 4px solid ${statusColor}; border-radius: 8px; padding: 25px; margin: 30px 0;">
+              <h3 style="color: ${statusColor}; margin: 0 0 15px 0; font-size: 18px;">${statusIcon} Application Status</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-weight: bold;">Teacher:</td>
+                  <td style="padding: 8px 0; color: #333;">${teacherName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-weight: bold;">Email:</td>
+                  <td style="padding: 8px 0; color: #333;">${teacherEmail}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #666; font-weight: bold;">Status:</td>
+                  <td style="padding: 8px 0; color: ${statusColor}; font-weight: bold;">${statusIcon} ${statusText}</td>
+                </tr>
+              </table>
+              ${adminMessage ? `
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px;">
+                  <h4 style="color: #333; margin: 0 0 10px 0; font-size: 16px;">💬 Message from Admin:</h4>
+                  <p style="color: #666; margin: 0; font-style: italic;">"${adminMessage}"</p>
+                </div>
+              ` : ''}
+            </div>
+            
+            ${isApproved ? `
+              <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="color: #155724; margin: 0 0 10px 0;">🚀 What's Next?</h4>
+                <ul style="color: #155724; line-height: 1.8; margin: 0; padding-left: 20px;">
+                  <li>Log into your teacher dashboard</li>
+                  <li>Create your first course</li>
+                  <li>Upload course materials and videos</li>
+                  <li>Start earning from your expertise!</li>
+                </ul>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/teacher" 
+                   style="background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                  Go to Teacher Dashboard
+                </a>
+              </div>
+            ` : `
+              <div style="background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <h4 style="color: #721c24; margin: 0 0 10px 0;">📝 Next Steps</h4>
+                <ul style="color: #721c24; line-height: 1.8; margin: 0; padding-left: 20px;">
+                  <li>You can continue to browse courses as a student</li>
+                  <li>Feel free to reapply in the future when you meet our requirements</li>
+                  <li>Contact support if you have questions about the decision</li>
+                </ul>
+              </div>
+            `}
+            
+            <div style="background: #e3f2fd; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h4 style="color: #1976d2; margin: 0 0 10px 0;">📞 Need Help?</h4>
+              <p style="color: #666; margin: 0; font-size: 14px;">
+                If you have any questions, contact us at 
+                <a href="mailto:support@learnhub.com" style="color: #1976d2;">support@learnhub.com</a>
+              </p>
+            </div>
+          </div>
+          
+          <div style="background: #343a40; padding: 20px; text-align: center;">
+            <p style="color: #adb5bd; margin: 0; font-size: 14px;">
+              © 2024 LearnHub. All rights reserved.
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+LearnHub - Teacher Application ${statusText}
+
+Dear ${teacherName},
+
+${mainMessage}
+
+Application Status:
+- Teacher: ${teacherName}
+- Email: ${teacherEmail}
+- Status: ${statusText}
+
+${adminMessage ? `Message from Admin: "${adminMessage}"` : ''}
+
+${isApproved ? `
+What's Next:
+- Log into your teacher dashboard
+- Create your first course
+- Upload course materials and videos
+- Start earning from your expertise!
+
+Visit: ${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/teacher
+` : `
+Next Steps:
+- You can continue to browse courses as a student
+- Feel free to reapply in the future when you meet our requirements
+- Contact support if you have questions about the decision
+`}
+
+Need help? Contact us at support@learnhub.com
+
+© 2024 LearnHub. All rights reserved.
+      `
+    }
+
+    await transporter.sendMail(mailOptions)
+    console.log(`✅ Teacher ${status} notification sent to:`, teacherEmail)
+    return true
+
+  } catch (error) {
+    console.error(`❌ Failed to send teacher ${status} notification:`, error)
+    
+    // Fall back to console logging if email fails
+    console.log(`
+📧 TEACHER ${status.toUpperCase()} NOTIFICATION (Fallback - Email Failed)
+To: ${teacherEmail}
+Teacher: ${teacherName}
 Status: ${status}
 Message: ${adminMessage || 'No message provided'}
 Error: ${error instanceof Error ? error.message : 'Unknown error'}
