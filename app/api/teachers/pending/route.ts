@@ -43,9 +43,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Transform data for dashboard
+    const transformedTeachers = pendingTeachers.map(teacher => ({
+      id: teacher.id,
+      name: teacher.name,
+      email: teacher.email,
+      status: teacher.approvalStatus as 'pending',
+      submittedAt: teacher.createdAt.toLocaleDateString()
+    }));
+
     return NextResponse.json({
       message: "Pending teachers retrieved successfully",
-      teachers: pendingTeachers,
+      teachers: transformedTeachers,
       count: pendingTeachers.length,
     });
 
