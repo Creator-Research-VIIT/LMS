@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { signOut } from "next-auth/react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -28,6 +29,7 @@ import {
   ArrowLeft,
   Plus,
   Trash2,
+  LogOut,
 } from "lucide-react"
 
 interface QuizQuestion {
@@ -952,6 +954,14 @@ export function TeacherDashboard() {
               }} className="flex items-center gap-2">
                 <Plus className="h-4 w-4" />
                 Create Course
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => signOut({ callbackUrl: '/login' })} 
+                className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
               </Button>
               <div className="p-2 bg-blue-600 rounded-lg">
                 <User className="h-5 w-5 text-white" />
