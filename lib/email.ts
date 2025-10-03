@@ -758,3 +758,126 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}
     return false
   }
 }
+
+/**
+ * Send email verification OTP to user
+ */
+export async function sendEmailVerificationOTP(email: string, name: string, otp: string): Promise<boolean> {
+  const transporter = createTransporter()
+  
+  // If no email configuration, fall back to console logging for development
+  if (!transporter) {
+    console.log(`
+📧 EMAIL VERIFICATION OTP (Development Mode)
+To: ${email}
+Name: ${name}
+OTP: ${otp}
+Expires: 30 minutes
+    `)
+    return true
+  }
+  
+  try {
+    const mailOptions = {
+      from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+      to: email,
+      subject: 'Verify Your Email Address - LearnHub',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; text-align: center; color: white;">
+            <h1 style="margin: 0; font-size: 28px;">🔐 LearnHub</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">Email Verification</p>
+          </div>
+          
+          <div style="padding: 40px 30px; background: #f8f9fa;">
+            <h2 style="color: #333; margin-bottom: 20px;">Verify Your Email Address</h2>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
+              Dear ${name},
+            </p>
+            <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
+              Thank you for registering with LearnHub! Please use the verification code below to confirm your email address:
+            </p>
+            
+            <div style="background: white; border: 3px dashed #667eea; border-radius: 8px; padding: 30px; text-align: center; margin: 30px 0;">
+              <h3 style="color: #333; margin: 0 0 15px 0;">Your Verification Code</h3>
+              <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #667eea; font-family: monospace;">
+                ${otp}
+              </div>
+            </div>
+            
+            <div style="background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h4 style="color: #856404; margin: 0 0 10px 0;">⏰ Important</h4>
+              <p style="color: #856404; margin: 0; font-size: 14px;">
+                This verification code will expire in 30 minutes for security reasons.
+              </p>
+            </div>
+            
+            <div style="background: #d4edda; border: 1px solid #c3e6cb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h4 style="color: #155724; margin: 0 0 10px 0;">🔒 Security Note</h4>
+              <p style="color: #155724; margin: 0; font-size: 14px;">
+                Never share this code with anyone. LearnHub staff will never ask for your verification code.
+              </p>
+            </div>
+            
+            <p style="color: #666; line-height: 1.6; margin-top: 30px;">
+              If you didn't request this verification, please ignore this email or contact our support team.
+            </p>
+            
+            <p style="color: #666; line-height: 1.6; margin-top: 20px;">
+              Best regards,<br>
+              The LearnHub Team
+            </p>
+          </div>
+          
+          <div style="background: #343a40; padding: 20px; text-align: center;">
+            <p style="color: #adb5bd; margin: 0; font-size: 14px;">
+              © 2024 LearnHub. All rights reserved.
+            </p>
+            <p style="color: #6c757d; margin: 5px 0 0 0; font-size: 12px;">
+              This is an automated message. Please do not reply to this email.
+            </p>
+          </div>
+        </div>
+      `,
+      text: `
+LearnHub - Email Verification
+
+Dear ${name},
+
+Thank you for registering with LearnHub! Please use the verification code below to confirm your email address:
+
+VERIFICATION CODE: ${otp}
+
+This verification code will expire in 30 minutes for security reasons.
+
+Security Note: Never share this code with anyone. LearnHub staff will never ask for your verification code.
+
+If you didn't request this verification, please ignore this email or contact our support team.
+
+Best regards,
+The LearnHub Team
+
+© 2024 LearnHub. All rights reserved.
+This is an automated message. Please do not reply to this email.
+      `
+    }
+
+    await transporter.sendMail(mailOptions)
+    console.log(`✅ Email verification OTP sent to: ${email}`)
+    return true
+
+  } catch (error) {
+    console.error(`❌ Failed to send email verification OTP:`, error)
+    
+    // Fall back to console logging if email fails
+    console.log(`
+📧 EMAIL VERIFICATION OTP (Fallback - Email Failed)
+To: ${email}
+Name: ${name}
+OTP: ${otp}
+Expires: 30 minutes
+Error: ${error instanceof Error ? error.message : 'Unknown error'}
+    `)
+    return false
+  }
+}

@@ -1,4 +1,4 @@
-import { sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
+import { sendEmailVerificationOTP, sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
@@ -86,6 +86,15 @@ export async function POST(request: NextRequest) {
 
     // Log OTP for development (remove in production)
     console.log(`📧 EMAIL VERIFICATION OTP for ${newUser.email}: ${emailOtp}`)
+
+    // Send email verification OTP to all users
+    try {
+      await sendEmailVerificationOTP(newUser.email, newUser.name, emailOtp)
+      console.log(`✅ Email verification OTP sent to: ${newUser.email}`)
+    } catch (emailError) {
+      console.error('❌ Failed to send email verification OTP:', emailError)
+      // Don't fail the registration if email fails - just log it
+    }
 
     // Send emails if user is a teacher
     if (newUser.role === 'TEACHER') {

@@ -1,29 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
+import { Footer } from '@/components/footer'
+import { Header } from '@/components/header'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { 
-  Play, 
-  Clock, 
-  Users, 
-  Star, 
-  BookOpen, 
-  Download, 
-  Award, 
-  Smartphone, 
-  Monitor,
-  CheckCircle,
-  ArrowLeft,
-  Share2,
-  Heart
+import {
+    ArrowLeft,
+    Award,
+    BookOpen,
+    CheckCircle,
+    Clock,
+    Download,
+    Heart,
+    Monitor,
+    Play,
+    Share2,
+    Smartphone,
+    Star,
+    Users
 } from 'lucide-react'
-import { Header } from '@/components/header'
-import { Footer } from '@/components/footer'
+import { useSession } from 'next-auth/react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 interface Course {
   id: string

@@ -1,23 +1,23 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import {
+  Bell,
+  BookOpen,
+  Calendar,
+  Clock,
+  FileText,
+  GraduationCap,
+  Home,
+  LogOut,
+  TrendingUp,
+  User
+} from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { 
-  BookOpen, 
-  Clock, 
-  TrendingUp, 
-  Calendar,
-  Bell,
-  User,
-  Home,
-  GraduationCap,
-  FileText,
-  LogOut
-} from "lucide-react";
 
 interface DashboardStats {
   totalCourses: number;

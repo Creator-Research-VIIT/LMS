@@ -81,9 +81,17 @@ export default function SignupPage() {
         return
       }
 
-      setSuccess("Account created successfully! Signing you in...")
+      setSuccess("Account created successfully! Please check your email for verification.")
 
-      // Auto-login after successful registration
+      // If the API returns a redirect URL (for email verification), use it
+      if (data.redirectUrl) {
+        setTimeout(() => {
+          router.push(data.redirectUrl)
+        }, 2000)
+        return
+      }
+
+      // Fallback: Auto-login after successful registration (for users with emailVerified already set)
       const signInResult = await signIn("credentials", {
         email: formData.email,
         password: formData.password,

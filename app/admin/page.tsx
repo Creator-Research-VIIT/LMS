@@ -1,38 +1,38 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSession, signOut } from "next-auth/react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import {
-  BookOpen,
-  Users,
-  Award,
-  BarChart3,
-  Settings,
-  Search,
-  Bell,
-  Target,
-  TrendingUp,
-  CheckCircle,
-  AlertCircle,
-  User,
-  GraduationCap,
-  DollarSign,
-  Star,
-  LogOut,
-  BookOpenCheck,
-  UserCheck
+    AlertCircle,
+    Award,
+    BarChart3,
+    Bell,
+    BookOpen,
+    BookOpenCheck,
+    CheckCircle,
+    DollarSign,
+    GraduationCap,
+    LogOut,
+    Search,
+    Settings,
+    Star,
+    Target,
+    TrendingUp,
+    User,
+    UserCheck,
+    Users
 } from "lucide-react";
-import { 
-  sampleCourses, 
-  sampleStats, 
-  sampleNotifications, 
-  samplePendingTeachers, 
-  samplePendingCourses 
+import { signOut, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import {
+    sampleCourses,
+    sampleNotifications,
+    samplePendingCourses,
+    samplePendingTeachers,
+    sampleStats
 } from "./sample-data";
 
 interface DashboardStats {

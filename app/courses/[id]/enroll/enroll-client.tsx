@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, CreditCard, CheckCircle, Star, Users, Clock } from 'lucide-react'
+import { CheckCircle, Clock, CreditCard, Loader2, Star, Users } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 interface Course {
   id: string

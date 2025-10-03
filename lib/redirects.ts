@@ -1,13 +1,13 @@
 export function getRoleBasedDashboard(role: string, approvalStatus?: string): string {
   switch (role) {
     case 'ADMIN':
-      return '/admin/dashboard'
+      return '/admin'
     case 'TEACHER':
       // Teachers need approval before accessing full dashboard
-      return approvalStatus === 'approved' ? '/dashboard' : '/teacher-approval'
+      return approvalStatus === 'approved' ? '/teacher' : '/teacher-approval'
     case 'STUDENT':
     default:
-      return '/dashboard'
+      return '/student'
   }
 }
 

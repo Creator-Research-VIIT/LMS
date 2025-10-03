@@ -1,14 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useSession } from 'next-auth/react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, CheckCircle, Star, Trophy, BookOpen, Play, Users, ArrowRight, Share2, Award } from 'lucide-react'
-import Image from 'next/image'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import confetti from 'canvas-confetti'
+import { ArrowRight, Award, BookOpen, CheckCircle, Loader2, Play, Share2, Star, Trophy, Users } from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export interface CourseEnrolledClientProps {
   readonly params: {

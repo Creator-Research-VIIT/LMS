@@ -1,9 +1,9 @@
 "use client"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Clock, Users, Star } from "lucide-react"
+import { Clock, Star, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 const newCourses = [

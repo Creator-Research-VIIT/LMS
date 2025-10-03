@@ -1,7 +1,7 @@
 "use client"
 
 import { Card, CardContent } from "@/components/ui/card"
-import { Code, Palette, TrendingUp, Camera, Music, Globe, Cpu, Heart } from "lucide-react"
+import { Camera, Code, Cpu, Globe, Heart, Music, Palette, TrendingUp } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 const categories = [
