@@ -28,24 +28,60 @@ export default function LoginPageClient() {
     setError("")
 
     try {
+      console.log('🔄 Attempting login for:', email);
+      
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
       })
 
+      console.log('🔍 Login result:', result);
+
       if (result?.error) {
+        console.log('❌ Login error:', result.error);
         setError("Invalid email or password")
       } else if (result?.ok) {
-        // Get the session again to access the user role
-        const sessionRes = await fetch("/api/auth/session");
-        const sessionData = await sessionRes.json();
-        const role = sessionData?.user?.role;
-        if (role === "ADMIN") router.push("/admin");
-        else if (role === "TEACHER") router.push("/teacher");
-        else router.push("/student");
+        console.log('✅ Login successful, redirecting...');
+        
+        // Wait a moment for session to be established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Get the session to access the user role
+        try {
+          const authRes = await fetch("/api/auth/check", {
+            method: 'GET',
+            credentials: 'include'
+          });
+          const authData = await authRes.json();
+          
+          console.log('👤 Auth check data:', authData);
+          
+          if (authData.authenticated && authData.user) {
+            const role = authData.user.role;
+            
+            if (role === "ADMIN") {
+              console.log('🔄 Redirecting to admin dashboard');
+              router.push("/admin");
+            } else if (role === "TEACHER") {
+              console.log('🔄 Redirecting to teacher dashboard');
+              router.push("/teacher");
+            } else {
+              console.log('🔄 Redirecting to student dashboard');
+              router.push("/student");
+            }
+          } else {
+            console.log('❌ Authentication check failed, redirecting to student as fallback');
+            router.push("/student");
+          }
+        } catch (sessionError) {
+          console.error('❌ Auth check error:', sessionError);
+          // Fallback redirect
+          router.push("/student");
+        }
       }
     } catch (error: any) {
+      console.error('❌ Login exception:', error);
       setError("An error occurred during sign in")
     } finally {
       setIsLoading(false)

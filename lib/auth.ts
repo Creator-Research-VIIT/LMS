@@ -7,6 +7,7 @@ import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
   debug: process.env.NODE_ENV === 'development', // Enable debug mode in development
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -27,36 +28,50 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
+        try {
+          const user = await prisma.user.findUnique({
+            where: {
+              email: credentials.email
+            }
+          });
+          
+          if (!user) {
+            console.log('❌ User not found:', credentials.email);
+            return null;
           }
-        });
 
-        if (!user?.password || user.password === "") {
+          if (!user.password || user.password === "") {
+            console.log('❌ User has no password:', credentials.email);
+            return null;
+          }
+
+          // Only allow teachers to log in if they are approved
+          if (user.role === "TEACHER" && user.approvalStatus !== "approved") {
+            console.log('❌ Teacher not approved:', credentials.email);
+            return null;
+          }
+
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            console.log('❌ Invalid password for:', credentials.email);
+            return null;
+          }
+
+          console.log('✅ User authenticated successfully:', credentials.email);
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error('❌ Database error during authentication:', error);
           return null;
         }
-
-        // Only allow teachers to log in if they are approved
-        if (user.role === "TEACHER" && user.approvalStatus !== "approved") {
-          return null;
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
       }
     })
   ],
@@ -152,7 +167,7 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: "/login",
-    error: "/login" // Redirect errors to login page
+    error: "/login", // Redirect errors to login page
+    newUser: "/signup" // Redirect new users to signup
   },
-  secret: process.env.NEXTAUTH_SECRET,
 };

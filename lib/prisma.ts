@@ -11,9 +11,8 @@ export const prisma =
         url: process.env.DATABASE_URL,
       },
     },
-    // Optimize connection pool for Neon
-    // Reduce connection pool size to prevent exhaustion
-    // Enable connection recycling
+    // Optimize for serverless environments
+    errorFormat: 'pretty',
   });
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
