@@ -67,7 +67,9 @@ export default withAuth(
           "/courses",
           "/api/auth",
           "/api/register",
-          "/api/auth/verify-email",
+          "/api/auth/verify-email", 
+          "/api/auth/debug",
+          "/api/auth/check",
           "/api/oauth-check",
           "/api/courses"
         ];

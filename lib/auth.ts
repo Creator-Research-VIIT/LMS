@@ -6,7 +6,7 @@ import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
-  debug: process.env.NODE_ENV === 'development', // Enable debug mode in development
+  debug: true, // Enable debug mode for production debugging
   secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
@@ -29,26 +29,44 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
+          console.log('🔍 Looking up user:', credentials.email);
+          
           const user = await prisma.user.findUnique({
             where: {
               email: credentials.email
+            },
+            select: {
+              id: true,
+              email: true,
+              name: true,
+              password: true,
+              role: true,
+              approvalStatus: true,
+              emailVerified: true
             }
           });
           
           if (!user) {
-            console.log('❌ User not found:', credentials.email);
-            return null;
+            console.log('❌ User not found:', credentials.email);  
+            throw new Error('Invalid credentials');
           }
 
           if (!user.password || user.password === "") {
             console.log('❌ User has no password:', credentials.email);
-            return null;
+            throw new Error('Invalid credentials');
           }
+
+          console.log('🔍 User found:', {
+            email: user.email,
+            role: user.role,
+            approvalStatus: user.approvalStatus,
+            hasPassword: !!user.password
+          });
 
           // Only allow teachers to log in if they are approved
           if (user.role === "TEACHER" && user.approvalStatus !== "approved") {
             console.log('❌ Teacher not approved:', credentials.email);
-            return null;
+            throw new Error('Account pending approval');
           }
 
           const isPasswordValid = await bcrypt.compare(
@@ -58,25 +76,36 @@ export const authOptions: NextAuthOptions = {
 
           if (!isPasswordValid) {
             console.log('❌ Invalid password for:', credentials.email);
-            return null;
+            throw new Error('Invalid credentials');
           }
 
-          console.log('✅ User authenticated successfully:', credentials.email);
+          console.log('✅ User authenticated successfully:', {
+            email: user.email,
+            role: user.role,
+            id: user.id
+          });
+          
           return {
             id: user.id,
             email: user.email,
             name: user.name,
             role: user.role,
+            approvalStatus: user.approvalStatus,
           };
         } catch (error) {
-          console.error('❌ Database error during authentication:', error);
+          console.error('❌ Authentication error:', error);
           return null;
         }
       }
     })
   ],
   session: {
-    strategy: "jwt"
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
+  },
+  jwt: {
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   callbacks: {
     async signIn({ user, account, profile }) {
@@ -85,6 +114,12 @@ export const authOptions: NextAuthOptions = {
         email: user.email, 
         name: user.name 
       });
+
+      // For credentials provider, always allow if we reach this point
+      if (account?.provider === "credentials") {
+        console.log('✅ Credentials login approved');
+        return true;
+      }
 
       if (account?.provider === "google" || account?.provider === "github") {
         try {
@@ -95,19 +130,10 @@ export const authOptions: NextAuthOptions = {
 
           if (existingUser) {
             console.log('✅ Existing OAuth user found, allowing sign in');
-            // User exists, allow sign in
             return true;
           } else {
             console.log('🆕 New OAuth user detected, redirecting to role selection');
-            // New OAuth user - redirect to role selection page with user data
-            const redirectParams = new URLSearchParams({
-              email: user.email || '',
-              name: user.name || '',
-              provider: account.provider,
-              image: user.image || ''
-            });
-            
-            return `/oauth-role-selection?${redirectParams.toString()}`;
+            return `/oauth-role-selection?email=${encodeURIComponent(user.email || '')}&name=${encodeURIComponent(user.name || '')}&provider=${account.provider}`;
           }
         } catch (error) {
           console.error('❌ Database error in signIn callback:', error);
@@ -120,29 +146,34 @@ export const authOptions: NextAuthOptions = {
       console.log('🔍 JWT callback triggered:', { 
         hasUser: !!user, 
         hasAccount: !!account, 
-        provider: account?.provider 
+        provider: account?.provider,
+        userEmail: user?.email,
+        tokenSub: token.sub
       });
 
       if (user) {
-        // For OAuth users, we need to fetch role from database
-        if (account?.provider === "google" || account?.provider === "github") {
-          try {
+        try {
+          // For OAuth users, fetch role from database
+          if (account?.provider === "google" || account?.provider === "github") {
             const dbUser = await prisma.user.findUnique({
               where: { email: user.email || "" }
             });
             
             if (dbUser) {
-              (token as any).role = dbUser.role;
+              token.role = dbUser.role;
               token.id = dbUser.id;
+              token.approvalStatus = dbUser.approvalStatus;
               console.log('✅ OAuth user role set:', dbUser.role);
             }
-          } catch (error) {
-            console.error('❌ Error fetching user role:', error);
+          } else {
+            // For credentials login
+            token.role = (user as any).role;
+            token.id = user.id;
+            token.approvalStatus = (user as any).approvalStatus;
+            console.log('✅ Credentials user role set:', (user as any).role);
           }
-        } else {
-          // For credentials login
-          (token as any).role = (user as any).role;
-          token.id = user.id;
+        } catch (error) {
+          console.error('❌ Error in JWT callback:', error);
         }
       }
       return token;
@@ -150,24 +181,40 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       console.log('🔍 Session callback triggered:', { 
         hasToken: !!token, 
-        tokenRole: (token as any)?.role,
-        sessionEmail: session.user?.email 
+        tokenRole: token?.role,
+        sessionEmail: session.user?.email,
+        tokenId: token?.id
       });
 
       if (token && session.user) {
         (session.user as any).id = token.id;
-        (session.user as any).role = (token as any).role;
-        // Expose the JWT token in the session object for API clients
-        (session as any).accessToken = token;
+        (session.user as any).role = token.role;
+        (session.user as any).approvalStatus = token.approvalStatus;
         
-        console.log('✅ Session established with role:', (token as any)?.role);
+        console.log('✅ Session established:', {
+          id: token.id,
+          role: token.role,
+          email: session.user.email
+        });
       }
       return session;
     }
   },
   pages: {
     signIn: "/login",
-    error: "/login", // Redirect errors to login page
-    newUser: "/signup" // Redirect new users to signup
+    error: "/login",
+    newUser: "/signup"
+  },
+  useSecureCookies: process.env.NODE_ENV === "production",
+  cookies: {
+    sessionToken: {
+      name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
   },
 };

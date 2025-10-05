@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, BookOpen, Eye, EyeOff } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import type React from "react";
 import { Suspense, useState } from "react";
 
@@ -20,7 +20,6 @@ export default function LoginPageClient() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const { data: session } = useSession();
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,51 +33,31 @@ export default function LoginPageClient() {
         email,
         password,
         redirect: false,
+        callbackUrl: window.location.origin,
       })
 
       console.log('🔍 Login result:', result);
 
       if (result?.error) {
         console.log('❌ Login error:', result.error);
-        setError("Invalid email or password")
-      } else if (result?.ok) {
-        console.log('✅ Login successful, redirecting...');
-        
-        // Wait a moment for session to be established
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Get the session to access the user role
-        try {
-          const authRes = await fetch("/api/auth/check", {
-            method: 'GET',
-            credentials: 'include'
-          });
-          const authData = await authRes.json();
-          
-          console.log('👤 Auth check data:', authData);
-          
-          if (authData.authenticated && authData.user) {
-            const role = authData.user.role;
-            
-            if (role === "ADMIN") {
-              console.log('🔄 Redirecting to admin dashboard');
-              router.push("/admin");
-            } else if (role === "TEACHER") {
-              console.log('🔄 Redirecting to teacher dashboard');
-              router.push("/teacher");
-            } else {
-              console.log('🔄 Redirecting to student dashboard');
-              router.push("/student");
-            }
-          } else {
-            console.log('❌ Authentication check failed, redirecting to student as fallback');
-            router.push("/student");
-          }
-        } catch (sessionError) {
-          console.error('❌ Auth check error:', sessionError);
-          // Fallback redirect
-          router.push("/student");
+        if (result.error === 'CredentialsSignin') {
+          setError("Invalid email or password")
+        } else {
+          setError("Login failed. Please try again.")
         }
+      } else if (result?.ok && result?.url) {
+        console.log('✅ Login successful, got URL:', result.url);
+        
+        // Force a page reload to ensure session is properly established
+        window.location.href = result.url;
+      } else if (result?.ok) {
+        console.log('✅ Login successful, waiting for session...');
+        
+        // Wait longer for session to be established
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        // Force reload to get fresh session
+        window.location.reload();
       }
     } catch (error: any) {
       console.error('❌ Login exception:', error);
