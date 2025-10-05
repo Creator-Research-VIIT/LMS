@@ -48,16 +48,13 @@ export default function LoginPageClient() {
       } else if (result?.ok && result?.url) {
         console.log('✅ Login successful, got URL:', result.url);
         
-        // Force a page reload to ensure session is properly established
+        // NextAuth returned a URL, use it
         window.location.href = result.url;
       } else if (result?.ok) {
-        console.log('✅ Login successful, waiting for session...');
+        console.log('✅ Login successful, no URL provided');
         
-        // Wait longer for session to be established
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Force reload to get fresh session
-        window.location.reload();
+        // No URL provided, redirect to home and let middleware handle it
+        window.location.href = '/';
       }
     } catch (error: any) {
       console.error('❌ Login exception:', error);

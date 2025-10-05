@@ -34,6 +34,20 @@ export default withAuth(
       }
     }
 
+    // If user is authenticated and accessing home page, redirect based on role
+    if (req.nextUrl.pathname === "/" && isAuth) {
+      const userRole = (token as any)?.role;
+      console.log("HOME PAGE REDIRECT:", { userRole });
+      
+      if (userRole === "ADMIN") {
+        return NextResponse.redirect(new URL("/admin", req.url));
+      } else if (userRole === "TEACHER") {
+        return NextResponse.redirect(new URL("/teacher", req.url));
+      } else if (userRole === "STUDENT") {
+        return NextResponse.redirect(new URL("/student", req.url));
+      }
+    }
+
     // Admin-only routes
     const isAdminRoute = req.nextUrl.pathname.startsWith("/api/teachers") ||
                         req.nextUrl.pathname.startsWith("/admin");
