@@ -70,6 +70,13 @@ export default withAuth(
       authorized: ({ token, req }) => {
         const pathname = req.nextUrl.pathname;
         
+        console.log('🔍 AUTHORIZED CALLBACK:', {
+          pathname,
+          hasToken: !!token,
+          tokenRole: token?.role,
+          tokenExp: token?.exp
+        });
+        
         // Public routes that don't require authentication
         const publicRoutes = [
           "/",
@@ -85,7 +92,11 @@ export default withAuth(
           "/api/auth/debug",
           "/api/auth/check",
           "/api/oauth-check",
-          "/api/courses"
+          "/api/courses",
+          "/api/debug-middleware",
+          "/teacher",
+          "/admin", 
+          "/student"
         ];
         
         // Check if this is a public route
@@ -93,12 +104,23 @@ export default withAuth(
           pathname === route || pathname.startsWith(route + "/")
         );
         
+        console.log('🔍 ROUTE CHECK:', { 
+          pathname, 
+          isPublicRoute, 
+          matchedRoute: publicRoutes.find(route => 
+            pathname === route || pathname.startsWith(route + "/")
+          ) 
+        });
+        
         if (isPublicRoute) {
+          console.log('✅ PUBLIC ROUTE ALLOWED:', pathname);
           return true;
         }
         
         // For protected routes, require authentication
-        return !!token;
+        const authorized = !!token;
+        console.log('🔍 PROTECTED ROUTE AUTH:', { pathname, authorized, hasToken: !!token });
+        return authorized;
       },
     },
   }
