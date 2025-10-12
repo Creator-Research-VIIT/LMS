@@ -22,14 +22,20 @@ interface Course {
   description: string
   thumbnail: string
   price: number
-  teacher: {
+  isFree: boolean
+  duration: string
+  category: string
+  User: {
     id: string
     name: string
+    email: string
   }
-  contents?: Array<{
+  Module?: Array<{
     id: string
     title: string
-    type: string
+    description: string
+    videoUrl: string
+    resources: string
     orderIndex: number
   }>
   _count?: {
@@ -82,7 +88,7 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         throw new Error(data.error || 'Failed to fetch course')
       }
       
-      setCourse(data.course)
+      setCourse(data)
     } catch (error) {
       console.error('Error fetching course:', error)
       setError('Failed to load course details. Please try again.')
@@ -93,6 +99,13 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
 
   const handleStartLearning = () => {
     router.push(`/student/courses/${courseId}`)
+  }
+
+  const handleModuleClick = (module: any) => {
+    // For now, just open the video URL in a new tab if available
+    if (module.videoUrl) {
+      window.open(module.videoUrl, '_blank')
+    }
   }
 
   const handleShareCourse = async () => {
@@ -197,7 +210,7 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
               <CardHeader>
                 <CardTitle className="text-2xl">{course.title}</CardTitle>
                 <CardDescription className="text-base">
-                  Instructor: {course.teacher.name}
+                  Instructor: {course.User.name}
                 </CardDescription>
               </CardHeader>
 
@@ -207,8 +220,8 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                 <div className="grid grid-cols-3 gap-4 mb-6">
                   <div className="text-center p-3 bg-blue-50 rounded-lg">
                     <BookOpen className="h-6 w-6 mx-auto mb-1 text-blue-600" />
-                    <div className="font-semibold text-gray-900">{course._count?.contents || 0}</div>
-                    <div className="text-xs text-gray-600">Lessons</div>
+                    <div className="font-semibold text-gray-900">{course.Module?.length || 0}</div>
+                    <div className="text-xs text-gray-600">Modules</div>
                   </div>
                   <div className="text-center p-3 bg-purple-50 rounded-lg">
                     <Users className="h-6 w-6 mx-auto mb-1 text-purple-600" />
@@ -222,40 +235,39 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   </div>
                 </div>
 
-                {/* Next Steps */}
+                {/* Course Modules */}
                 <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">What's Next?</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">Course Modules</h3>
                   
                   <div className="space-y-3">
-                    <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        1
+                    {course.Module && course.Module.length > 0 ? (
+                      course.Module.map((module, index) => (
+                        <Button key={module.id} variant="ghost" className="flex items-start space-x-3 p-4 bg-white border rounded-lg hover:shadow-md transition-shadow h-auto w-full justify-start" onClick={() => handleModuleClick(module)}>
+                          <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                            {index + 1}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium text-gray-900">{module.title}</h4>
+                              {module.videoUrl && (
+                                <Play className="h-4 w-4 text-blue-600" />
+                              )}
+                            </div>
+                            <p className="text-sm text-gray-600 mt-1">{module.description}</p>
+                            {module.resources && (
+                              <p className="text-xs text-green-600 mt-1">+ Additional resources available</p>
+                            )}
+                          </div>
+                          <ArrowRight className="h-4 w-4 text-gray-400" />
+                        </Button>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <BookOpen className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                        <p>No modules available yet</p>
+                        <p className="text-sm">Check back later for course content</p>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Start Learning</h4>
-                        <p className="text-sm text-gray-600">Access your course content and begin your learning journey</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        2
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Track Progress</h4>
-                        <p className="text-sm text-gray-600">Monitor your progress and complete assignments</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        3
-                      </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Earn Certificate</h4>
-                        <p className="text-sm text-gray-600">Complete the course to receive your certificate</p>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </CardContent>

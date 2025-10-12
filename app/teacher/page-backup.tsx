@@ -135,7 +135,7 @@ export default function TeacherPage() {
         <h1 className="text-2xl font-bold">Teacher Dashboard</h1>
         <button
           className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={() => signOut({ callbackUrl: "/" })}
         >
           Logout
         </button>

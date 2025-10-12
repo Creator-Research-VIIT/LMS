@@ -51,7 +51,7 @@ export async function GET() {
       take: 6,
       orderBy: { createdAt: 'desc' },
       include: {
-        teacher: {
+        User: {
           select: {
             name: true,
             email: true
@@ -81,7 +81,7 @@ export async function GET() {
     const formattedCourses = recentCourses.map(course => ({
       id: course.id,
       title: course.title,
-      instructor: course.teacher.name,
+      instructor: course.User.name,
       category: 'Programming', // You might want to add a category field to your schema
       rating: 4.5, // You'd calculate this from feedbacks
       students: course._count.enrollments,

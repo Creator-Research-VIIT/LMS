@@ -48,8 +48,9 @@ export async function GET(request: NextRequest) {
       id: teacher.id,
       name: teacher.name,
       email: teacher.email,
-      status: teacher.approvalStatus as 'pending',
-      submittedAt: teacher.createdAt.toLocaleDateString()
+      status: teacher.approvalStatus,
+      submittedAt: teacher.createdAt.toLocaleDateString(),
+      referralCode: teacher.referralCode
     }));
 
     return NextResponse.json({

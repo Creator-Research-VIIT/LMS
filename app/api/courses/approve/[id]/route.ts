@@ -23,10 +23,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const updatedCourse = await prisma.course.update({
       where: { id: courseId },
       data: { 
-        approvalStatus: action === "APPROVE" ? "APPROVED" : "REJECTED"
+        approvalStatus: action === "APPROVE" ? "approved" : "rejected"
       },
-      include: { 
-        teacher: { 
+      include: {
+        User: { 
           select: { name: true, email: true } 
         } 
       }
@@ -36,8 +36,8 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     try {
       await sendCourseApprovalNotification(
         updatedCourse.title,
-        updatedCourse.teacher.email || '',
-        updatedCourse.teacher.name || 'Unknown Teacher',
+        updatedCourse.User.email || '',
+        updatedCourse.User.name || 'Unknown Teacher',
         action === "APPROVE" ? 'approved' : 'rejected',
         message || undefined
       );

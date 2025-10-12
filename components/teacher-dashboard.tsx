@@ -70,6 +70,8 @@ export function TeacherDashboard() {
   const [activeSection, setActiveSection] = useState("dashboard")
   const [showAddQuiz, setShowAddQuiz] = useState(false)
   const [showCreateCourse, setShowCreateCourse] = useState(false)
+  const [showEditCourse, setShowEditCourse] = useState(false)
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null)
   const [quiz, setQuiz] = useState<Quiz>({ title: "", questions: [] })
   const [currentQuestion, setCurrentQuestion] = useState<QuizQuestion>({
     id: "1",
@@ -86,7 +88,16 @@ export function TeacherDashboard() {
     title: "",
     description: "",
     thumbnail: "",
-    price: ""
+    price: "",
+    duration: "",
+    category: "",
+    isFree: false,
+    modules: [] as Array<{
+      title: string
+      description: string
+      videoUrl: string
+      resources: string
+    }>
   })
 
   const [realCourses, setRealCourses] = useState<Course[]>([])
@@ -131,7 +142,7 @@ export function TeacherDashboard() {
     { title: "Active Courses", value: "3", icon: BookOpen, bgColor: "bg-green-50", iconColor: "text-green-600" },
     {
       title: "Total Revenue",
-      value: "$30,140",
+      value: "₹30,140",
       icon: DollarSign,
       bgColor: "bg-yellow-50",
       iconColor: "text-yellow-600",
@@ -187,7 +198,7 @@ export function TeacherDashboard() {
       duration: "8.5 hours",
       students: 245,
       completion: 78,
-      revenue: "$12450",
+      revenue: "₹12450",
       rating: 4.8,
       status: "active",
       approvalStatus: "APPROVED"
@@ -200,7 +211,7 @@ export function TeacherDashboard() {
       duration: "12.3 hours",
       students: 189,
       completion: 65,
-      revenue: "$9890",
+      revenue: "₹9890",
       rating: 4.6,
       status: "active",
       approvalStatus: "APPROVED"
@@ -213,7 +224,7 @@ export function TeacherDashboard() {
       duration: "6.2 hours",
       students: 156,
       completion: 45,
-      revenue: "$7800",
+      revenue: "₹7800",
       rating: 4.7,
       status: "disabled",
       approvalStatus: "PENDING"
@@ -349,14 +360,27 @@ export function TeacherDashboard() {
           title: courseForm.title,
           description: courseForm.description,
           thumbnail: courseForm.thumbnail,
-          price: parseFloat(courseForm.price)
+          price: courseForm.isFree ? 0 : parseFloat(courseForm.price),
+          duration: courseForm.duration,
+          category: courseForm.category,
+          isFree: courseForm.isFree,
+          modules: courseForm.modules
         }),
       })
 
       if (response.ok) {
         await response.json()
         setMessage("Course submitted for admin approval! You will be notified once it's reviewed.")
-        setCourseForm({ title: "", description: "", thumbnail: "", price: "" })
+        setCourseForm({ 
+          title: "", 
+          description: "", 
+          thumbnail: "", 
+          price: "", 
+          duration: "",
+          category: "",
+          isFree: false,
+          modules: []
+        })
         setShowCreateCourse(false)
         await fetchCourses() // Refresh courses list
       } else {
@@ -370,12 +394,120 @@ export function TeacherDashboard() {
     }
   }
 
-  const handleCourseInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
+  const handleCourseInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target
+    const checked = (e.target as HTMLInputElement).checked
+    
     setCourseForm(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }))
+  }
+
+  const addModule = () => {
+    setCourseForm(prev => ({
+      ...prev,
+      modules: [...prev.modules, {
+        title: "",
+        description: "",
+        videoUrl: "",
+        resources: ""
+      }]
+    }))
+  }
+
+  const removeModule = (index: number) => {
+    setCourseForm(prev => ({
+      ...prev,
+      modules: prev.modules.filter((_, i) => i !== index)
+    }))
+  }
+
+  const updateModule = (index: number, field: string, value: string) => {
+    setCourseForm(prev => ({
+      ...prev,
+      modules: prev.modules.map((module, i) => 
+        i === index ? { ...module, [field]: value } : module
+      )
+    }))
+  }
+
+  const startEditCourse = async (course: Course) => {
+    try {
+      // Fetch course details with modules
+      const response = await fetch(`/api/courses/${course.id}`)
+      if (response.ok) {
+        const courseData = await response.json()
+        
+        setEditingCourse(course)
+        setCourseForm({
+          title: courseData.title || '',
+          description: courseData.description || '',
+          thumbnail: courseData.thumbnail || '',
+          price: courseData.price?.toString() || '0',
+          duration: courseData.duration || '',
+          category: courseData.category || '',
+          isFree: courseData.isFree || courseData.price === 0,
+          modules: courseData.Module || []
+        })
+        setShowEditCourse(true)
+      }
+    } catch (error) {
+      console.error('Error fetching course details:', error)
+      setMessage('Failed to load course details')
+    }
+  }
+
+  const handleEditCourseSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingCourse) return
+
+    setLoading(true)
+    setMessage("")
+
+    try {
+      const response = await fetch(`/api/courses/${editingCourse.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: courseForm.title,
+          description: courseForm.description,
+          thumbnail: courseForm.thumbnail,
+          price: courseForm.isFree ? 0 : parseFloat(courseForm.price),
+          duration: courseForm.duration,
+          category: courseForm.category,
+          isFree: courseForm.isFree,
+          modules: courseForm.modules
+        }),
+      })
+
+      if (response.ok) {
+        await response.json()
+        setMessage("Course updated successfully!")
+        setCourseForm({ 
+          title: "", 
+          description: "", 
+          thumbnail: "", 
+          price: "", 
+          duration: "",
+          category: "",
+          isFree: false,
+          modules: []
+        })
+        setShowEditCourse(false)
+        setEditingCourse(null)
+        await fetchCourses() // Refresh courses list
+      } else {
+        const error = await response.json()
+        setMessage(error.message || "Failed to update course")
+      }
+    } catch (error) {
+      setMessage("An error occurred while updating the course")
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Course creation form component
@@ -440,20 +572,149 @@ export function TeacherDashboard() {
                 type="url"
               />
             </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="duration">Duration</Label>
+                <Input
+                  id="duration"
+                  name="duration"
+                  value={courseForm.duration}
+                  onChange={handleCourseInputChange}
+                  placeholder="e.g., 8.5 hours"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="category">Category</Label>
+                <select
+                  id="category"
+                  name="category"
+                  value={courseForm.category}
+                  onChange={handleCourseInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">Select category</option>
+                  <option value="programming">Programming</option>
+                  <option value="design">Design</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="business">Business</option>
+                  <option value="data-science">Data Science</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
             
-            <div>
-              <Label htmlFor="price">Course Price ($) *</Label>
-              <Input
-                id="price"
-                name="price"
-                value={courseForm.price}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="isFree"
+                name="isFree"
+                checked={courseForm.isFree}
                 onChange={handleCourseInputChange}
-                placeholder="Enter course price"
-                type="number"
-                min="0"
-                step="0.01"
-                required
+                className="rounded"
               />
+              <Label htmlFor="isFree">Make this course free (for testing)</Label>
+            </div>
+            
+            {!courseForm.isFree && (
+              <div>
+                <Label htmlFor="price">Course Price (₹) *</Label>
+                <Input
+                  id="price"
+                  name="price"
+                  value={courseForm.price}
+                  onChange={handleCourseInputChange}
+                  placeholder="Enter course price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required={!courseForm.isFree}
+                />
+              </div>
+            )}
+            
+            {/* Modules Section */}
+            <div className="border-t pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-lg font-semibold">Course Modules</Label>
+                <Button type="button" onClick={addModule} variant="outline" size="sm" className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Module
+                </Button>
+              </div>
+              
+              {courseForm.modules.length === 0 ? (
+                <p className="text-gray-500 text-center py-4 border-2 border-dashed rounded-lg">
+                  No modules yet. Add your first module to get started.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {courseForm.modules.map((module, index) => (
+                    <Card key={index} className="relative">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base">Module {index + 1}</CardTitle>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeModule(index)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div>
+                          <Label htmlFor={`module-title-${index}`}>Module Title *</Label>
+                          <Input
+                            id={`module-title-${index}`}
+                            value={module.title}
+                            onChange={(e) => updateModule(index, 'title', e.target.value)}
+                            placeholder="e.g., Introduction to React"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`module-description-${index}`}>Description</Label>
+                          <textarea
+                            id={`module-description-${index}`}
+                            value={module.description}
+                            onChange={(e) => updateModule(index, 'description', e.target.value)}
+                            placeholder="What will students learn in this module?"
+                            className="w-full p-2 border border-gray-300 rounded-md min-h-[80px]"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`module-video-${index}`}>YouTube Video URL *</Label>
+                          <Input
+                            id={`module-video-${index}`}
+                            value={module.videoUrl}
+                            onChange={(e) => updateModule(index, 'videoUrl', e.target.value)}
+                            placeholder="https://youtube.com/watch?v=... or hosted video URL"
+                            type="url"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`module-resources-${index}`}>Resources (Optional)</Label>
+                          <Input
+                            id={`module-resources-${index}`}
+                            value={module.resources}
+                            onChange={(e) => updateModule(index, 'resources', e.target.value)}
+                            placeholder="PDF links, additional resources, etc."
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
             
             <div className="flex gap-3">
@@ -461,6 +722,235 @@ export function TeacherDashboard() {
                 {loading ? 'Creating...' : 'Create Course'}
               </Button>
               <Button type="button" variant="outline" onClick={() => setShowCreateCourse(false)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  // Edit course form component
+  const renderEditCourseForm = () => (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="outline" onClick={() => {
+          setShowEditCourse(false)
+          setEditingCourse(null)
+        }} className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Courses
+        </Button>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Edit Course: {editingCourse?.title}
+        </h2>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Course Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {message && (
+            <div className={`p-4 rounded mb-4 ${message.includes('success') 
+              ? 'bg-green-100 text-green-700' 
+              : 'bg-red-100 text-red-700'
+            }`}>
+              {message}
+            </div>
+          )}
+          
+          <form onSubmit={handleEditCourseSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="edit-title">Course Title *</Label>
+              <Input
+                id="edit-title"
+                name="title"
+                value={courseForm.title}
+                onChange={handleCourseInputChange}
+                placeholder="Enter course title"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="edit-description">Course Description *</Label>
+              <textarea
+                id="edit-description"
+                name="description"
+                value={courseForm.description}
+                onChange={handleCourseInputChange}
+                placeholder="Enter course description"
+                className="w-full p-2 border border-gray-300 rounded-md min-h-[100px]"
+                required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="edit-thumbnail">Thumbnail URL</Label>
+              <Input
+                id="edit-thumbnail"
+                name="thumbnail"
+                value={courseForm.thumbnail}
+                onChange={handleCourseInputChange}
+                placeholder="Enter thumbnail image URL"
+                type="url"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-duration">Duration</Label>
+                <Input
+                  id="edit-duration"
+                  name="duration"
+                  value={courseForm.duration}
+                  onChange={handleCourseInputChange}
+                  placeholder="e.g., 8.5 hours"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="edit-category">Category</Label>
+                <select
+                  id="edit-category"
+                  name="category"
+                  value={courseForm.category}
+                  onChange={handleCourseInputChange}
+                  className="w-full p-2 border border-gray-300 rounded-md"
+                >
+                  <option value="">Select category</option>
+                  <option value="programming">Programming</option>
+                  <option value="design">Design</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="business">Business</option>
+                  <option value="data-science">Data Science</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="edit-isFree"
+                name="isFree"
+                checked={courseForm.isFree}
+                onChange={handleCourseInputChange}
+                className="rounded"
+              />
+              <Label htmlFor="edit-isFree">Make this course free (for testing)</Label>
+            </div>
+            
+            {!courseForm.isFree && (
+              <div>
+                <Label htmlFor="edit-price">Course Price (₹) *</Label>
+                <Input
+                  id="edit-price"
+                  name="price"
+                  value={courseForm.price}
+                  onChange={handleCourseInputChange}
+                  placeholder="Enter course price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required={!courseForm.isFree}
+                />
+              </div>
+            )}
+            
+            {/* Modules Section */}
+            <div className="border-t pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <Label className="text-lg font-semibold">Course Modules</Label>
+                <Button type="button" onClick={addModule} variant="outline" size="sm" className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Module
+                </Button>
+              </div>
+              
+              {courseForm.modules.length === 0 ? (
+                <p className="text-gray-500 text-center py-4 border-2 border-dashed rounded-lg">
+                  No modules yet. Add your first module to get started.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {courseForm.modules.map((module, index) => (
+                    <Card key={index} className="relative">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base">Module {index + 1}</CardTitle>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeModule(index)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div>
+                          <Label htmlFor={`edit-module-title-${index}`}>Module Title *</Label>
+                          <Input
+                            id={`edit-module-title-${index}`}
+                            value={module.title}
+                            onChange={(e) => updateModule(index, 'title', e.target.value)}
+                            placeholder="e.g., Introduction to React"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`edit-module-description-${index}`}>Description</Label>
+                          <textarea
+                            id={`edit-module-description-${index}`}
+                            value={module.description}
+                            onChange={(e) => updateModule(index, 'description', e.target.value)}
+                            placeholder="What will students learn in this module?"
+                            className="w-full p-2 border border-gray-300 rounded-md min-h-[80px]"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`edit-module-video-${index}`}>YouTube Video URL *</Label>
+                          <Input
+                            id={`edit-module-video-${index}`}
+                            value={module.videoUrl}
+                            onChange={(e) => updateModule(index, 'videoUrl', e.target.value)}
+                            placeholder="https://youtube.com/watch?v=... or hosted video URL"
+                            type="url"
+                            required
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`edit-module-resources-${index}`}>Resources (Optional)</Label>
+                          <Input
+                            id={`edit-module-resources-${index}`}
+                            value={module.resources}
+                            onChange={(e) => updateModule(index, 'resources', e.target.value)}
+                            placeholder="PDF links, additional resources, etc."
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex gap-3">
+              <Button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700">
+                {loading ? 'Updating...' : 'Update Course'}
+              </Button>
+              <Button type="button" variant="outline" onClick={() => {
+                setShowEditCourse(false)
+                setEditingCourse(null)
+              }}>
                 Cancel
               </Button>
             </div>
@@ -900,7 +1390,13 @@ export function TeacherDashboard() {
             </div>
 
             <div className="flex gap-3">
-              <Button variant="outline">Edit Course</Button>
+              <Button 
+                variant="outline" 
+                onClick={() => startEditCourse(course)}
+                disabled={course.approvalStatus === "PENDING"}
+              >
+                Edit Course
+              </Button>
               <Button variant="outline">View Details</Button>
             </div>
           </Card>
@@ -916,6 +1412,10 @@ export function TeacherDashboard() {
 
     if (showCreateCourse) {
       return renderCreateCourseForm()
+    }
+
+    if (showEditCourse) {
+      return renderEditCourseForm()
     }
 
     switch (activeSection) {
@@ -957,7 +1457,7 @@ export function TeacherDashboard() {
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => signOut({ callbackUrl: '/login' })} 
+                onClick={() => signOut({ callbackUrl: '/' })} 
                 className="flex items-center gap-2 text-red-600 border-red-200 hover:bg-red-50"
               >
                 <LogOut className="h-4 w-4" />

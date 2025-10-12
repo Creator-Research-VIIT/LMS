@@ -28,10 +28,10 @@ export async function POST(request: NextRequest) {
     const course = await prisma.course.findUnique({
       where: { 
         id: courseId,
-        approvalStatus: "APPROVED"
+        approvalStatus: "approved"
       },
       include: {
-        teacher: {
+        User: {
           select: { id: true, name: true }
         }
       }
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
             id: true,
             title: true,
             thumbnail: true,
-            teacher: {
+            User: {
               select: { name: true }
             }
           }

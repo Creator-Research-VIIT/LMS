@@ -15,7 +15,7 @@ const newCourses = [
     duration: "12 weeks",
     students: 1250,
     rating: 4.9,
-    price: "$99",
+    price: "₹99",
     badge: "New",
   },
   {
@@ -26,7 +26,7 @@ const newCourses = [
     duration: "16 weeks",
     students: 890,
     rating: 4.8,
-    price: "$149",
+    price: "₹149",
     badge: "Popular",
   },
   {
@@ -37,7 +37,7 @@ const newCourses = [
     duration: "8 weeks",
     students: 2100,
     rating: 4.7,
-    price: "$79",
+    price: "₹79",
     badge: "Trending",
   },
   {
@@ -48,7 +48,7 @@ const newCourses = [
     duration: "10 weeks",
     students: 1680,
     rating: 4.9,
-    price: "$119",
+    price: "₹119",
     badge: "New",
   },
 ]

@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { BookOpen, Clock, DollarSign, Filter, Loader2, Search, Star, Users } from 'lucide-react'
+import { BookOpen, Clock, IndianRupee, Filter, Loader2, Search, Star, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -19,7 +19,7 @@ interface Course {
   teacherId: string
   createdAt: string
   approvalStatus: string
-  teacher: {
+  User: {
     id: string
     name: string
   }
@@ -93,7 +93,7 @@ export default function CoursesPageClient() {
       filtered = filtered.filter(course =>
         course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        course.teacher.name.toLowerCase().includes(searchTerm.toLowerCase())
+        course.User.name.toLowerCase().includes(searchTerm.toLowerCase())
       )
     }
 
@@ -130,7 +130,7 @@ export default function CoursesPageClient() {
   }
 
   const formatPrice = (price: number) => {
-    return price === 0 ? 'Free' : `$${price.toFixed(2)}`
+    return price === 0 ? 'Free' : `₹${price.toFixed(2)}`
   }
 
   if (isLoading) {
@@ -251,7 +251,7 @@ export default function CoursesPageClient() {
                 </CardTitle>
                 <div className="flex items-center text-sm text-gray-600">
                   <Users className="h-4 w-4 mr-1" />
-                  <span>by {course.teacher.name}</span>
+                  <span>by {course.User.name}</span>
                 </div>
               </CardHeader>
 
@@ -277,7 +277,7 @@ export default function CoursesPageClient() {
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center font-bold text-lg">
-                    <DollarSign className="h-5 w-5 mr-1 text-green-600" />
+                    <IndianRupee className="h-5 w-5 mr-1 text-green-600" />
                     <span className={course.price === 0 ? 'text-green-600' : 'text-gray-900'}>
                       {formatPrice(course.price)}
                     </span>

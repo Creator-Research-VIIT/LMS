@@ -14,14 +14,20 @@ interface Course {
   description: string
   thumbnail: string
   price: number
-  teacher: {
+  isFree: boolean
+  duration: string
+  category: string
+  User: {
     id: string
     name: string
+    email: string
   }
-  contents?: Array<{
+  Module?: Array<{
     id: string
     title: string
-    type: string
+    description: string
+    videoUrl: string
+    resources: string
     orderIndex: number
   }>
   _count?: {
@@ -69,7 +75,7 @@ export default function CourseEnrollClient({ courseId }: CourseEnrollClientProps
     return (
       <>
         <CreditCard className="h-4 w-4 mr-2" />
-        {course.price === 0 ? 'Enroll Now' : `Enroll for $${course.price}`}
+        {course.price === 0 ? 'Enroll Now' : `Enroll for ₹${course.price}`}
       </>
     );
   };
@@ -93,7 +99,7 @@ export default function CourseEnrollClient({ courseId }: CourseEnrollClientProps
         throw new Error(data.error || 'Failed to fetch course details')
       }
       
-      setCourse(data.course)
+      setCourse(data)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -145,7 +151,7 @@ export default function CourseEnrollClient({ courseId }: CourseEnrollClientProps
   }
 
   const formatPrice = (price: number) => {
-    return price === 0 ? 'Free' : `$${price.toFixed(2)}`
+    return price === 0 ? 'Free' : `₹${price.toFixed(2)}`
   }
 
   if (isLoading) {
@@ -203,7 +209,7 @@ export default function CourseEnrollClient({ courseId }: CourseEnrollClientProps
                 </div>
                 <CardTitle className="text-2xl">{course.title}</CardTitle>
                 <CardDescription className="text-base">
-                  by {course.teacher.name}
+                  by {course.User.name}
                 </CardDescription>
               </CardHeader>
               <CardContent>

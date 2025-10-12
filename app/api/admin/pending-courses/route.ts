@@ -15,7 +15,7 @@ export async function GET() {
     const courses = await prisma.course.findMany({
       where: { approvalStatus: "pending" },
       include: {
-        teacher: {
+        User: {
           select: { name: true }
         }
       },
@@ -26,7 +26,7 @@ export async function GET() {
     const transformedCourses = courses.map(course => ({
       id: course.id,
       title: course.title,
-      teacher: course.teacher.name,
+      teacher: course.User.name,
       submittedAt: course.createdAt.toLocaleDateString(),
       status: 'pending' as const
     }));

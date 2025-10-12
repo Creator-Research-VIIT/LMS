@@ -1,5 +1,6 @@
 import { PrismaClient, Role } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+import crypto from 'crypto'
 
 const prisma = new PrismaClient()
 
@@ -14,6 +15,7 @@ async function main() {
     where: { email: 'admin@lms.com' },
     update: {},
     create: {
+      id: crypto.randomUUID(),
       name: 'Admin User',
       email: 'admin@lms.com',
       password: hashedPassword,
@@ -28,6 +30,7 @@ async function main() {
     where: { email: 'teacher@lms.com' },
     update: {},
     create: {
+      id: crypto.randomUUID(),
       name: 'John Teacher',
       email: 'teacher@lms.com',
       password: hashedPassword,

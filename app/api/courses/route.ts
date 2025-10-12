@@ -7,11 +7,12 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const courses = await prisma.course.findMany({
-      where: { approvalStatus: "APPROVED" },
-      include: { teacher: { select: { name: true, id: true } } }
+      where: { approvalStatus: "approved" },
+      include: { User: { select: { name: true, id: true } } }
     });
     return NextResponse.json({ courses }, { status: 200 });
   } catch (error) {
+    console.error('Error fetching courses:', error);
     return NextResponse.json({ error: "Failed to fetch courses" }, { status: 500 });
   }
 }
@@ -23,18 +24,54 @@ export async function POST(req: Request) {
   }
   try {
     const body = await req.json();
-    const { title, description, thumbnail, price } = body;
-    if (!title || !description || !thumbnail || !price) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    const { title, description, thumbnail, price, duration, category, isFree, modules } = body;
+    
+    if (!title || !description) {
+      return NextResponse.json({ error: "Title and description are required" }, { status: 400 });
     }
+
+    if (!isFree && (!price || price <= 0)) {
+      return NextResponse.json({ error: "Price is required for paid courses" }, { status: 400 });
+    }
+
+    if (!modules || modules.length === 0) {
+      return NextResponse.json({ error: "At least one module is required" }, { status: 400 });
+    }
+
+    // Validate modules
+    for (let i = 0; i < modules.length; i++) {
+      const module = modules[i];
+      if (!module.title || !module.videoUrl) {
+        return NextResponse.json({ 
+          error: `Module ${i + 1} must have a title and video URL` 
+        }, { status: 400 });
+      }
+    }
+
     const course = await prisma.course.create({
       data: {
+        id: crypto.randomUUID(),
         title,
         description,
         thumbnail,
-        price: parseFloat(price),
+        price: isFree ? 0 : parseFloat(price),
+        duration,
+        category,
+        isFree,
         teacherId: session.user.id,
-        approvalStatus: "PENDING"
+        approvalStatus: "PENDING",
+        Module: {
+          create: modules.map((module: any, index: number) => ({
+            title: module.title,
+            description: module.description || '',
+            videoUrl: module.videoUrl,
+            resources: module.resources || '',
+            orderIndex: index + 1,
+          }))
+        }
+      },
+      include: {
+        Module: true
       }
     });
 
@@ -53,6 +90,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ course, message: "Course submitted for admin approval" }, { status: 201 });
   } catch (error) {
+    console.error('Error creating course:', error);
     return NextResponse.json({ error: "Failed to create course" }, { status: 500 });
   }
 }

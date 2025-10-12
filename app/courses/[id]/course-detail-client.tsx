@@ -31,13 +31,24 @@ interface Course {
   description: string
   thumbnail: string
   price: number
-  teacherId: string
+  duration: string
+  category: string
+  isFree: boolean
   createdAt: string
   approvalStatus: string
-  teacher: {
+  User: {
     id: string
     name: string
+    email: string
   }
+  Module: Array<{
+    id: string
+    title: string
+    description: string
+    videoUrl: string
+    resources: string
+    orderIndex: number
+  }>
   _count?: {
     enrollments: number
     feedbacks: number
@@ -82,7 +93,7 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
         throw new Error(data.error || 'Failed to fetch course details')
       }
       
-      setCourse(data.course)
+      setCourse(data)
       
       // Mock reviews data (you can replace with actual API call)
       setReviews([
@@ -166,28 +177,7 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
     { icon: Award, text: 'Certificate of completion' },
   ]
 
-  const courseContent = [
-    {
-      title: 'Introduction to AI and ChatGPT',
-      duration: '1 hour',
-      lessons: 5
-    },
-    {
-      title: 'Advanced Prompt Engineering',
-      duration: '2 hours',
-      lessons: 8
-    },
-    {
-      title: 'AI for Content Creation',
-      duration: '1.5 hours',
-      lessons: 6
-    },
-    {
-      title: 'Practical Applications',
-      duration: '2 hours',
-      lessons: 10
-    }
-  ]
+
 
   if (isLoading) {
     return (
@@ -285,13 +275,13 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
                   </div>
                   <div className="flex items-center">
                     <Clock className="h-4 w-4 mr-1" />
-                    <span>12 hours total</span>
+                    <span>{course.duration || 'Variable duration'}</span>
                   </div>
                 </div>
                 <div className="mt-4">
                   <span className="text-sm text-gray-600">Created by </span>
                   <span className="font-medium text-blue-600">
-                    {course.teacher.name}
+                    {course.User.name}
                   </span>
                 </div>
               </div>
@@ -304,21 +294,32 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
                     Course Content
                   </CardTitle>
                   <CardDescription>
-                    4 sections • 29 lectures • 12h total length
+                    {course.Module?.length || 0} modules • {course.duration || 'Variable duration'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {courseContent.map((section) => (
-                      <div key={section.title} className="border rounded-lg p-4">
-                        <div className="flex justify-between items-center">
-                          <h3 className="font-medium">{section.title}</h3>
-                          <span className="text-sm text-gray-500">
-                            {section.lessons} lectures • {section.duration}
-                          </span>
+                    {course.Module && course.Module.length > 0 ? (
+                      course.Module.map((module) => (
+                        <div key={module.id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{module.title}</h3>
+                            <span className="text-sm text-gray-500">
+                              Module {module.orderIndex + 1}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mt-2">{module.description}</p>
+                          {module.videoUrl && (
+                            <div className="flex items-center mt-2 text-sm text-blue-600">
+                              <Play className="h-4 w-4 mr-1" />
+                              Video Lesson
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="text-gray-500">No modules available for this course.</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -381,8 +382,8 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
                     )}
                   </div>
 
-                  {/* Enroll Button */}
-                  {isEnrolled ? (
+                  {/* Enroll/Purchase Buttons */}
+                  {isEnrolled && (
                     <Button 
                       onClick={handleGoToCourse}
                       className="w-full mb-4 bg-green-600 hover:bg-green-700"
@@ -390,23 +391,38 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
                       <CheckCircle className="mr-2 h-4 w-4" />
                       Go to Course
                     </Button>
-                  ) : (
+                  )}
+                  
+                  {!isEnrolled && course.isFree && (
                     <Button 
                       onClick={handleEnroll}
-                      className="w-full mb-4 bg-purple-600 hover:bg-purple-700"
+                      className="w-full mb-4 bg-blue-600 hover:bg-blue-700"
                     >
-                      Add to Cart
+                      <BookOpen className="mr-2 h-4 w-4" />
+                      Enroll Now
                     </Button>
                   )}
+                  
+                  {!isEnrolled && !course.isFree && (
+                    <>
+                      <Button 
+                        onClick={handleEnroll}
+                        className="w-full mb-4 bg-purple-600 hover:bg-purple-700"
+                      >
+                        Add to Cart
+                      </Button>
+                      {/* Buy Now Button */}
+                      <Button variant="outline" className="w-full mb-4">
+                        Buy Now
+                      </Button>
+                    </>
+                  )}
 
-                  {/* Buy Now Button */}
-                  <Button variant="outline" className="w-full mb-4">
-                    Buy Now
-                  </Button>
-
-                  <div className="text-center text-sm text-gray-500 mb-6">
-                    30-Day Money-Back Guarantee
-                  </div>
+                  {!course.isFree && (
+                    <div className="text-center text-sm text-gray-500 mb-6">
+                      30-Day Money-Back Guarantee
+                    </div>
+                  )}
 
                   <Separator className="my-4" />
 

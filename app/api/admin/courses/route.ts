@@ -15,7 +15,7 @@ export async function GET() {
     const courses = await prisma.course.findMany({
       where: { approvalStatus: "approved" },
       include: {
-        teacher: {
+        User: {
           select: { name: true }
         },
         enrollments: {

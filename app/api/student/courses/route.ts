@@ -18,16 +18,16 @@ export async function GET(request: Request) {
         studentId: session.user.id
       },
       include: {
-        course: {
+        Course: {
           include: {
-            teacher: {
+            User: {
               select: {
                 id: true,
                 name: true,
                 email: true
               }
             },
-            progresses: {
+            CourseProgress: {
               where: {
                 studentId: session.user.id
               }
@@ -41,9 +41,9 @@ export async function GET(request: Request) {
     })
 
     const courses = enrollments.map(enrollment => {
-      const progress = enrollment.course.progresses[0];
+      const progress = enrollment.Course.CourseProgress[0];
       return {
-        ...enrollment.course,
+        ...enrollment.Course,
         progress: progress ? progress.progressPercent : 0,
         lastAccessed: progress ? progress.lastAccessedAt : null,
         nextClass: "Today, 2:00 PM" // Mock data - would come from actual schedule
