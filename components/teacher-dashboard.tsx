@@ -32,6 +32,40 @@ import {
 import { signOut } from "next-auth/react"
 import { useEffect, useState } from "react"
 
+// Enhanced Quiz System Interfaces
+interface QuizAnswer {
+  id?: string
+  answerText: string
+  isCorrect: boolean
+  orderIndex?: number
+  matchPair?: string
+  blankPosition?: number
+}
+
+interface EnhancedQuizQuestion {
+  id?: string
+  questionText: string
+  questionType: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'MATCH_COLUMN' | 'FILL_IN_BLANKS'
+  points: number
+  orderIndex?: number
+  explanation?: string
+  questionData?: any
+  answers: QuizAnswer[]
+}
+
+interface EnhancedQuiz {
+  id?: string
+  title: string
+  description?: string
+  courseId: string
+  timeLimit?: number
+  maxAttempts: number
+  passingScore: number
+  isPublished: boolean
+  questions?: EnhancedQuizQuestion[]
+}
+
+// Legacy interfaces for backward compatibility
 interface QuizQuestion {
   id: string
   question: string
@@ -82,6 +116,31 @@ export function TeacherDashboard() {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState("")
+
+  // Enhanced Quiz System State
+  const [quizzes, setQuizzes] = useState<EnhancedQuiz[]>([])
+  const [selectedCourseId, setSelectedCourseId] = useState<string>("")
+  const [showCreateQuiz, setShowCreateQuiz] = useState(false)
+  const [editingQuiz, setEditingQuiz] = useState<EnhancedQuiz | null>(null)
+  const [currentEnhancedQuestion, setCurrentEnhancedQuestion] = useState<EnhancedQuizQuestion>({
+    questionText: "",
+    questionType: "MULTIPLE_CHOICE",
+    points: 1,
+    answers: [
+      { answerText: "", isCorrect: false },
+      { answerText: "", isCorrect: false }
+    ]
+  })
+  const [newQuiz, setNewQuiz] = useState<EnhancedQuiz>({
+    title: "",
+    description: "",
+    courseId: "",
+    timeLimit: 30,
+    maxAttempts: 3,
+    passingScore: 60,
+    isPublished: false
+  })
+  const [showQuestionForm, setShowQuestionForm] = useState(false)
   
   // Course form state
   const [courseForm, setCourseForm] = useState({
@@ -107,6 +166,13 @@ export function TeacherDashboard() {
     fetchCourses()
   }, [])
 
+  // Fetch quizzes when examining section is active
+  useEffect(() => {
+    if (activeSection === 'examinations') {
+      fetchQuizzes()
+    }
+  }, [activeSection])
+
   const fetchCourses = async () => {
     try {
       const response = await fetch('/api/courses/teacher')
@@ -117,6 +183,123 @@ export function TeacherDashboard() {
     } catch (error) {
       console.error('Error fetching courses:', error)
     }
+  }
+
+  // Enhanced Quiz System Functions
+  const fetchQuizzes = async (courseId?: string) => {
+    try {
+      const url = courseId ? `/api/quizzes?courseId=${courseId}` : '/api/quizzes'
+      const response = await fetch(url)
+      if (response.ok) {
+        const data = await response.json()
+        setQuizzes(data.quizzes || [])
+      }
+    } catch (error) {
+      console.error('Error fetching quizzes:', error)
+    }
+  }
+
+  const createQuiz = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/quizzes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newQuiz)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setMessage('Quiz created successfully!')
+        setShowCreateQuiz(false)
+        resetQuizForm()
+        fetchQuizzes()
+      } else {
+        const errorData = await response.json()
+        setMessage(errorData.error || 'Failed to create quiz')
+      }
+    } catch (error) {
+      console.error('Error creating quiz:', error)
+      setMessage('Error creating quiz')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const addEnhancedQuestion = async (quizId: string) => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/quizzes/${quizId}/questions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(currentEnhancedQuestion)
+      })
+
+      if (response.ok) {
+        setMessage('Question added successfully!')
+        resetQuestionForm()
+        setShowQuestionForm(false)
+        fetchQuizzes()
+      } else {
+        const errorData = await response.json()
+        setMessage(errorData.error || 'Failed to add question')
+      }
+    } catch (error) {
+      console.error('Error adding question:', error)
+      setMessage('Error adding question')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const resetQuizForm = () => {
+    setNewQuiz({
+      title: "",
+      description: "",
+      courseId: "",
+      timeLimit: 30,
+      maxAttempts: 3,
+      passingScore: 60,
+      isPublished: false
+    })
+  }
+
+  const resetQuestionForm = () => {
+    setCurrentEnhancedQuestion({
+      questionText: "",
+      questionType: "MULTIPLE_CHOICE",
+      points: 1,
+      answers: [
+        { answerText: "", isCorrect: false },
+        { answerText: "", isCorrect: false }
+      ]
+    })
+  }
+
+  const addAnswer = () => {
+    setCurrentEnhancedQuestion({
+      ...currentEnhancedQuestion,
+      answers: [...currentEnhancedQuestion.answers, { answerText: "", isCorrect: false }]
+    })
+  }
+
+  const removeAnswer = (index: number) => {
+    if (currentEnhancedQuestion.answers.length > 2) {
+      const newAnswers = currentEnhancedQuestion.answers.filter((_, i) => i !== index)
+      setCurrentEnhancedQuestion({
+        ...currentEnhancedQuestion,
+        answers: newAnswers
+      })
+    }
+  }
+
+  const updateAnswer = (index: number, field: string, value: any) => {
+    const newAnswers = [...currentEnhancedQuestion.answers]
+    newAnswers[index] = { ...newAnswers[index], [field]: value }
+    setCurrentEnhancedQuestion({
+      ...currentEnhancedQuestion,
+      answers: newAnswers
+    })
   }
 
   const getBadgeStyle = (course: Course) => {
@@ -1237,92 +1420,517 @@ export function TeacherDashboard() {
     </div>
   )
 
-  const renderExaminations = () => (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-gray-900">Examination System</h2>
-        <Button onClick={() => setShowAddQuiz(true)} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Quiz
-        </Button>
-      </div>
+  const renderExaminations = () => {
+    if (showCreateQuiz) {
+      return renderCreateQuizForm()
+    }
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Question Types */}
+    if (showQuestionForm) {
+      return renderQuestionForm()
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-900">Quiz & Examination System</h2>
+          <Button onClick={() => setShowCreateQuiz(true)} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Create New Quiz
+          </Button>
+        </div>
+
+        {message && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-800">{message}</p>
+          </div>
+        )}
+
+        {/* Question Types Overview */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Question Types</CardTitle>
+            <CardTitle className="text-lg font-semibold">Supported Question Types</CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
+                <h3 className="font-medium text-blue-800">Multiple Choice</h3>
+                <p className="text-sm text-blue-600 mt-1">Standard MCQ with 2-6 options</p>
+              </div>
+              <div className="p-4 border border-green-200 rounded-lg bg-green-50">
+                <h3 className="font-medium text-green-800">True / False</h3>
+                <p className="text-sm text-green-600 mt-1">Binary choice questions</p>
+              </div>
+              <div className="p-4 border border-purple-200 rounded-lg bg-purple-50">
+                <h3 className="font-medium text-purple-800">Match Column</h3>
+                <p className="text-sm text-purple-600 mt-1">Match items from two lists</p>
+              </div>
+              <div className="p-4 border border-orange-200 rounded-lg bg-orange-50">
+                <h3 className="font-medium text-orange-800">Fill in Blanks</h3>
+                <p className="text-sm text-orange-600 mt-1">Complete missing words</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Existing Quizzes */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Your Quizzes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {quizzes.length > 0 ? (
+              <div className="space-y-4">
+                {quizzes.map((quiz) => (
+                  <div key={quiz.id} className="p-4 border border-gray-200 rounded-lg">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-medium text-gray-900">{quiz.title}</h3>
+                          <Badge variant={quiz.isPublished ? "default" : "secondary"}>
+                            {quiz.isPublished ? "Published" : "Draft"}
+                          </Badge>
+                        </div>
+                        {quiz.description && (
+                          <p className="text-sm text-gray-600 mb-2">{quiz.description}</p>
+                        )}
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span>⏱️ {quiz.timeLimit ? `${quiz.timeLimit} min` : 'No limit'}</span>
+                          <span>🔄 {quiz.maxAttempts} attempts</span>
+                          <span>📊 {quiz.passingScore}% to pass</span>
+                          <span>❓ {quiz.questions?.length || 0} questions</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            setEditingQuiz(quiz)
+                            setShowQuestionForm(true)
+                          }}
+                        >
+                          Add Questions
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <ClipboardList className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No quizzes yet</h3>
+                <p className="text-gray-500 mb-4">
+                  Create your first quiz to start testing your students
+                </p>
+                <Button onClick={() => setShowCreateQuiz(true)}>
+                  Create Your First Quiz
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  const renderCreateQuizForm = () => (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="outline" onClick={() => setShowCreateQuiz(false)}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Quizzes
+        </Button>
+        <h2 className="text-2xl font-bold text-gray-900">Create New Quiz</h2>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Quiz Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="quiz-title">Quiz Title *</Label>
+            <Input
+              id="quiz-title"
+              value={newQuiz.title}
+              onChange={(e) => setNewQuiz({ ...newQuiz, title: e.target.value })}
+              placeholder="Enter quiz title"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="quiz-description">Description</Label>
+            <Input
+              id="quiz-description"
+              value={newQuiz.description}
+              onChange={(e) => setNewQuiz({ ...newQuiz, description: e.target.value })}
+              placeholder="Brief description of the quiz"
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="quiz-course">Select Course *</Label>
+            <select
+              id="quiz-course"
+              className="w-full p-2 border border-gray-300 rounded-md"
+              value={newQuiz.courseId}
+              onChange={(e) => setNewQuiz({ ...newQuiz, courseId: e.target.value })}
+            >
+              <option value="">Select a course...</option>
+              {realCourses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="time-limit">Time Limit (minutes)</Label>
+              <Input
+                id="time-limit"
+                type="number"
+                value={newQuiz.timeLimit || ''}
+                onChange={(e) => setNewQuiz({ ...newQuiz, timeLimit: parseInt(e.target.value) || undefined })}
+                placeholder="30"
+              />
+            </div>
+            <div>
+              <Label htmlFor="max-attempts">Max Attempts</Label>
+              <Input
+                id="max-attempts"
+                type="number"
+                value={newQuiz.maxAttempts}
+                onChange={(e) => setNewQuiz({ ...newQuiz, maxAttempts: parseInt(e.target.value) || 3 })}
+                placeholder="3"
+              />
+            </div>
+            <div>
+              <Label htmlFor="passing-score">Passing Score (%)</Label>
+              <Input
+                id="passing-score"
+                type="number"
+                value={newQuiz.passingScore}
+                onChange={(e) => setNewQuiz({ ...newQuiz, passingScore: parseFloat(e.target.value) || 60 })}
+                placeholder="60"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="is-published"
+              checked={newQuiz.isPublished}
+              onChange={(e) => setNewQuiz({ ...newQuiz, isPublished: e.target.checked })}
+              className="rounded border-gray-300"
+            />
+            <Label htmlFor="is-published">Publish immediately (students can take this quiz)</Label>
+          </div>
+
+          <div className="flex justify-end gap-4">
+            <Button variant="outline" onClick={() => setShowCreateQuiz(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={createQuiz}
+              disabled={loading || !newQuiz.title || !newQuiz.courseId}
+            >
+              {loading ? 'Creating...' : 'Create Quiz'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+
+  const renderQuestionForm = () => (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4">
+        <Button variant="outline" onClick={() => setShowQuestionForm(false)}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Quiz
+        </Button>
+        <h2 className="text-2xl font-bold text-gray-900">
+          Add Question to "{editingQuiz?.title}"
+        </h2>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Question Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="question-text">Question Text *</Label>
+            <textarea
+              id="question-text"
+              className="w-full p-3 border border-gray-300 rounded-md"
+              rows={3}
+              value={currentEnhancedQuestion.questionText}
+              onChange={(e) => setCurrentEnhancedQuestion({ 
+                ...currentEnhancedQuestion, 
+                questionText: e.target.value 
+              })}
+              placeholder="Enter your question here..."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="question-type">Question Type *</Label>
+              <select
+                id="question-type"
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={currentEnhancedQuestion.questionType}
+                onChange={(e) => {
+                  const type = e.target.value as any
+                  let defaultAnswers = [
+                    { answerText: "", isCorrect: false },
+                    { answerText: "", isCorrect: false }
+                  ]
+                  
+                  if (type === 'TRUE_FALSE') {
+                    defaultAnswers = [
+                      { answerText: "True", isCorrect: false },
+                      { answerText: "False", isCorrect: false }
+                    ]
+                  }
+                  
+                  setCurrentEnhancedQuestion({ 
+                    ...currentEnhancedQuestion, 
+                    questionType: type,
+                    answers: defaultAnswers
+                  })
+                }}
+              >
+                <option value="MULTIPLE_CHOICE">Multiple Choice</option>
+                <option value="TRUE_FALSE">True / False</option>
+                <option value="MATCH_COLUMN">Match the Column</option>
+                <option value="FILL_IN_BLANKS">Fill in the Blanks</option>
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="question-points">Points</Label>
+              <Input
+                id="question-points"
+                type="number"
+                value={currentEnhancedQuestion.points}
+                onChange={(e) => setCurrentEnhancedQuestion({ 
+                  ...currentEnhancedQuestion, 
+                  points: parseInt(e.target.value) || 1 
+                })}
+                placeholder="1"
+              />
+            </div>
+          </div>
+
+          {/* Answer Options based on Question Type */}
+          {currentEnhancedQuestion.questionType === 'MULTIPLE_CHOICE' && (
             <div className="space-y-4">
-              {questionTypes.map((type, index) => (
-                <div key={index} className="p-3 border border-gray-200 rounded-lg">
-                  <h3 className={`font-medium ${type.color}`}>{type.type}</h3>
-                  <p className="text-sm text-gray-500 mt-1">{type.count}</p>
+              <div className="flex items-center justify-between">
+                <Label>Answer Options *</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addAnswer}
+                  disabled={currentEnhancedQuestion.answers.length >= 6}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Option
+                </Button>
+              </div>
+              {currentEnhancedQuestion.answers.map((answer, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="correct-answer"
+                    checked={answer.isCorrect}
+                    onChange={() => {
+                      const newAnswers = currentEnhancedQuestion.answers.map((a, i) => ({
+                        ...a,
+                        isCorrect: i === index
+                      }))
+                      setCurrentEnhancedQuestion({
+                        ...currentEnhancedQuestion,
+                        answers: newAnswers
+                      })
+                    }}
+                  />
+                  <Input
+                    value={answer.answerText}
+                    onChange={(e) => updateAnswer(index, 'answerText', e.target.value)}
+                    placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                    className="flex-1"
+                  />
+                  {currentEnhancedQuestion.answers.length > 2 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeAnswer(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
+          )}
 
-        {/* Unit Examinations */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Unit Examinations</CardTitle>
-          </CardHeader>
-          <CardContent>
+          {currentEnhancedQuestion.questionType === 'TRUE_FALSE' && (
             <div className="space-y-4">
-              <div className="p-3 border border-gray-200 rounded-lg">
-                <h3 className="font-medium text-gray-900">Unit 1 Exam</h3>
-                <p className="text-sm text-gray-500">25 questions • 30 minutes</p>
-                <p className="text-sm text-orange-600 mt-1">89% completion rate</p>
-              </div>
-              <div className="p-3 border border-gray-200 rounded-lg">
-                <h3 className="font-medium text-gray-900">Unit 2 Exam</h3>
-                <p className="text-sm text-gray-500">20 questions • 25 minutes</p>
-                <p className="text-sm text-orange-600 mt-1">67% completion rate</p>
-              </div>
-              <Button 
-                className="w-full" 
-                onClick={() => {
-                  setActiveSection("examinations")
-                  setShowAddQuiz(true)
-                }}
-              >
-                Create Unit Exam
-              </Button>
+              <Label>Select Correct Answer *</Label>
+              {currentEnhancedQuestion.answers.map((answer, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <input
+                    type="radio"
+                    name="tf-correct-answer"
+                    checked={answer.isCorrect}
+                    onChange={() => {
+                      const newAnswers = currentEnhancedQuestion.answers.map((a, i) => ({
+                        ...a,
+                        isCorrect: i === index
+                      }))
+                      setCurrentEnhancedQuestion({
+                        ...currentEnhancedQuestion,
+                        answers: newAnswers
+                      })
+                    }}
+                  />
+                  <span className="font-medium">{answer.answerText}</span>
+                </div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
+          )}
 
-        {/* Final Examination */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold">Final Examination</CardTitle>
-          </CardHeader>
-          <CardContent>
+          {currentEnhancedQuestion.questionType === 'MATCH_COLUMN' && (
             <div className="space-y-4">
-              <div className="p-3 border border-gray-200 rounded-lg">
-                <h3 className="font-medium text-red-600">Previous Questions</h3>
-                <p className="text-sm text-gray-500 mt-1">45 questions available</p>
+              <div className="flex items-center justify-between">
+                <Label>Match Pairs *</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addAnswer}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Pair
+                </Button>
               </div>
-              <div className="p-3 border border-gray-200 rounded-lg">
-                <h3 className="font-medium text-gray-900">Final Exam Setup</h3>
-                <p className="text-sm text-gray-500 mt-1">50 questions • 90 minutes</p>
-              </div>
-              <Button 
-                className="w-full bg-red-600 hover:bg-red-700"
-                onClick={() => {
-                  setActiveSection("examinations")
-                  setShowAddQuiz(true)
-                }}
-              >
-                Generate Final Exam
-              </Button>
+              {currentEnhancedQuestion.answers.map((answer, index) => (
+                <div key={index} className="grid grid-cols-2 gap-3 items-center">
+                  <div>
+                    <Input
+                      value={answer.answerText}
+                      onChange={(e) => updateAnswer(index, 'answerText', e.target.value)}
+                      placeholder="Left column item"
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={answer.matchPair || ''}
+                      onChange={(e) => updateAnswer(index, 'matchPair', e.target.value)}
+                      placeholder="Right column match"
+                      className="flex-1"
+                    />
+                    {currentEnhancedQuestion.answers.length > 2 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeAnswer(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          )}
+
+          {currentEnhancedQuestion.questionType === 'FILL_IN_BLANKS' && (
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>Instructions:</strong> Use _____ (5 underscores) in your question text to mark blanks.
+                  Then specify the correct answers for each blank position below.
+                </p>
+              </div>
+              <div className="flex items-center justify-between">
+                <Label>Correct Answers for Blanks *</Label>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={addAnswer}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Blank
+                </Button>
+              </div>
+              {currentEnhancedQuestion.answers.map((answer, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <span className="text-sm font-medium">Blank {index + 1}:</span>
+                  <Input
+                    value={answer.answerText}
+                    onChange={(e) => {
+                      updateAnswer(index, 'answerText', e.target.value)
+                      updateAnswer(index, 'blankPosition', index + 1)
+                    }}
+                    placeholder="Correct answer for this blank"
+                    className="flex-1"
+                  />
+                  {currentEnhancedQuestion.answers.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => removeAnswer(index)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="explanation">Explanation (Optional)</Label>
+            <textarea
+              id="explanation"
+              className="w-full p-3 border border-gray-300 rounded-md"
+              rows={2}
+              value={currentEnhancedQuestion.explanation || ''}
+              onChange={(e) => setCurrentEnhancedQuestion({ 
+                ...currentEnhancedQuestion, 
+                explanation: e.target.value 
+              })}
+              placeholder="Explain why this is the correct answer (shown after submission)"
+            />
+          </div>
+
+          <div className="flex justify-end gap-4">
+            <Button variant="outline" onClick={() => setShowQuestionForm(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => editingQuiz?.id && addEnhancedQuestion(editingQuiz.id)}
+              disabled={loading || !currentEnhancedQuestion.questionText || !currentEnhancedQuestion.answers.some(a => a.answerText)}
+            >
+              {loading ? 'Adding...' : 'Add Question'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 

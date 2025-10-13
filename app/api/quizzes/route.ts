@@ -1,85 +1,135 @@
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { getServerSession } from 'next-auth'
-import { NextResponse } from 'next/server'
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { getServerSession } from "next-auth/next";
+import { NextRequest, NextResponse } from "next/server";
 
-// POST /api/quizzes - Teacher adds quiz
-export async function POST(request: Request) {
+// GET - Fetch all quizzes for a teacher or specific course
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getServerSession(authOptions);
     
-    if (!session || session.user?.role !== 'TEACHER') {
-      return NextResponse.json({ error: 'Unauthorized. Only teachers can create quizzes.' }, { status: 401 })
+    if (!session || (session.user.role !== "TEACHER" && session.user.role !== "ADMIN")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json()
-    const { title, description, type, courseId, questions } = body
+    const { searchParams } = new URL(request.url);
+    const courseId = searchParams.get('courseId');
 
-    // Validate required fields
-    if (!title || !courseId || !questions || !Array.isArray(questions)) {
-      return NextResponse.json({ 
-        error: 'Missing required fields: title, courseId, and questions array' 
-      }, { status: 400 })
+    let whereClause = {};
+    
+    if (courseId) {
+      whereClause = { courseId };
+    } else if (session.user.role === "TEACHER") {
+      // Teacher can only see quizzes for their own courses
+      whereClause = {
+        Course: {
+          teacherId: session.user.id
+        }
+      };
     }
 
-    // Verify teacher owns the course
-    const course = await prisma.course.findFirst({
-      where: {
-        id: courseId,
-        teacherId: session.user.id,
-        approvalStatus: 'approved'
+    const quizzes = await prisma.quiz.findMany({
+      where: whereClause,
+      include: {
+        Course: {
+          select: { title: true, id: true }
+        },
+        Question: {
+          include: {
+            Answer: true
+          }
+        },
+        _count: {
+          select: { 
+            Question: true,
+            QuizSubmission: true 
+          }
+        }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return NextResponse.json({ 
+      success: true,
+      quizzes: quizzes.map(quiz => ({
+        ...quiz,
+        questionCount: quiz._count.Question,
+        submissionCount: quiz._count.QuizSubmission
+      }))
+    });
+
+  } catch (error) {
+    console.error("Error fetching quizzes:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Create a new quiz
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    
+    if (!session || (session.user.role !== "TEACHER" && session.user.role !== "ADMIN")) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { title, description, courseId, timeLimit, maxAttempts, passingScore } = body;
+
+    if (!title || !courseId) {
+      return NextResponse.json(
+        { error: "Title and course ID are required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify teacher owns the course (if not admin)
+    if (session.user.role === "TEACHER") {
+      const course = await prisma.course.findFirst({
+        where: { 
+          id: courseId, 
+          teacherId: session.user.id 
+        }
+      });
+
+      if (!course) {
+        return NextResponse.json(
+          { error: "Course not found or access denied" },
+          { status: 403 }
+        );
       }
-    })
-
-    if (!course) {
-      return NextResponse.json({ 
-        error: 'Course not found or you do not have permission to add quizzes to this course' 
-      }, { status: 403 })
     }
 
-    // Create quiz with questions and answers
     const quiz = await prisma.quiz.create({
       data: {
         title,
         description,
-        type: (type as any) || 'PRACTICE',
         courseId,
-        questions: {
-          create: questions.map((question: any, index: number) => ({
-            questionText: question.questionText,
-            questionType: question.questionType || 'multiple_choice',
-            points: question.points || 1,
-            orderIndex: index,
-            answers: {
-              create: question.answers?.map((answer: any) => ({
-                answerText: answer.answerText,
-                isCorrect: answer.isCorrect || false
-              })) || []
-            }
-          }))
-        }
+        timeLimit: timeLimit ? parseInt(timeLimit) : null,
+        maxAttempts: maxAttempts ? parseInt(maxAttempts) : 3,
+        passingScore: passingScore ? parseFloat(passingScore) : 60.0,
       },
       include: {
-        questions: {
-          include: {
-            answers: true
-          },
-          orderBy: {
-            orderIndex: 'asc'
-          }
+        Course: {
+          select: { title: true }
         }
       }
-    })
+    });
 
-    return NextResponse.json({ 
-      message: 'Quiz created successfully',
-      quiz 
-    }, { status: 201 })
+    return NextResponse.json({
+      success: true,
+      message: "Quiz created successfully",
+      quiz
+    });
 
   } catch (error) {
-    console.error('Error creating quiz:', error)
-    return NextResponse.json({ 
-      error: 'Internal server error' 
-    }, { status: 500 })
+    console.error("Error creating quiz:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

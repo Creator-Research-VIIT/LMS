@@ -28,7 +28,7 @@ export default function PendingCoursesPage() {
 
   const fetchPendingCourses = async () => {
     try {
-      const response = await fetch('/api/courses/pending');
+      const response = await fetch('/api/admin/pending-courses');
       if (response.ok) {
         const data = await response.json();
         setPendingCourses(data.courses);

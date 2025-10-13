@@ -8,11 +8,15 @@ datasource db {
 }
 
 model Answer {
-  id         String   @id
+  id         String   @id @default(cuid())
   questionId String
   answerText String
   isCorrect  Boolean  @default(false)
   orderIndex Int
+  // For matching questions - stores the pair data
+  matchPair  String?
+  // For fill in the blanks - stores the blank position
+  blankPosition Int?
   Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
@@ -97,40 +101,49 @@ model Feedback {
 }
 
 model Question {
-  id           String   @id
+  id           String      @id @default(cuid())
   quizId       String
   questionText String
-  questionType String   @default("multiple_choice")
-  points       Int      @default(1)
+  questionType QuestionType @default(MULTIPLE_CHOICE)
+  points       Int         @default(1)
   orderIndex   Int
+  // Additional data for complex question types
+  questionData Json?       // Stores additional configuration like blanks positions, matching pairs etc
+  explanation  String?     // Optional explanation for the answer
   Answer       Answer[]
-  Quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  Quiz         Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
 }
 
 model Quiz {
-  id             String           @id
+  id             String           @id @default(cuid())
   title          String
   courseId       String
   createdAt      DateTime         @default(now())
   description    String?
-  updatedAt      DateTime
+  updatedAt      DateTime         @updatedAt
+  timeLimit      Int?             // Time limit in minutes
+  maxAttempts    Int              @default(3)
+  passingScore   Float            @default(60.0) // Percentage
+  isPublished    Boolean          @default(false)
   Question       Question[]
   Course         Course           @relation(fields: [courseId], references: [id])
   QuizSubmission QuizSubmission[]
 }
 
 model QuizSubmission {
-  id          String   @id
+  id          String   @id @default(cuid())
   quizId      String
   studentId   String
-  answers     Json
-  score       Float?
-  maxScore    Float?
+  answers     Json     // Stores student's answers with question IDs
+  score       Float?   // Calculated score
+  maxScore    Float?   // Maximum possible score
+  percentage  Float?   // Score as percentage
+  isPassed    Boolean  @default(false)
+  attemptNumber Int    @default(1)
+  timeSpent   Int?     // Time spent in seconds
   submittedAt DateTime @default(now())
   Quiz        Quiz     @relation(fields: [quizId], references: [id])
   User        User     @relation(fields: [studentId], references: [id])
-
-  @@unique([quizId, studentId])
 }
 
 model User {
@@ -154,6 +167,13 @@ model User {
 enum ContentType {
   VIDEO
   NOTE
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  MATCH_COLUMN
+  FILL_IN_BLANKS
 }
 
 enum Role {
