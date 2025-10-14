@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
 
-// GET /api/quizzes/[courseId] - Get all quizzes for a course
+// GET /api/quizzes/course/[courseId] - Get all quizzes for a course
 export async function GET(
   request: Request,
   { params }: { params: { courseId: string } }
@@ -32,12 +32,15 @@ export async function GET(
         courseId
       },
       include: {
-        questions: {
+        Question: {
           include: {
-            answers: {
+            Answer: {
               select: {
                 id: true,
                 answerText: true,
+                orderIndex: true,
+                matchPair: true,
+                blankPosition: true,
                 // Only include isCorrect for teachers
                 isCorrect: session.user.role === 'TEACHER'
               }
@@ -49,7 +52,7 @@ export async function GET(
         },
         // Include submission status for students
         ...(session.user.role === 'STUDENT' && {
-          submissions: {
+          QuizSubmission: {
             where: {
               studentId: session.user.id
             },
@@ -57,7 +60,9 @@ export async function GET(
               id: true,
               score: true,
               maxScore: true,
-              submittedAt: true
+              submittedAt: true,
+              percentage: true,
+              isPassed: true
             }
           }
         })
