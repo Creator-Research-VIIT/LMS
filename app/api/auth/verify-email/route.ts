@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const emailVerification = user.EmailVerification.find(v => !v.verified)
+    const emailVerification = user.EmailVerification.find(v => !v.used)
     if (!emailVerification) {
       return NextResponse.json(
         { error: 'No verification token found. Please request a new verification email.' },
@@ -67,21 +67,26 @@ export async function POST(request: NextRequest) {
     }
 
     // Update user as verified and mark verification as completed
-    await prisma.$transaction([
+    const [updatedUser] = await prisma.$transaction([
       prisma.user.update({
         where: { id: userId },
         data: { emailVerified: new Date() }
       }),
       prisma.emailVerification.update({
         where: { id: emailVerification.id },
-        data: { verified: true }
+        data: { used: true }
       })
     ])
 
     return NextResponse.json(
       { 
         message: 'Email verified successfully!',
-        success: true 
+        success: true,
+        user: {
+          id: updatedUser.id,
+          role: updatedUser.role,
+          approvalStatus: updatedUser.approvalStatus
+        }
       },
       { status: 200 }
     )
@@ -141,7 +146,7 @@ export async function GET(request: NextRequest) {
 
     // Delete existing token and create new one
     await prisma.emailVerification.deleteMany({
-      where: { userId: user.id, verified: false }
+      where: { userId: user.id, used: false }
     })
 
     await prisma.emailVerification.create({

@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     // Delete existing unverified tokens and create new one
     await prisma.emailVerification.deleteMany({
-      where: { userId: user.id, verified: false }
+      where: { userId: user.id, used: false }
     })
 
     await prisma.emailVerification.create({

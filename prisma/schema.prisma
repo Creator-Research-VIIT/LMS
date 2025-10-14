@@ -147,7 +147,7 @@ model QuizSubmission {
 }
 
 model User {
-  id             String           @id
+  id             String           @id @default(cuid())
   name           String
   email          String           @unique
   password       String
@@ -162,6 +162,20 @@ model User {
   Enrollment     Enrollment[]
   Feedback       Feedback[]
   QuizSubmission QuizSubmission[]
+  EmailVerification EmailVerification[]
+}
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, otp])
 }
 
 enum ContentType {

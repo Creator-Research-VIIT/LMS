@@ -53,31 +53,40 @@ export default function VerifyEmailClient() {
       
       if (data.success) {
         setIsSuccess(true)
-        setMessage('Email verified successfully! Redirecting...')
+        setMessage('Email verified successfully! Redirecting to your dashboard...')
         
-        // Fetch user details to determine redirect
-        try {
-          const userResponse = await fetch(`/api/user/${userId}`)
-          const userData = await userResponse.json()
+        // Use user data from verification response if available
+        if (data.user) {
+          const redirectPath = getRoleBasedDashboard(data.user.role, data.user.approvalStatus)
           
-          if (userData.user) {
-            const redirectPath = getRoleBasedDashboard(userData.user.role, userData.user.approvalStatus)
+          setTimeout(() => {
+            router.push(redirectPath)
+          }, 2000)
+        } else {
+          // Fallback: Fetch user details to determine redirect
+          try {
+            const userResponse = await fetch(`/api/user/${userId}`)
+            const userData = await userResponse.json()
             
+            if (userData.user) {
+              const redirectPath = getRoleBasedDashboard(userData.user.role, userData.user.approvalStatus)
+              
+              setTimeout(() => {
+                router.push(redirectPath)
+              }, 2000)
+            } else {
+              // Fallback to student dashboard
+              setTimeout(() => {
+                router.push('/student')
+              }, 2000)
+            }
+          } catch (userError) {
+            console.error('Failed to fetch user details:', userError)
+            // Fallback to student dashboard
             setTimeout(() => {
-              router.push(redirectPath)
-            }, 2000)
-          } else {
-            // Fallback to generic dashboard
-            setTimeout(() => {
-              router.push('/dashboard')
+              router.push('/student')
             }, 2000)
           }
-        } catch (userError) {
-          console.error('Failed to fetch user details:', userError)
-          // Fallback to generic dashboard
-          setTimeout(() => {
-            router.push('/dashboard')
-          }, 2000)
         }
       } else {
         setMessage(data.error || 'Verification failed')
