@@ -1,15 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 // Update the import path below if your Alert component is located elsewhere
 import { Alert, AlertDescription } from '@/components/ui/alert'
 // If the file does not exist, create 'alert.tsx' in 'components/ui' or adjust the path accordingly.
-import { Loader2, Mail, CheckCircle, AlertCircle } from 'lucide-react'
 import { getRoleBasedDashboard } from '@/lib/redirects'
+import { AlertCircle, CheckCircle, Loader2, Mail } from 'lucide-react'
 
 export default function VerifyEmailClient() {
   const [otp, setOtp] = useState('')

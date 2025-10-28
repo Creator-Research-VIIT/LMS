@@ -1,26 +1,26 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useState } from "react";
-import { signOut } from "next-auth/react";
 import {
-  BarChart3,
-  BookOpen,
-  Users,
-  Award,
-  Settings,
-  LogOut,
-  Bell,
-  Search,
-  Clock,
-  TrendingUp,
-  UserCheck,
-  AlertCircle,
-  CheckCircle,
-  DollarSign,
-  Star,
-  GraduationCap
+    AlertCircle,
+    Award,
+    BarChart3,
+    Bell,
+    BookOpen,
+    CheckCircle,
+    Clock,
+    DollarSign,
+    GraduationCap,
+    LogOut,
+    Search,
+    Settings,
+    Star,
+    TrendingUp,
+    UserCheck,
+    Users
 } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
 
 interface AdminStats {
   totalStudents: number;

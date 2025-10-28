@@ -5,17 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-  Bell,
-  BookOpen,
-  Calendar,
-  Clock,
-  FileText,
-  GraduationCap,
-  Home,
-  LogOut,
-  Search,
-  TrendingUp,
-  User
+    Bell,
+    BookOpen,
+    Calendar,
+    Clock,
+    FileText,
+    GraduationCap,
+    Home,
+    LogOut,
+    Search,
+    TrendingUp,
+    User
 } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";

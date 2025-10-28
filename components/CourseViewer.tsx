@@ -1,17 +1,17 @@
 "use client";
 
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
-  Play,
-  BookOpen,
-  Clock,
-  CheckCircle,
-  User,
-  DollarSign
+    ArrowLeft,
+    BookOpen,
+    CheckCircle,
+    Clock,
+    DollarSign,
+    Play,
+    User
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Course {
   id: string;
