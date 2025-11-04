@@ -87,6 +87,7 @@ export default withAuth(
           "/oauth-role-selection",
           "/courses",
           "/api/auth",
+          "/api/diag",
           "/api/register",
           "/api/auth/verify-email", 
           "/api/auth/debug",
@@ -137,6 +138,6 @@ export const config = {
      * - public folder files
      * - files with extensions (images, css, js, etc.)
      */
-    "/((?!api/auth|_next/static|_next/image|favicon.ico|public|.*\\.[\\w]+$).*)",
+    "/((?!api/auth|api/diag|_next/static|_next/image|favicon.ico|public|.*\\.[\\w]+$).*)",
   ],
 }; 

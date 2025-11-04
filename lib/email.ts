@@ -4,18 +4,27 @@ import nodemailer from 'nodemailer'
 // Create reusable transporter object using SMTP transport
 const createTransporter = () => {
   if (!process.env.EMAIL_HOST || !process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn('Email configuration missing. Emails will be logged to console only.')
+    console.warn('⚠️ Email configuration missing in deployment environment.')
+    console.warn('📋 Required environment variables: EMAIL_HOST, EMAIL_USER, EMAIL_PASS')
+    console.warn('🔧 Please set these in your deployment platform (Vercel, Netlify, etc.)')
     return null
   }
+  
+  console.log('📧 Creating email transporter for environment:', process.env.NODE_ENV)
   
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT || '587'),
-    secure: false,
+    secure: false, // Use TLS
+    requireTLS: true, // Require TLS for security
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
     },
+    // Add deployment-specific settings
+    connectionTimeout: 60000, // 60 seconds
+    greetingTimeout: 30000,   // 30 seconds  
+    socketTimeout: 60000,     // 60 seconds
   })
 }
 

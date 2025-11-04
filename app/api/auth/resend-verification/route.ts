@@ -50,9 +50,14 @@ export async function POST(request: NextRequest) {
     })
 
     // Send new OTP email
+    let emailSent = false
     try {
-      await sendEmailVerificationOTP(user.email, user.name, otp)
-      console.log(`✅ New verification OTP sent to: ${user.email}`)
+      emailSent = await sendEmailVerificationOTP(user.email, user.name, otp)
+      if (emailSent) {
+        console.log(`✅ New verification OTP sent to: ${user.email}`)
+      } else {
+        console.warn(`⚠️ OTP created but email not sent. OTP for ${user.email}: ${otp}`)
+      }
     } catch (emailError) {
       console.error('❌ Failed to send verification OTP:', emailError)
       // Log OTP for development if email fails
@@ -62,7 +67,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         message: 'New verification code sent!',
-        success: true 
+        success: true,
+        emailSent
       },
       { status: 200 }
     )
