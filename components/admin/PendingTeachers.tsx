@@ -7,10 +7,8 @@ interface Teacher {
   id: string;
   name: string;
   email: string;
-  role: string;
-  isApproved: boolean;
-  createdAt: string;
-  referralCode: string;
+  status: string;
+  submittedAt: string;
 }
 
 export default function PendingTeachers() {
@@ -40,18 +38,57 @@ export default function PendingTeachers() {
 
   const approveTeacher = async (teacherId: string) => {
     try {
+      setLoading(true);
       const response = await fetch(`/api/teachers/${teacherId}/approve`, {
         method: "PATCH",
       });
 
       if (!response.ok) {
-        throw new Error("Failed to approve teacher");
+        const data = await response.json();
+        throw new Error(data.error || "Failed to approve teacher");
       }
+
+      const data = await response.json();
+      console.log("Teacher approved:", data.message);
 
       // Remove the approved teacher from the list
       setPendingTeachers(prev => prev.filter(teacher => teacher.id !== teacherId));
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to approve teacher");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const rejectTeacher = async (teacherId: string, reason?: string) => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/teachers/${teacherId}/reject`, {
+        method: "PATCH",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          adminMessage: reason || "Application did not meet our requirements at this time."
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to reject teacher");
+      }
+
+      const data = await response.json();
+      console.log("Teacher rejected:", data.message);
+
+      // Remove the rejected teacher from the list
+      setPendingTeachers(prev => prev.filter(teacher => teacher.id !== teacherId));
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to reject teacher");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,18 +142,31 @@ export default function PendingTeachers() {
                   <h3 className="font-semibold text-lg">{teacher.name}</h3>
                   <p className="text-gray-600">{teacher.email}</p>
                   <p className="text-sm text-gray-500">
-                    Applied: {new Date(teacher.createdAt).toLocaleDateString()}
+                    Applied: {teacher.submittedAt}
                   </p>
                   <p className="text-sm text-gray-500">
-                    Referral Code: {teacher.referralCode}
+                    Status: <span className="capitalize font-medium text-yellow-600">{teacher.status}</span>
                   </p>
                 </div>
-                <button
-                  onClick={() => approveTeacher(teacher.id)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                >
-                  Approve
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => approveTeacher(teacher.id)}
+                    disabled={loading}
+                    className="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    {loading ? "Processing..." : "Approve"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const reason = window.prompt("Reason for rejection (optional):");
+                      rejectTeacher(teacher.id, reason || undefined);
+                    }}
+                    disabled={loading}
+                    className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    {loading ? "Processing..." : "Reject"}
+                  </button>
+                </div>
               </div>
             </div>
           ))}

@@ -1,7 +1,19 @@
+"use client"
+
 import { Button } from "@/components/ui/button"
 import { Award, BookOpen, Play, Users } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function HeroSection() {
+  const router = useRouter()
+
+  const handleStartLearning = () => {
+    router.push('/courses')
+  }
+
+  const handleExploreCourses = () => {
+    router.push('/courses')
+  }
   return (
     <section className="bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,7 +27,7 @@ export function HeroSection() {
               taught by industry experts.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mt-8">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white animate-pulse-glow">
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white animate-pulse-glow" onClick={handleStartLearning}>
                 <Play className="mr-2 h-5 w-5" />
                 Start Learning Today
               </Button>
@@ -23,6 +35,7 @@ export function HeroSection() {
                 size="lg"
                 variant="outline"
                 className="border-primary text-primary hover:bg-primary hover:text-white bg-transparent"
+                onClick={handleExploreCourses}
               >
                 Explore Courses
               </Button>

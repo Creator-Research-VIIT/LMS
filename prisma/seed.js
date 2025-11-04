@@ -1,0 +1,143 @@
+const { PrismaClient } = require('@prisma/client')
+const bcrypt = require('bcryptjs')
+
+const prisma = new PrismaClient()
+
+async function main() {
+  console.log('🌱 Starting seeding...')
+
+  // Hash passwords for all users
+  const hashedPassword = await bcrypt.hash('password123', 12)
+
+  // Create Admin User
+  await prisma.user.upsert({
+    where: { email: 'admin@lms.com' },
+    update: {},
+    create: {
+      name: 'Admin User',
+      email: 'admin@lms.com',
+      password: hashedPassword,
+      role: 'ADMIN',
+      approvalStatus: 'approved',
+      emailVerified: new Date(),
+    },
+  })
+
+  // Create Teacher User
+  const teacher = await prisma.user.upsert({
+    where: { email: 'teacher@lms.com' },
+    update: {},
+    create: {
+      name: 'John Teacher',
+      email: 'teacher@lms.com',
+      password: hashedPassword,
+      role: 'TEACHER',
+      approvalStatus: 'approved',
+      emailVerified: new Date(),
+    },
+  })
+
+  // Create Student User
+  const student = await prisma.user.upsert({
+    where: { email: 'student@lms.com' },
+    update: {},
+    create: {
+      name: 'Jane Student',
+      email: 'student@lms.com',
+      password: hashedPassword,
+      role: 'STUDENT',
+      approvalStatus: 'approved',
+      emailVerified: new Date(),
+    },
+  })
+
+  // Create a pending teacher for admin approval testing
+  await prisma.user.upsert({
+    where: { email: 'pending.teacher@lms.com' },
+    update: {},
+    create: {
+      name: 'Pending Teacher',
+      email: 'pending.teacher@lms.com',
+      password: hashedPassword,
+      role: 'TEACHER',
+      approvalStatus: 'pending',
+      emailVerified: new Date(),
+    },
+  })
+
+  // Create sample courses by the approved teacher
+  const course1 = await prisma.course.upsert({
+    where: { id: 'course-1' },
+    update: {},
+    create: {
+      id: 'course-1',
+      title: 'Introduction to React',
+      description: 'Learn the fundamentals of React development including components, hooks, and state management.',
+      thumbnail: '/react-course-thumbnail.png',
+      price: 99.99,
+      teacherId: teacher.id,
+      approvalStatus: 'approved',
+    },
+  })
+
+  await prisma.course.upsert({
+    where: { id: 'course-2' },
+    update: {},
+    create: {
+      id: 'course-2',
+      title: 'Advanced JavaScript',
+      description: 'Master advanced JavaScript concepts including async/await, closures, and design patterns.',
+      thumbnail: '/js-course-thumbnail.png',
+      price: 129.99,
+      teacherId: teacher.id,
+      approvalStatus: 'pending',
+    },
+  })
+
+  // Create enrollment for student
+  await prisma.enrollment.upsert({
+    where: { id: 'enrollment-1' },
+    update: {},
+    create: {
+      id: 'enrollment-1',
+      studentId: student.id,
+      courseId: course1.id,
+    },
+  })
+
+  console.log('✅ Seeding completed successfully!')
+  console.log('\n📋 Test Accounts Created:')
+  console.log('┌─────────────────────────────────────────────────────────┐')
+  console.log('│                    LOGIN CREDENTIALS                    │')
+  console.log('├─────────────────────────────────────────────────────────┤')
+  console.log('│ 👑 ADMIN                                               │')
+  console.log('│   Email: admin@lms.com                                  │')
+  console.log('│   Password: password123                                 │')
+  console.log('│                                                         │')
+  console.log('│ 👨‍🏫 APPROVED TEACHER                                    │')
+  console.log('│   Email: teacher@lms.com                                │')
+  console.log('│   Password: password123                                 │')
+  console.log('│                                                         │')
+  console.log('│ 👨‍🏫 PENDING TEACHER (for testing approval)             │')
+  console.log('│   Email: pending.teacher@lms.com                        │')
+  console.log('│   Password: password123                                 │')
+  console.log('│                                                         │')
+  console.log('│ 👨‍🎓 STUDENT                                             │')
+  console.log('│   Email: student@lms.com                                │')
+  console.log('│   Password: password123                                 │')
+  console.log('└─────────────────────────────────────────────────────────┘')
+  console.log('\n📚 Sample Data:')
+  console.log('• 1 Approved Course: "Introduction to React"')
+  console.log('• 1 Pending Course: "Advanced JavaScript"')
+  console.log('• 1 Student Enrollment')
+}
+
+main()
+  .then(async () => {
+    await prisma.$disconnect()
+  })
+  .catch(async (e) => {
+    console.error('❌ Seeding failed:', e)
+    await prisma.$disconnect()
+    process.exit(1)
+  })

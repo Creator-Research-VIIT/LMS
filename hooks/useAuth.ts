@@ -21,13 +21,13 @@ export const useAuth = () => {
 
       return { success: true };
     } catch (error) {
-      return { success: false, error: error.message };
+      return { success: false, error: error instanceof Error ? error.message : 'An error occurred' };
     }
   };
 
   const logout = async () => {
     await signOut({ redirect: false });
-    router.push("/login");
+    router.push("/");
   };
 
   const isAuthenticated = status === "authenticated";

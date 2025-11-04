@@ -7,115 +7,175 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Answer {
+  id         String   @id @default(cuid())
+  questionId String
+  answerText String
+  isCorrect  Boolean  @default(false)
+  orderIndex Int
+  // For matching questions - stores the pair data
+  matchPair  String?
+  // For fill in the blanks - stores the blank position
+  blankPosition Int?
+  Question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
 model Course {
-  id          String          @id @default(uuid())
+  id             String           @id
+  title          String
+  description    String
+  thumbnail      String?
+  price          Float            @default(0)
+  teacherId      String
+  createdAt      DateTime         @default(now())
+  approvalStatus String           @default("pending")
+  category       String?
+  duration       String?
+  isFree         Boolean          @default(false)
+  updatedAt      DateTime         @updatedAt
+  User           User             @relation(fields: [teacherId], references: [id])
+  CourseContent  CourseContent[]
+  CourseProgress CourseProgress[]
+  Enrollment     Enrollment[]
+  Feedback       Feedback[]
+  Module         Module[]
+  Quiz           Quiz[]
+}
+
+model Module {
+  id          String   @id @default(cuid())
   title       String
-  description String
-  thumbnail   String
-  price       Float
-  teacherId   String
-  createdAt   DateTime        @default(now())
-  isApproved  Boolean         @default(false) // For admin approval
-  teacher     User            @relation("CourseTeacher", fields: [teacherId], references: [id])
-  contents    CourseContent[]
-  enrollments Enrollment[]
-  feedbacks   Feedback[]
-  progresses  Progress[]
-  quizzes     Quiz[]
+  description String?
+  videoUrl    String?
+  resources   String?
+  orderIndex  Int
+  courseId    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  Course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
 }
 
 model CourseContent {
-  id         String      @id @default(uuid())
+  id         String      @id
   title      String
   type       ContentType
   url        String
   courseId   String
   orderIndex Int
-  course     Course      @relation(fields: [courseId], references: [id])
+  Course     Course      @relation(fields: [courseId], references: [id])
+}
+
+model CourseProgress {
+  id               String   @id
+  studentId        String
+  courseId         String
+  completedLessons Int      @default(0)
+  totalLessons     Int      @default(0)
+  progressPercent  Float    @default(0)
+  lastAccessedAt   DateTime @default(now())
+  updatedAt        DateTime
+  Course           Course   @relation(fields: [courseId], references: [id])
+  User             User     @relation(fields: [studentId], references: [id])
+
+  @@unique([studentId, courseId])
 }
 
 model Enrollment {
-  id         String   @id @default(uuid())
+  id         String   @id
   studentId  String
   courseId   String
   enrolledAt DateTime @default(now())
-  course     Course   @relation(fields: [courseId], references: [id])
-  student    User     @relation(fields: [studentId], references: [id])
-}
-
-model Quiz {
-  id        String         @id @default(uuid())
-  title     String
-  type      QuizType
-  courseId  String
-  course    Course         @relation(fields: [courseId], references: [id])
-  attempts  QuizAttempt[]
-  questions QuizQuestion[]
-}
-
-model QuizQuestion {
-  id            String   @id @default(uuid())
-  quizId        String
-  questionText  String
-  options       String[]
-  correctAnswer String
-  quiz          Quiz     @relation(fields: [quizId], references: [id])
-}
-
-model QuizAttempt {
-  id          String   @id @default(uuid())
-  studentId   String
-  quizId      String
-  score       Float
-  answers     String[]
-  submittedAt DateTime @default(now())
-  quiz        Quiz     @relation(fields: [quizId], references: [id])
-  student     User     @relation(fields: [studentId], references: [id])
-}
-
-model Progress {
-  id              String  @id @default(uuid())
-  studentId       String
-  courseId        String
-  progressPercent Float
-  completed       Boolean
-  course          Course  @relation(fields: [courseId], references: [id])
-  student         User    @relation(fields: [studentId], references: [id])
+  Course     Course   @relation(fields: [courseId], references: [id])
+  User       User     @relation(fields: [studentId], references: [id])
 }
 
 model Feedback {
-  id        String   @id @default(uuid())
+  id        String   @id
   userId    String
   courseId  String
   rating    Int
   comment   String
   createdAt DateTime @default(now())
-  course    Course   @relation(fields: [courseId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  Course    Course   @relation(fields: [courseId], references: [id])
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model Question {
+  id           String      @id @default(cuid())
+  quizId       String
+  questionText String
+  questionType QuestionType @default(MULTIPLE_CHOICE)
+  points       Int         @default(1)
+  orderIndex   Int
+  // Additional data for complex question types
+  questionData Json?       // Stores additional configuration like blanks positions, matching pairs etc
+  explanation  String?     // Optional explanation for the answer
+  Answer       Answer[]
+  Quiz         Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+}
+
+model Quiz {
+  id             String           @id @default(cuid())
+  title          String
+  courseId       String
+  createdAt      DateTime         @default(now())
+  description    String?
+  updatedAt      DateTime         @updatedAt
+  timeLimit      Int?             // Time limit in minutes
+  maxAttempts    Int              @default(3)
+  passingScore   Float            @default(60.0) // Percentage
+  isPublished    Boolean          @default(false)
+  Question       Question[]
+  Course         Course           @relation(fields: [courseId], references: [id])
+  QuizSubmission QuizSubmission[]
+}
+
+model QuizSubmission {
+  id          String   @id @default(cuid())
+  quizId      String
+  studentId   String
+  answers     Json     // Stores student's answers with question IDs
+  score       Float?   // Calculated score
+  maxScore    Float?   // Maximum possible score
+  percentage  Float?   // Score as percentage
+  isPassed    Boolean  @default(false)
+  attemptNumber Int    @default(1)
+  timeSpent   Int?     // Time spent in seconds
+  submittedAt DateTime @default(now())
+  Quiz        Quiz     @relation(fields: [quizId], references: [id])
+  User        User     @relation(fields: [studentId], references: [id])
 }
 
 model User {
-  id            String        @id @default(uuid())
-  name          String
-  email         String        @unique
-  password      String
-  role          Role
-  approvalStatus String       @default("pending") // "pending", "approved", "rejected"
-  createdAt     DateTime      @default(now())
-  emailVerified DateTime?
-  referralCode  String?       @unique
-  referredBy    String?
-  courses       Course[]      @relation("CourseTeacher")
-  enrollments   Enrollment[]
-  feedbacks     Feedback[]
-  progresses    Progress[]
-  quizAttempts  QuizAttempt[]
+  id             String           @id @default(cuid())
+  name           String
+  email          String           @unique
+  password       String
+  role           Role
+  approvalStatus String           @default("pending")
+  createdAt      DateTime         @default(now())
+  emailVerified  DateTime?
+  referralCode   String?          @unique
+  referredBy     String?
+  Course         Course[]
+  CourseProgress CourseProgress[]
+  Enrollment     Enrollment[]
+  Feedback       Feedback[]
+  QuizSubmission QuizSubmission[]
+  EmailVerification EmailVerification[]
 }
 
-enum Role {
-  STUDENT
-  TEACHER
-  ADMIN
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String
+  otp       String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, otp])
 }
 
 enum ContentType {
@@ -123,7 +183,15 @@ enum ContentType {
   NOTE
 }
 
-enum QuizType {
-  MID
-  FINAL
+enum QuestionType {
+  MULTIPLE_CHOICE
+  TRUE_FALSE
+  MATCH_COLUMN
+  FILL_IN_BLANKS
+}
+
+enum Role {
+  STUDENT
+  TEACHER
+  ADMIN
 }

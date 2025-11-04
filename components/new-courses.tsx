@@ -1,7 +1,10 @@
+"use client"
+
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Clock, Users, Star } from "lucide-react"
+import { Clock, Star, Users } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 const newCourses = [
   {
@@ -12,7 +15,7 @@ const newCourses = [
     duration: "12 weeks",
     students: 1250,
     rating: 4.9,
-    price: "$99",
+    price: "₹99",
     badge: "New",
   },
   {
@@ -23,7 +26,7 @@ const newCourses = [
     duration: "16 weeks",
     students: 890,
     rating: 4.8,
-    price: "$149",
+    price: "₹149",
     badge: "Popular",
   },
   {
@@ -34,7 +37,7 @@ const newCourses = [
     duration: "8 weeks",
     students: 2100,
     rating: 4.7,
-    price: "$79",
+    price: "₹79",
     badge: "Trending",
   },
   {
@@ -45,12 +48,27 @@ const newCourses = [
     duration: "10 weeks",
     students: 1680,
     rating: 4.9,
-    price: "$119",
+    price: "₹119",
     badge: "New",
   },
 ]
 
 export function NewCourses() {
+  const router = useRouter()
+
+  const handleViewDetails = (courseId: number) => {
+    router.push(`/courses/${courseId}`)
+  }
+
+  const getBadgeColor = (badge: string) => {
+    if (badge === "New") return "bg-accent text-accent-foreground"
+    if (badge === "Popular") return "bg-secondary text-white" 
+    return "bg-primary text-white"
+  }
+
+  const handleViewAllCourses = () => {
+    router.push('/courses')
+  }
   return (
     <section id="courses" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,13 +97,7 @@ export function NewCourses() {
               className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
             />
             <Badge
-              className={`absolute top-3 left-3 ${
-                course.badge === "New"
-                  ? "bg-accent text-accent-foreground"
-                  : course.badge === "Popular"
-                  ? "bg-secondary text-white"
-                  : "bg-primary text-white"
-              }`}
+              className={`absolute top-3 left-3 ${getBadgeColor(course.badge)}`}
             >
               {course.badge}
             </Badge>
@@ -117,7 +129,10 @@ export function NewCourses() {
           </div>
         </CardContent>
         <CardFooter className="p-6 pt-0">
-          <Button className="w-full bg-primary hover:bg-primary/90 text-white">
+          <Button 
+            className="w-full bg-primary hover:bg-primary/90 text-white"
+            onClick={() => handleViewDetails(course.id)}
+          >
             View Details
           </Button>
         </CardFooter>
@@ -132,6 +147,7 @@ export function NewCourses() {
             size="lg"
             variant="outline"
             className="border-primary text-primary hover:bg-primary hover:text-white bg-transparent"
+            onClick={handleViewAllCourses}
           >
             View All Courses
           </Button>

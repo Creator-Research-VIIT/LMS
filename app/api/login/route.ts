@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcrypt";
+
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -41,6 +42,8 @@ export async function POST(request: NextRequest) {
       validatedData.password,
       user.password
     );
+
+    
     
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -52,6 +55,7 @@ export async function POST(request: NextRequest) {
     // Return user data (without password)
     return NextResponse.json({
       message: "Login successful",
+    
       user: {
         id: user.id,
         name: user.name,

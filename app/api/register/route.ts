@@ -1,12 +1,14 @@
+import { sendEmailVerificationOTP, sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import bcrypt from 'bcrypt';
 
 // Validation schema for registration
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   role: z.enum(['STUDENT', 'TEACHER', 'ADMIN']),
   referralCode: z.string().optional(),
@@ -31,8 +33,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
-    // const hashedPassword = await bcrypt.hash(validatedData.password, 12);
+  // Hash password (current branch behavior)
+  const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
     // Referral code logic
     let referredBy = null;
@@ -45,36 +47,77 @@ export async function POST(request: NextRequest) {
 
     const newReferralCode = randomUUID();
 
-    // Create new user
-   const newUser = await prisma.user.create({
-  data: {
-    name: validatedData.name,      // ✅ string
-    email: validatedData.email,    // ✅ string
-    password: validatedData.password,      // ✅ string
-    role: validatedData.role,      // ✅ enum Role
-    referralCode: newReferralCode,        // ✅ string
-    referredBy: null,              // ✅ string | null
-    emailVerified: new Date(),     // ✅ Date
-    approvalStatus: "approved"     // ✅ string
-  },
-  select: {
-    id: true,
-    name: true,
-    email: true,
-    role: true,
-    referralCode: true,
-    approvalStatus: true,
-    createdAt: true
-  }
-});
+    // Generate email verification OTP
+    const emailOtp = Math.floor(100000 + Math.random() * 900000).toString()
+    const otpExpiresAt = new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
 
+    // Create new user (without email verification initially)
+    const newUser = await prisma.user.create({
+      data: {
+        name: validatedData.name,
+        email: validatedData.email,
+        password: hashedPassword,
+        role: validatedData.role,
+        referralCode: newReferralCode,
+        referredBy: referredBy,
+        emailVerified: null, // Not verified initially
+        approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved"
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        referralCode: true,
+        approvalStatus: true,
+        createdAt: true,
+      },
+    });
 
-    // Return success with a safe redirect URL
+    // Create email verification record
+    await prisma.emailVerification.create({
+      data: {
+        userId: newUser.id,
+        email: newUser.email,
+        otp: emailOtp,
+        expiresAt: otpExpiresAt
+      }
+    })
+
+    // Log OTP for development (remove in production)
+    console.log(`📧 EMAIL VERIFICATION OTP for ${newUser.email}: ${emailOtp}`)
+
+    // Send email verification OTP to all users
+    try {
+      await sendEmailVerificationOTP(newUser.email, newUser.name, emailOtp)
+      console.log(`✅ Email verification OTP sent to: ${newUser.email}`)
+    } catch (emailError) {
+      console.error('❌ Failed to send email verification OTP:', emailError)
+      // Don't fail the registration if email fails - just log it
+    }
+
+    // Send emails if user is a teacher
+    if (newUser.role === 'TEACHER') {
+      try {
+        // Send confirmation email to teacher
+        await sendTeacherApplicationConfirmation(newUser.email, newUser.name)
+        
+        // Send notification email to admin
+        await sendTeacherApplicationNotification(newUser.email, newUser.name)
+        
+        console.log(`✅ Teacher application emails sent for: ${newUser.name}`)
+      } catch (emailError) {
+        console.error('❌ Failed to send teacher application emails:', emailError)
+        // Don't fail the registration if emails fail - just log it
+      }
+    }
+
+    // Return success with verification redirect
     return NextResponse.json(
       {
-        message: 'User registered successfully',
+        message: 'User registered successfully. Please check your email for verification code.',
         user: newUser,
-        redirectUrl: '/dashboard', // <-- safe page after registration
+        redirectUrl: `/verify-email?userId=${newUser.id}&email=${encodeURIComponent(newUser.email)}`,
       },
       { status: 201 }
     );

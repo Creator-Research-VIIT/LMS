@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Search, Menu, X, BookOpen } from "lucide-react"
+import { BookOpen, Menu, Search, X } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 export function Header() {
 const router = useRouter();
+const [searchQuery, setSearchQuery] = useState("")
 
   const handleClick = () => {
     router.push("/login"); // navigates to /login
@@ -17,6 +18,16 @@ const router = useRouter();
     // alert("hello")
     router.push("/signup");
   }
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/courses?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push('/courses');
+    }
+  }
+
   const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   return (
@@ -33,10 +44,10 @@ const router = useRouter();
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#" className="text-foreground hover:text-primary transition-colors font-medium">
+            <a href="/" className="text-foreground hover:text-primary transition-colors font-medium">
               Home
             </a>
-            <a href="#courses" className="text-foreground hover:text-primary transition-colors font-medium">
+            <a href="/courses" className="text-foreground hover:text-primary transition-colors font-medium">
               Courses
             </a>
             <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium">
@@ -49,13 +60,15 @@ const router = useRouter();
 
           {/* Search Bar */}
          <div className="hidden lg:flex items-center space-x-4 flex-1 max-w-md mx-8">
-  <div className="relative w-full">
+  <form onSubmit={handleSearch} className="relative w-full">
     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
     <Input
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
       placeholder="Search courses..."
       className="pl-10 bg-muted/50 border-0 focus:bg-white transition-colors rounded-full"
     />
-  </div>
+  </form>
 </div>
 
 
@@ -77,15 +90,20 @@ const router = useRouter();
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t animate-fade-in-up">
             <div className="flex flex-col space-y-4">
-              <div className="relative">
+              <form onSubmit={handleSearch} className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input placeholder="Search courses..." className="pl-10" />
-              </div>
+                <Input 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search courses..." 
+                  className="pl-10" 
+                />
+              </form>
               <nav className="flex flex-col space-y-2">
-                <a href="#" className="text-foreground hover:text-primary transition-colors font-medium py-2">
+                <a href="/" className="text-foreground hover:text-primary transition-colors font-medium py-2">
                   Home
                 </a>
-                <a href="#courses" className="text-foreground hover:text-primary transition-colors font-medium py-2">
+                <a href="/courses" className="text-foreground hover:text-primary transition-colors font-medium py-2">
                   Courses
                 </a>
                 <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium py-2">

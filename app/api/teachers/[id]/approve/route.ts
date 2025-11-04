@@ -1,13 +1,15 @@
 import { authOptions } from "@/lib/auth";
+import { sendTeacherApprovalNotification } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Check authentication
     const session = await getServerSession(authOptions);
     
@@ -26,54 +28,68 @@ export async function PATCH(
       );
     }
 
-    const teacherId = params.id;
+    const teacherId = id;
 
-    // Check if teacher exists and is a teacher
-    const teacher = await prisma.user.findUnique({
-      where: { id: teacherId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        isApproved: true,
-      },
-    });
+// Check if teacher exists and is a teacher
+const teacher = await prisma.user.findUnique({
+  where: { id: teacherId },
+  select: {
+    id: true,
+    name: true,
+    email: true,
+    role: true,
+    approvalStatus: true,
+    createdAt: true,
+    referralCode: true
+  }
+});
 
-    if (!teacher) {
-      return NextResponse.json(
-        { error: "Teacher not found" },
-        { status: 404 }
-      );
-    }
+if (!teacher) {
+  return NextResponse.json(
+    { error: "Teacher not found" },
+    { status: 404 }
+  );
+}
 
-    if (teacher.role !== "TEACHER") {
-      return NextResponse.json(
-        { error: "User is not a teacher" },
-        { status: 400 }
-      );
-    }
+if (teacher.role !== "TEACHER") {
+  return NextResponse.json(
+    { error: "User is not a teacher" },
+    { status: 400 }
+  );
+}
 
-    if (teacher.isApproved) {
-      return NextResponse.json(
-        { error: "Teacher is already approved" },
-        { status: 400 }
-      );
-    }
+if (teacher.approvalStatus === "approved") {
+  return NextResponse.json(
+    { error: "Teacher is already approved" },
+    { status: 400 }
+  );
+}
 
     // Approve the teacher
     const approvedTeacher = await prisma.user.update({
       where: { id: teacherId },
-      data: { isApproved: true },
+      data: { approvalStatus: "approved" },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        isApproved: true,
-        updatedAt: true,
+        approvalStatus: true,
       },
     });
+
+    // Send approval email notification to teacher
+    try {
+      await sendTeacherApprovalNotification(
+        approvedTeacher.email, 
+        approvedTeacher.name, 
+        'approved'
+      );
+      console.log(`✅ Teacher approval notification sent to: ${approvedTeacher.email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send teacher approval email:', emailError);
+      // Don't fail the approval if email fails - just log it
+    }
 
     return NextResponse.json({
       message: "Teacher approved successfully",

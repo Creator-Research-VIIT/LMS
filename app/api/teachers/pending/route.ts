@@ -23,18 +23,18 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get pending teachers (TEACHER role with isApproved = false)
+    // Get pending teachers (TEACHER role with approvalStatus = "pending")
     const pendingTeachers = await prisma.user.findMany({
       where: {
         role: "TEACHER",
-        isApproved: false,
+        approvalStatus: "pending",
       },
       select: {
         id: true,
         name: true,
         email: true,
         role: true,
-        isApproved: true,
+        approvalStatus: true,
         createdAt: true,
         referralCode: true,
       },
@@ -43,9 +43,19 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // Transform data for dashboard
+    const transformedTeachers = pendingTeachers.map(teacher => ({
+      id: teacher.id,
+      name: teacher.name,
+      email: teacher.email,
+      status: teacher.approvalStatus,
+      submittedAt: teacher.createdAt.toLocaleDateString(),
+      referralCode: teacher.referralCode
+    }));
+
     return NextResponse.json({
       message: "Pending teachers retrieved successfully",
-      teachers: pendingTeachers,
+      teachers: transformedTeachers,
       count: pendingTeachers.length,
     });
 
