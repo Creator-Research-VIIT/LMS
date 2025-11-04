@@ -3,13 +3,14 @@ export default function DashboardPage() {
   // ...existing code...
   // Import useAuth hook
   // @ts-ignore
-  const { user, isAuthenticated, logout } = require("../../hooks/useAuth").useAuth();
+  const { user, logout } = require("../../hooks/useAuth").useAuth();
 
   // Only show button if user is admin
   const isAdmin = user?.role === "ADMIN";
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* Navbar */}
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
@@ -28,7 +29,7 @@ export default function DashboardPage() {
               {isAdmin && (
                 <button
                   className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium"
-                  onClick={() => window.location.href = "/admin/pending-teachers"}
+                  onClick={() => { globalThis.location.href = "/admin/pending-teachers"; }}
                 >
                   Pending Teachers
                 </button>
@@ -40,6 +41,8 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Dashboard Content */}
       <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">
@@ -52,4 +55,4 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-} 
+}

@@ -1,14 +1,14 @@
 import { sendEmailVerificationOTP, sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
-import bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import bcrypt from 'bcrypt';
 
 // Validation schema for registration
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
+  email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   role: z.enum(['STUDENT', 'TEACHER', 'ADMIN']),
   referralCode: z.string().optional(),
@@ -17,7 +17,7 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-
+    console.log('Registration request body:', body);
     // Validate input
     const validatedData = registerSchema.parse(body);
 
@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(validatedData.password, 12);
+  // Hash password (current branch behavior)
+  const hashedPassword = await bcrypt.hash(validatedData.password, 12);
 
     // Referral code logic
     let referredBy = null;
