@@ -265,7 +265,7 @@ export default function InstituteMainPage() {
                 </button>
               ))}
               <a 
-                href="/dashboard"
+                href="/"
                 className="text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
               >
                 ← Back to LMS

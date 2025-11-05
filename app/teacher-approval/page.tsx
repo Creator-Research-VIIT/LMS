@@ -68,7 +68,7 @@ export default function TeacherApprovalPage() {
                 <Link href="/">Return to Homepage</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link href="/dashboard">Browse as Student</Link>
+                <Link href="/">Browse as Student</Link>
               </Button>
             </div>
           </CardContent>

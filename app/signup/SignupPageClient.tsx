@@ -101,7 +101,7 @@ export default function SignupPage() {
       if (signInResult?.error) {
         setError("Account created but automatic login failed. Please sign in manually.")
       } else if (signInResult?.ok) {
-        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
         router.push(callbackUrl)
       }
     } catch (error) {
