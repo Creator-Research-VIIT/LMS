@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { emailHasAllowedDomain, isInstituteAccessEnabled } from '@/lib/instituteAccess';
 
 export async function GET() {
   try {
@@ -9,6 +10,19 @@ export async function GET() {
     
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Institute access enforcement for this API route
+    if (isInstituteAccessEnabled()) {
+      const userEmail = session.user?.email || null;
+      const userRole = (session.user as any)?.role as string | undefined;
+      const isAdmin = userRole === 'ADMIN';
+      if (!isAdmin && !emailHasAllowedDomain(userEmail)) {
+        return NextResponse.json(
+          { error: 'Forbidden: Institute access only' },
+          { status: 403 }
+        );
+      }
     }
 
     // Get total statistics

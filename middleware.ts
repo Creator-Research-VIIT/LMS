@@ -1,5 +1,6 @@
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import { emailHasAllowedDomain, isInstituteAccessEnabled } from "@/lib/instituteAccess";
 
 export default withAuth(
   function middleware(req) {
@@ -60,6 +61,34 @@ export default withAuth(
           { error: "Forbidden: Admin access required" },
           { status: 403 }
         );
+      }
+    }
+
+    // Institute portal and APIs: enforce domain allowlist when enabled
+    if (isInstituteAccessEnabled()) {
+      const path = req.nextUrl.pathname;
+      const isInstitutePath = path.startsWith('/institute') || path.startsWith('/api/institute');
+      if (isInstitutePath) {
+        if (!isAuth) {
+          // not authenticated: fall back to default auth flow
+          return null;
+        }
+        const role = (token as any)?.role as string | undefined;
+        const email = (token as any)?.email as string | undefined;
+        const isAdmin = role === 'ADMIN';
+        const allowed = emailHasAllowedDomain(email || null);
+        if (!isAdmin && !allowed) {
+          const isApi = path.startsWith('/api/');
+          if (isApi) {
+            return NextResponse.json(
+              { error: 'Forbidden: Institute access only' },
+              { status: 403 }
+            );
+          }
+          const url = new URL('/login', req.url);
+          url.searchParams.set('error', 'instituteAccess');
+          return NextResponse.redirect(url);
+        }
       }
     }
 

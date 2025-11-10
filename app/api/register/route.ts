@@ -1,9 +1,10 @@
 import { sendEmailVerificationOTP, sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
-import { randomUUID } from 'node:crypto';
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 import bcrypt from 'bcrypt';
+import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
+import { emailHasAllowedDomain, isInstituteAccessEnabled } from '@/lib/instituteAccess';
 
 // Validation schema for registration
 const registerSchema = z.object({
@@ -20,6 +21,17 @@ export async function POST(request: NextRequest) {
     console.log('Registration request body:', body);
     // Validate input
     const validatedData = registerSchema.parse(body);
+
+    // Institute access enforcement (if enabled): only allow configured email domains
+    if (isInstituteAccessEnabled()) {
+      const isAdmin = validatedData.role === 'ADMIN';
+      if (!isAdmin && !emailHasAllowedDomain(validatedData.email)) {
+        return NextResponse.json(
+          { error: 'Registration restricted: only approved institute email domains may register.' },
+          { status: 403 }
+        );
+      }
+    }
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({

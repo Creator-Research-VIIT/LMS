@@ -5,6 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import confetti from 'canvas-confetti'
 import { ArrowRight, Award, BookOpen, CheckCircle, Loader2, Play, Share2, Star, Trophy, Users } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Progress } from '@/components/ui/progress'
+import dynamic from 'next/dynamic'
+// Lazy load jsPDF only on client interaction
+const loadJsPDF = async () => (await import('jspdf')).default
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -51,6 +56,16 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [hasPlayedConfetti, setHasPlayedConfetti] = useState(false)
+  const [completedModuleIds, setCompletedModuleIds] = useState<string[]>([])
+  const [progressPercent, setProgressPercent] = useState(0)
+  const [certificateReady, setCertificateReady] = useState(false)
+  type QuizAnswerOption = { id: string; answerText: string; orderIndex: number }
+  type QuizQuestion = { id: string; questionText: string; questionType: string; points: number; Answer: QuizAnswerOption[] }
+  type FinalQuiz = { id: string; title: string; passingScore: number; Question: QuizQuestion[]; QuizSubmission?: Array<{ isPassed: boolean }> }
+  const [finalQuiz, setFinalQuiz] = useState<FinalQuiz | null>(null)
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, any>>({})
+  const [quizSubmitting, setQuizSubmitting] = useState(false)
+  const [quizMessage, setQuizMessage] = useState<string | null>(null)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -64,6 +79,8 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
       return
     }
     fetchCourse()
+    fetchModuleProgress()
+    fetchFinalQuiz()
   }, [courseId, session, status])
 
   useEffect(() => {
@@ -108,6 +125,56 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
     }
   }
 
+  const fetchModuleProgress = async () => {
+    try {
+      const res = await fetch(`/api/progress/modules/${courseId}`)
+      if (!res.ok) return
+      const data = await res.json()
+      setCompletedModuleIds(data.completedModuleIds || [])
+      setProgressPercent(data.progressPercent || 0)
+    } catch (e) {
+      console.warn('Failed to fetch module progress', e)
+    }
+  }
+
+  const toggleModule = async (moduleId: string) => {
+    try {
+      const res = await fetch('/api/progress/modules/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moduleId })
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      const isCompleted = data.completed
+      setProgressPercent(data.aggregate?.progressPercent || 0)
+      setCompletedModuleIds(prev => {
+        const exists = prev.includes(moduleId)
+        if (isCompleted && !exists) return [...prev, moduleId]
+        if (!isCompleted && exists) return prev.filter(id => id !== moduleId)
+        return prev
+      })
+    } catch (e) {
+      console.error('Failed toggling module', e)
+    }
+  }
+
+  const generateCertificate = async () => {
+    const jsPDF = await loadJsPDF()
+    const doc = new jsPDF()
+    doc.setFontSize(22)
+    doc.text('Certificate of Completion', 105, 30, { align: 'center' })
+    doc.setFontSize(14)
+    doc.text(`This certifies that ${session?.user?.name || 'Student'}`, 105, 50, { align: 'center' })
+    doc.text(`has successfully completed the course`, 105, 60, { align: 'center' })
+    doc.setFontSize(16)
+    doc.text(course?.title || '', 105, 72, { align: 'center' })
+    doc.setFontSize(12)
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 105, 90, { align: 'center' })
+    doc.text('Congratulations!', 105, 100, { align: 'center' })
+    doc.save(`certificate-${courseId}.pdf`)
+  }
+
   const handleShareCourse = async () => {
     if (navigator.share) {
       try {
@@ -123,6 +190,62 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
       // Fallback: copy to clipboard
       navigator.clipboard.writeText(`${window.location.origin}/courses/${courseId}`)
       alert('Course link copied to clipboard!')
+    }
+  }
+
+  const fetchFinalQuiz = async () => {
+    try {
+      const res = await fetch(`/api/quizzes/course/${courseId}`)
+      if (!res.ok) return
+      const data = await res.json()
+      const quizzes = data.quizzes || []
+      // Treat the latest quiz (sorted desc) as final
+      const last = quizzes[0] || null
+      if (last) {
+        setFinalQuiz(last)
+        // If any submission for this quiz is passed, unlock certificate
+        if (last.QuizSubmission && last.QuizSubmission.some((s: any) => s.isPassed)) {
+          setCertificateReady(true)
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to fetch quizzes', e)
+    }
+  }
+
+  const startFinalQuiz = () => {
+    // Expands the inline quiz section; nothing to navigate
+    const el = document.getElementById('final-quiz-section')
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const selectAnswer = (questionId: string, answerId: string) => {
+    setQuizAnswers(prev => ({ ...prev, [questionId]: answerId }))
+  }
+
+  const submitFinalQuiz = async () => {
+    if (!finalQuiz) return
+    setQuizSubmitting(true)
+    setQuizMessage(null)
+    try {
+      const res = await fetch(`/api/quizzes/${finalQuiz.id}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers: quizAnswers })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setQuizMessage(data.error || 'Failed to submit quiz')
+      } else {
+        setQuizMessage(`Your score: ${data.result.percentage}%`) 
+        if (data.result.isPassed) {
+          setCertificateReady(true)
+        }
+      }
+    } catch (e) {
+      setQuizMessage('An error occurred submitting the quiz')
+    } finally {
+      setQuizSubmitting(false)
     }
   }
 
@@ -235,6 +358,16 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   </div>
                 </div>
 
+                {/* Progress Summary */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Progress</h3>
+                  <div className="flex items-center gap-3 mb-1">
+                    <Progress value={progressPercent} className="w-full" />
+                    <span className="text-sm font-medium w-16 text-right">{Math.round(progressPercent)}%</span>
+                  </div>
+                  <p className="text-xs text-gray-500">Mark modules as completed to advance your progress.</p>
+                </div>
+
                 {/* Course Modules */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">Course Modules</h3>
@@ -242,30 +375,106 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   <div className="space-y-3">
                     {course.Module && course.Module.length > 0 ? (
                       course.Module.map((module, index) => (
-                        <Button key={module.id} variant="ghost" className="flex items-start space-x-3 p-4 bg-white border rounded-lg hover:shadow-md transition-shadow h-auto w-full justify-start" onClick={() => handleModuleClick(module)}>
+                        <div key={module.id} className="flex items-start gap-3 p-4 bg-white border rounded-lg hover:shadow-md transition-shadow">
+                          <Checkbox 
+                            checked={completedModuleIds.includes(module.id)}
+                            onCheckedChange={() => toggleModule(module.id)}
+                            className="mt-1"
+                          />
                           <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                             {index + 1}
                           </div>
-                          <div className="flex-1">
+                          <button onClick={() => handleModuleClick(module)} className="flex-1 text-left">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-gray-900">{module.title}</h4>
-                              {module.videoUrl && (
-                                <Play className="h-4 w-4 text-blue-600" />
-                              )}
+                              <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                {module.title}
+                                {completedModuleIds.includes(module.id) && <CheckCircle className="h-4 w-4 text-green-600" />}
+                              </h4>
+                              {module.videoUrl && <Play className="h-4 w-4 text-blue-600" />}
                             </div>
                             <p className="text-sm text-gray-600 mt-1">{module.description}</p>
                             {module.resources && (
                               <p className="text-xs text-green-600 mt-1">+ Additional resources available</p>
                             )}
-                          </div>
+                          </button>
                           <ArrowRight className="h-4 w-4 text-gray-400" />
-                        </Button>
+                        </div>
                       ))
                     ) : (
                       <div className="text-center py-8 text-gray-500">
                         <BookOpen className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                         <p>No modules available yet</p>
                         <p className="text-sm">Check back later for course content</p>
+                      </div>
+                    )}
+                  </div>
+                  {/* Quiz & Certificate Section */}
+                  <div id="final-quiz-section" className="mt-8 border-t pt-6 space-y-4">
+                    <h3 className="text-lg font-semibold">Final Quiz & Certificate</h3>
+                    <p className="text-sm text-gray-600">Complete all modules to unlock the final quiz and generate your certificate.</p>
+                    {progressPercent < 100 && (
+                      <div className="text-sm text-yellow-600 flex items-center gap-2">
+                        <Award className="h-4 w-4" />
+                        Finish remaining modules to unlock the quiz.
+                      </div>
+                    )}
+                    {progressPercent === 100 && (
+                      <div className="space-y-3">
+                        {!certificateReady && (
+                          <Button variant="default" className="w-full" onClick={startFinalQuiz} disabled={!finalQuiz}>
+                            <Trophy className="h-4 w-4 mr-2" />
+                            {finalQuiz ? `Take Final Quiz: ${finalQuiz.title}` : 'Loading Quiz...'}
+                          </Button>
+                        )}
+                        {/* Inline simple quiz UI */}
+                        {progressPercent === 100 && finalQuiz && !certificateReady && (
+                          <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-semibold">{finalQuiz.title}</h4>
+                              <span className="text-xs text-gray-600">Passing: {finalQuiz.passingScore}%</span>
+                            </div>
+                            <div className="space-y-4">
+                              {finalQuiz.Question?.map((q, qi) => (
+                                <div key={q.id} className="bg-white p-3 rounded border">
+                                  <div className="font-medium mb-2">{qi + 1}. {q.questionText}</div>
+                                  {(q.questionType === 'MULTIPLE_CHOICE' || q.questionType === 'TRUE_FALSE') ? (
+                                    <div className="space-y-2">
+                                      {q.Answer.map(opt => (
+                                        <label key={opt.id} className="flex items-center gap-2 cursor-pointer">
+                                          <input
+                                            type="radio"
+                                            name={`q-${q.id}`}
+                                            checked={quizAnswers[q.id] === opt.id}
+                                            onChange={() => selectAnswer(q.id, opt.id)}
+                                          />
+                                          <span>{opt.answerText}</span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-gray-500">Question type not supported in inline mode.</div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                            {quizMessage && <div className="text-sm text-blue-700">{quizMessage}</div>}
+                            <Button onClick={submitFinalQuiz} disabled={quizSubmitting}>
+                              {quizSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                              Submit Quiz
+                            </Button>
+                          </div>
+                        )}
+                        {certificateReady && (
+                          <>
+                            <Button variant="default" className="w-full" disabled>
+                              <CheckCircle className="h-4 w-4 mr-2" /> Quiz Passed
+                            </Button>
+                            <Button variant="outline" onClick={generateCertificate} className="w-full">
+                              <Award className="h-4 w-4 mr-2" />
+                              Download Certificate PDF
+                            </Button>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>
@@ -276,7 +485,7 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
 
           {/* Action Panel */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Start Learning Card */}
+            {/* Start Learning / Certificate Card */}
             <Card>
               <CardHeader className="text-center">
                 <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-2" />
@@ -293,6 +502,16 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   <Play className="h-4 w-4 mr-2" />
                   Start Learning
                 </Button>
+                {progressPercent === 100 && certificateReady && (
+                  <Button 
+                    variant="secondary"
+                    onClick={generateCertificate}
+                    className="w-full"
+                  >
+                    <Award className="h-4 w-4 mr-2" />
+                    Generate Certificate
+                  </Button>
+                )}
                 
                 <Button 
                   variant="outline"

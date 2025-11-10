@@ -40,6 +40,7 @@ model Course {
   Feedback       Feedback[]
   Module         Module[]
   Quiz           Quiz[]
+  ModuleProgress ModuleProgress[]
 }
 
 model Module {
@@ -53,6 +54,7 @@ model Module {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   Course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  ModuleProgress ModuleProgress[]
 }
 
 model CourseContent {
@@ -78,6 +80,26 @@ model CourseProgress {
   User             User     @relation(fields: [studentId], references: [id])
 
   @@unique([studentId, courseId])
+}
+
+// Track per-student completion of each module
+model ModuleProgress {
+  id         String   @id @default(cuid())
+  studentId  String
+  courseId   String
+  moduleId   String
+  completed  Boolean  @default(false)
+  completedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  User   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, moduleId])
+  @@index([studentId, courseId])
 }
 
 model Enrollment {
@@ -163,6 +185,7 @@ model User {
   Feedback       Feedback[]
   QuizSubmission QuizSubmission[]
   EmailVerification EmailVerification[]
+  ModuleProgress ModuleProgress[]
 }
 
 model EmailVerification {
