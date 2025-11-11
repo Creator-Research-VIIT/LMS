@@ -99,9 +99,11 @@ export async function POST(request: NextRequest) {
     // Log OTP for development (remove in production)
     console.log(`📧 EMAIL VERIFICATION OTP for ${newUser.email}: ${emailOtp}`)
 
-    // Send email verification OTP to all users
+    // Send email verification OTP to all users and capture flag
+    let emailSent = false
     try {
       await sendEmailVerificationOTP(newUser.email, newUser.name, emailOtp)
+      emailSent = true
       console.log(`✅ Email verification OTP sent to: ${newUser.email}`)
     } catch (emailError) {
       console.error('❌ Failed to send email verification OTP:', emailError)
@@ -124,12 +126,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Return success with verification redirect
+    // Return success with verification redirect and emailSent indicator
     return NextResponse.json(
       {
         message: 'User registered successfully. Please check your email for verification code.',
         user: newUser,
         redirectUrl: `/verify-email?userId=${newUser.id}&email=${encodeURIComponent(newUser.email)}`,
+        emailSent,
       },
       { status: 201 }
     );
