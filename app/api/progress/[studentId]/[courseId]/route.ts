@@ -6,10 +6,10 @@ import { NextResponse } from 'next/server';
 // GET /api/progress/[studentId]/[courseId] - Get student progress for a course
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ studentId: string; courseId: string }> }
+  { params }: { params: { studentId: string; courseId: string } }
 ) {
   try {
-    const { studentId, courseId } = await params;
+    const { studentId, courseId } = params;
     const session = await getServerSession(authOptions)
     
     if (!session) {

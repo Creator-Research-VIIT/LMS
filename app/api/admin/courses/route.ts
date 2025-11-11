@@ -15,18 +15,10 @@ export async function GET() {
     const courses = await prisma.course.findMany({
       where: { approvalStatus: "approved" },
       include: {
-        User: {
-          select: { name: true }
-        },
-        enrollments: {
-          select: { id: true }
-        },
-        feedbacks: {
-          select: { rating: true }
-        },
-        progresses: {
-          select: { progressPercent: true }
-        }
+        User: { select: { name: true } },
+        Enrollment: { select: { id: true } },
+        Feedback: { select: { rating: true } },
+        CourseProgress: { select: { progressPercent: true } },
       },
       take: 10,
       orderBy: { createdAt: 'desc' }
@@ -34,13 +26,13 @@ export async function GET() {
 
     // Transform data for dashboard
     const transformedCourses = courses.map(course => {
-      const totalEnrollments = course.enrollments.length;
-      const averageRating = course.feedbacks.length > 0 
-        ? course.feedbacks.reduce((sum, feedback) => sum + feedback.rating, 0) / course.feedbacks.length
+      const totalEnrollments = course.Enrollment.length;
+      const averageRating = course.Feedback.length > 0 
+        ? course.Feedback.reduce((sum, feedback) => sum + feedback.rating, 0) / course.Feedback.length
         : 0;
       
-      const averageProgress = course.progresses.length > 0
-        ? course.progresses.reduce((sum, progress) => sum + progress.progressPercent, 0) / course.progresses.length
+      const averageProgress = course.CourseProgress.length > 0
+        ? course.CourseProgress.reduce((sum, progress) => sum + progress.progressPercent, 0) / course.CourseProgress.length
         : 0;
 
       return {
