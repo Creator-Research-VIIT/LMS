@@ -2,6 +2,7 @@
 
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
+import { PaymentButton } from '@/components/payment-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -412,30 +413,19 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
                     </Button>
                   )}
                   
-                  {!isEnrolled && course.isFree && (
-                    <Button 
-                      onClick={handleEnroll}
-                      disabled={isProcessing}
-                      className="w-full mb-4 bg-blue-600 hover:bg-blue-700"
-                    >
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      {isProcessing ? 'Enrolling…' : 'Enroll Now'}
-                    </Button>
-                  )}
-                  
-                  {!isEnrolled && !course.isFree && (
-                    <>
-                      <Button 
-                        onClick={handleEnroll}
-                        className="w-full mb-4 bg-purple-600 hover:bg-purple-700"
-                      >
-                        Add to Cart
-                      </Button>
-                      {/* Buy Now Button */}
-                      <Button variant="outline" className="w-full mb-4">
-                        Buy Now
-                      </Button>
-                    </>
+                  {!isEnrolled && (
+                    <PaymentButton
+                      courseId={course.id}
+                      courseName={course.title}
+                      price={course.price}
+                      isFree={course.isFree}
+                      onSuccess={() => {
+                        setIsEnrolled(true)
+                        checkEnrollmentStatus()
+                      }}
+                      className="w-full mb-4"
+                      size="default"
+                    />
                   )}
 
                   {!course.isFree && (

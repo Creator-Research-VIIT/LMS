@@ -8,7 +8,7 @@ For more information, see: https://pris.ly/prisma-config
 Environment variables loaded from .env
 Prisma schema loaded from prisma\schema.prisma
 
-✔ Generated Prisma Client (v6.14.0) to .\node_modules\@prisma\client in 106ms
+✔ Generated Prisma Client (v6.14.0) to .\node_modules\@prisma\client in 166ms
 
 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
 
@@ -22,101 +22,9 @@ Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
    - Environments: .env.local, .env.production, .env
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 7.0s
+ ✓ Compiled successfully in 9.0s
    Skipping validation of types
    Skipping linting
    Collecting page data ...
-   Generating static pages (0/52) ...
-   Generating static pages (13/52) 
-   Generating static pages (26/52) 
-   Generating static pages (39/52) 
- ✓ Generating static pages (52/52)
-   Finalizing page optimization ...
-   Collecting build traces ...
-
-Route (app)                                      Size  First Load JS
-┌ ○ /                                         12.9 kB         132 kB
-├ ○ /_not-found                                  1 kB         101 kB
-├ ○ /admin                                    6.48 kB         116 kB
-├ ○ /admin/pending-courses                    2.52 kB         110 kB
-├ ○ /admin/pending-teachers                   21.1 kB         121 kB
-├ ƒ /api/admin/courses                          261 B         100 kB
-├ ƒ /api/admin/pending-courses                  261 B         100 kB
-├ ƒ /api/admin/stats                            261 B         100 kB
-├ ƒ /api/aprroval                               261 B         100 kB
-├ ƒ /api/auth/[...nextauth]                     261 B         100 kB
-├ ƒ /api/auth/check                             261 B         100 kB
-├ ƒ /api/auth/debug                             261 B         100 kB
-├ ƒ /api/auth/resend-verification               261 B         100 kB
-├ ƒ /api/auth/verify-email                      261 B         100 kB
-├ ƒ /api/courses                                261 B         100 kB
-├ ƒ /api/courses/[id]                           261 B         100 kB
-├ ƒ /api/courses/[id]/approve                   261 B         100 kB
-├ ƒ /api/courses/[id]/enroll                    261 B         100 kB
-├ ƒ /api/courses/[id]/enrollment                261 B         100 kB
-├ ƒ /api/courses/[id]/reject                    261 B         100 kB
-├ ƒ /api/courses/approve/[id]                   261 B         100 kB
-├ ƒ /api/courses/pending                        261 B         100 kB
-├ ƒ /api/courses/teacher                        261 B         100 kB
-├ ƒ /api/debug-middleware                       261 B         100 kB
-├ ƒ /api/debug-oauth                            261 B         100 kB
-├ ƒ /api/diag/email                             261 B         100 kB
-├ ƒ /api/enrollments                            261 B         100 kB
-├ ƒ /api/enrollments/check                      261 B         100 kB
-├ ƒ /api/health                                 261 B         100 kB
-├ ƒ /api/institute/dashboard                    261 B         100 kB
-├ ƒ /api/login                                  261 B         100 kB
-├ ƒ /api/oauth-check                            261 B         100 kB
-├ ƒ /api/oauth-register                         261 B         100 kB
-├ ƒ /api/progress/[studentId]/[courseId]        261 B         100 kB
-├ ƒ /api/progress/modules/[courseId]            261 B         100 kB
-├ ƒ /api/progress/modules/toggle                261 B         100 kB
-├ ƒ /api/quizzes                                261 B         100 kB
-├ ƒ /api/quizzes/[id]                           261 B         100 kB
-├ ƒ /api/quizzes/[id]/questions                 261 B         100 kB
-├ ƒ /api/quizzes/[id]/questions/[questionId]    261 B         100 kB
-├ ƒ /api/quizzes/[id]/submit                    261 B         100 kB
-├ ƒ /api/quizzes/course/[courseId]              261 B         100 kB
-├ ƒ /api/register                               261 B         100 kB
-├ ƒ /api/student/assignments                    261 B         100 kB
-├ ƒ /api/student/courses                        261 B         100 kB
-├ ƒ /api/student/enroll                         261 B         100 kB
-├ ƒ /api/student/notifications                  261 B         100 kB
-├ ƒ /api/student/stats                          261 B         100 kB
-├ ƒ /api/submit-quiz                            261 B         100 kB
-├ ƒ /api/teachers                               261 B         100 kB
-├ ƒ /api/teachers/[id]/approve                  261 B         100 kB
-├ ƒ /api/teachers/[id]/reject                   261 B         100 kB
-├ ƒ /api/teachers/pending                       261 B         100 kB
-├ ƒ /api/test-prisma                            261 B         100 kB
-├ ƒ /api/user/[id]                              261 B         100 kB
-├ ○ /auth-test                                  825 B         110 kB
-├ ○ /charity                                  40.3 kB         155 kB
-├ ƒ /charity/dashboard                          261 B         100 kB
-├ ○ /charity/login                              261 B         100 kB
-├ ƒ /course/[id]                              3.64 kB         113 kB
-├ ○ /courses                                   4.5 kB         127 kB
-├ ƒ /courses/[id]                             6.74 kB         132 kB
-├ ƒ /courses/[id]/enroll                      3.38 kB         126 kB
-├ ƒ /courses/[id]/enrolled                    12.4 kB         139 kB
-├ ○ /institute                                9.41 kB         132 kB
-├ ○ /login                                     5.1 kB         125 kB
-├ ○ /oauth-role-selection                     3.81 kB         127 kB
-├ ƒ /quiz/[id]                                   7 kB         115 kB
-├ ○ /register                                   261 B         100 kB
-├ ○ /signup                                   5.66 kB         129 kB
-├ ○ /student                                  7.51 kB         128 kB
-├ ○ /teacher                                  13.5 kB         138 kB
-├ ○ /teacher-approval                           166 B         104 kB
-└ ○ /verify-email                             3.97 kB         112 kB
-+ First Load JS shared by all                  100 kB
-  ├ chunks/4bd1b696-cc729d47eba2cee4.js       54.1 kB
-  ├ chunks/5964-4f12b6422f73cb12.js           43.9 kB
-  └ other shared chunks (total)               2.21 kB
-
-
-ƒ Middleware                                  61.6 kB
-
-○  (Static)   prerendered as static content
-ƒ  (Dynamic)  server-rendered on demand
-
+Terminate batch job (Y/N)? Terminate batch job (Y/N)? Terminate batch job (Y/N)? Terminate batch job (Y/N)? Terminate batch job (Y/N)? 
+^C

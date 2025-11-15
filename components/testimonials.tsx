@@ -11,7 +11,7 @@ const testimonials = [
     role: "Software Developer",
     image: "/professional-woman-headshot.png",
     rating: 5,
-    text: "EduPlatform transformed my career! The React course was incredibly comprehensive and the instructor was always available to help. I landed my dream job just 3 months after completing the program.",
+    text: "EduLearn transformed my career! The React course was incredibly comprehensive and the instructor was always available to help. I landed my dream job just 3 months after completing the program.",
   },
   {
     id: 2,
@@ -43,7 +43,7 @@ const testimonials = [
     role: "Entrepreneur",
     image: "/professional-woman-entrepreneur-headshot.png",
     rating: 5,
-    text: "EduPlatform's business courses gave me the confidence and knowledge to start my own company. The practical advice and networking opportunities were game-changers for my entrepreneurial journey.",
+    text: "EduLearn's business courses gave me the confidence and knowledge to start my own company. The practical advice and networking opportunities were game-changers for my entrepreneurial journey.",
   },
 ]
 

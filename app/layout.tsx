@@ -18,7 +18,7 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: "EduPlatform - Learn, Grow, Succeed",
+  title: "EduLearn - Learn, Grow, Succeed | Creator Research",
   description: "Professional online learning platform with expert-led courses",
   generator: "v0.app",
 }

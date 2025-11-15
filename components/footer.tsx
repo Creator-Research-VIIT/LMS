@@ -11,7 +11,7 @@ export function Footer() {
               <div className="bg-white p-2 rounded-lg">
                 <BookOpen className="h-6 w-6 text-primary" />
               </div>
-              <span className="font-heading font-bold text-xl">EduPlatform</span>
+              <span className="font-heading font-bold text-xl">EduLearn</span>
             </div>
             <p className="text-blue-100 mb-6 leading-relaxed">
               Empowering learners worldwide with high-quality, accessible education. Join our community and unlock your
@@ -150,7 +150,7 @@ export function Footer() {
 
         <div className="border-t border-blue-400/20 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-blue-100 text-sm">© 2024 EduPlatform. All rights reserved.</p>
+            <p className="text-blue-100 text-sm">© 2024 EduLearn by Creator Research. All rights reserved.</p>
             <div className="flex items-center space-x-6 mt-4 md:mt-0">
               <a href="#" className="text-blue-100 hover:text-white text-sm transition-colors">
                 Student Portal

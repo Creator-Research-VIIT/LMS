@@ -2,8 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { BookOpen, Menu, Search, X, ChevronDown } from "lucide-react"
+import { Menu, Search, X, ChevronDown } from "lucide-react"
 import { useRouter } from "next/navigation"
+import Image from "next/image"
 import { useState } from "react"
 
 export function Header() {
@@ -55,11 +56,20 @@ const [searchQuery, setSearchQuery] = useState("")
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="bg-primary p-2 rounded-lg">
-              <BookOpen className="h-6 w-6 text-white" />
+          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => router.push('/')}>
+            <div className="w-10 h-10 flex items-center justify-center">
+              <Image 
+                src="/creator-research-logo.svg" 
+                alt="Creator Research Logo" 
+                width={40} 
+                height={40}
+                className="text-blue-600"
+              />
             </div>
-            <span className="font-heading font-bold text-xl text-primary">EduPlatform</span>
+            <div className="flex flex-col">
+              <span className="font-heading font-bold text-lg text-primary">EduLearn</span>
+              <span className="text-xs text-gray-500">Creator Research</span>
+            </div>
           </div>
 
           {/* Desktop Navigation */}

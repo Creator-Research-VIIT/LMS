@@ -68,7 +68,7 @@ export function AboutSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
           <div className="animate-slide-in-left">
-            <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-6">About EduPlatform</h2>
+            <h2 className="font-heading font-bold text-3xl md:text-4xl text-foreground mb-6">About EduLearn</h2>
             <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
               We're on a mission to democratize education and make high-quality learning accessible to everyone,
               everywhere. Our platform connects passionate learners with expert instructors to create transformative

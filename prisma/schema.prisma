@@ -41,6 +41,7 @@ model Course {
   Module         Module[]
   Quiz           Quiz[]
   ModuleProgress ModuleProgress[]
+  Payment        Payment[]
 }
 
 model Module {
@@ -104,12 +105,15 @@ model ModuleProgress {
 }
 
 model Enrollment {
-  id         String   @id
-  studentId  String
-  courseId   String
-  enrolledAt DateTime @default(now())
-  Course     Course   @relation(fields: [courseId], references: [id])
-  User       User     @relation(fields: [studentId], references: [id])
+  id            String   @id
+  studentId     String
+  courseId      String
+  enrolledAt    DateTime @default(now())
+  isPaid        Boolean  @default(false)    // true for free courses or paid students
+  paymentId     String?  // Foreign key to Payment model
+  payment       Payment? @relation(fields: [paymentId], references: [id])
+  Course        Course   @relation(fields: [courseId], references: [id])
+  User          User     @relation(fields: [studentId], references: [id])
 }
 
 model Feedback {
@@ -187,6 +191,7 @@ model User {
   QuizSubmission QuizSubmission[]
   EmailVerification EmailVerification[]
   ModuleProgress ModuleProgress[]
+  Payment        Payment[]
 }
 
 model EmailVerification {
@@ -200,6 +205,31 @@ model EmailVerification {
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, otp])
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  studentId       String
+  courseId        String
+  amount          Float
+  currency        String   @default("INR")
+  razorpayOrderId String   @unique
+  razorpayPaymentId String? @unique
+  razorpaySignature String?
+  status          PaymentStatus @default(PENDING)  // PENDING, SUCCESS, FAILED, CANCELLED
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  User            User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Enrollment      Enrollment[]
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
 }
 
 enum ContentType {

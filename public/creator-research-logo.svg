@@ -1,0 +1,19 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Book/Document outline -->
+  <g>
+    <!-- Left page -->
+    <path d="M 50 40 L 80 40 L 80 140 L 50 140 Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Right page -->
+    <path d="M 80 40 L 110 40 L 110 140 L 80 140 Z" fill="currentColor" fill-opacity="0.8" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>
+    <!-- Book spine/fold -->
+    <line x1="80" y1="40" x2="80" y2="140" stroke="currentColor" stroke-width="2"/>
+    
+    <!-- Magnifying glass -->
+    <g transform="translate(130, 100)">
+      <!-- Glass -->
+      <circle cx="0" cy="0" r="25" fill="none" stroke="currentColor" stroke-width="3"/>
+      <!-- Handle -->
+      <line x1="18" y1="18" x2="38" y2="38" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>
