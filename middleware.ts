@@ -216,10 +216,7 @@ export default withAuth(
 );
 
 export const config = {
-  // Match all routes except Next.js internals and static files
-  // This allows middleware to process: API routes, pages, auth pages, etc.
-  // while skipping: _next/static, _next/image, and file extensions
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|public|.*\\.[\\w]+$).*)",
   ],
 };

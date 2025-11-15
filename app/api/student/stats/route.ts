@@ -7,7 +7,16 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
+    console.log('📊 Student stats API called:', {
+      hasSession: !!session,
+      hasUserId: !!session?.user?.id,
+      userEmail: session?.user?.email,
+      userRole: (session?.user as any)?.role,
+      timestamp: new Date().toISOString()
+    });
+    
     if (!session?.user?.id) {
+      console.warn('⚠️ Student stats API: No user ID in session');
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

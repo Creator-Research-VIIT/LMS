@@ -9,16 +9,29 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
 
+    console.log('📚 Student courses API called:', {
+      hasSession: !!session,
+      hasUserId: !!session?.user?.id,
+      userEmail: session?.user?.email,
+      timestamp: new Date().toISOString()
+    });
+
     // Fallback to reading JWT directly if session is unavailable in prod
     let userId = session?.user?.id as string | undefined
     let userRole = session?.user?.role as string | undefined
     if (!userRole || !userId) {
       const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET })
+      console.log('🔑 JWT token fallback used:', {
+        hasToken: !!token,
+        tokenRole: (token as any)?.role,
+        tokenId: (token as any)?.id
+      });
       userRole = (token as any)?.role
       userId = (token as any)?.id
     }
 
     if (!userRole || userRole !== 'STUDENT' || !userId) {
+      console.warn('⚠️ Student courses API: Unauthorized access attempt', { userRole, userId });
       return NextResponse.json({ error: 'Unauthorized. Only students can access this endpoint.' }, { status: 401 })
     }
 
