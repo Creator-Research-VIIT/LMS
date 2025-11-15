@@ -129,6 +129,12 @@ export default withAuth(
           tokenRole: token?.role,
           tokenExp: token?.exp
         });
+
+        // Always allow API routes to reach our middleware handler, so we can
+        // return JSON errors instead of HTML redirects.
+        if (pathname.startsWith('/api/')) {
+          return true;
+        }
         
         // Public routes that don't require authentication
         const publicRoutes = [

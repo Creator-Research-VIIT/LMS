@@ -1,7 +1,34 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
-const fs = require('fs');
+const { execSync } = require('node:child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+
+// Minimal .env loader for local scripts (no dependency on dotenv)
+function loadEnv() {
+  const candidates = [
+    path.join(process.cwd(), '.env.local'),
+    path.join(process.cwd(), '.env'),
+  ];
+  for (const file of candidates) {
+    if (fs.existsSync(file)) {
+      const content = fs.readFileSync(file, 'utf8');
+      for (const line of content.split(/\r?\n/)) {
+        if (!line || line.trim().startsWith('#')) continue;
+        const idx = line.indexOf('=');
+        if (idx === -1) continue;
+        const key = line.slice(0, idx).trim();
+        let val = line.slice(idx + 1).trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.slice(1, -1);
+        }
+        if (!(key in process.env)) process.env[key] = val;
+      }
+    }
+  }
+}
+
+loadEnv();
 
 console.log('🚀 Starting LMS Application with Database Health Check\n');
 
@@ -15,8 +42,12 @@ async function checkDatabaseConnection() {
     
     // Try to connect to database
     console.log('🌐 Testing database connection...');
-    const { PrismaClient } = require('./generated/prisma');
-    const prisma = new PrismaClient();
+    const { PrismaClient } = require('@prisma/client');
+    const prisma = new PrismaClient({
+      datasources: {
+        db: { url: process.env.DATABASE_URL }
+      }
+    });
     
     await prisma.$queryRaw`SELECT NOW()`;
     console.log('✅ Database connection successful!');
