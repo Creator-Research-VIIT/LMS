@@ -59,13 +59,13 @@ async function addSampleCourses() {
         where: { title: courseData.title }
       })
 
-      if (!existingCourse) {
+      if (existingCourse) {
+        console.log(`Course already exists: ${courseData.title}`)
+      } else {
         const course = await prisma.course.create({
           data: courseData
         })
         console.log(`Created course: ${course.title} (ID: ${course.id})`)
-      } else {
-        console.log(`Course already exists: ${courseData.title}`)
       }
     }
 

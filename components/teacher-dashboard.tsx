@@ -543,7 +543,7 @@ export function TeacherDashboard() {
           title: courseForm.title,
           description: courseForm.description,
           thumbnail: courseForm.thumbnail,
-          price: courseForm.isFree ? 0 : parseFloat(courseForm.price),
+          price: courseForm.isFree ? 0 : Number.parseFloat(courseForm.price),
           duration: courseForm.duration,
           category: courseForm.category,
           isFree: courseForm.isFree,
@@ -658,7 +658,7 @@ export function TeacherDashboard() {
           title: courseForm.title,
           description: courseForm.description,
           thumbnail: courseForm.thumbnail,
-          price: courseForm.isFree ? 0 : parseFloat(courseForm.price),
+          price: courseForm.isFree ? 0 : Number.parseFloat(courseForm.price),
           duration: courseForm.duration,
           category: courseForm.category,
           isFree: courseForm.isFree,
@@ -1596,7 +1596,7 @@ export function TeacherDashboard() {
                 id="time-limit"
                 type="number"
                 value={newQuiz.timeLimit || ''}
-                onChange={(e) => setNewQuiz({ ...newQuiz, timeLimit: parseInt(e.target.value) || undefined })}
+                onChange={(e) => setNewQuiz({ ...newQuiz, timeLimit: Number.parseInt(e.target.value) || undefined })}
                 placeholder="30"
               />
             </div>
@@ -1606,7 +1606,7 @@ export function TeacherDashboard() {
                 id="max-attempts"
                 type="number"
                 value={newQuiz.maxAttempts}
-                onChange={(e) => setNewQuiz({ ...newQuiz, maxAttempts: parseInt(e.target.value) || 3 })}
+                onChange={(e) => setNewQuiz({ ...newQuiz, maxAttempts: Number.parseInt(e.target.value) || 3 })}
                 placeholder="3"
               />
             </div>
@@ -1616,7 +1616,7 @@ export function TeacherDashboard() {
                 id="passing-score"
                 type="number"
                 value={newQuiz.passingScore}
-                onChange={(e) => setNewQuiz({ ...newQuiz, passingScore: parseFloat(e.target.value) || 60 })}
+                onChange={(e) => setNewQuiz({ ...newQuiz, passingScore: Number.parseFloat(e.target.value) || 60 })}
                 placeholder="60"
               />
             </div>
@@ -1723,7 +1723,7 @@ export function TeacherDashboard() {
                 value={currentEnhancedQuestion.points}
                 onChange={(e) => setCurrentEnhancedQuestion({ 
                   ...currentEnhancedQuestion, 
-                  points: parseInt(e.target.value) || 1 
+                  points: Number.parseInt(e.target.value) || 1 
                 })}
                 placeholder="1"
               />

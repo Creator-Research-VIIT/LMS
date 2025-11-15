@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, BookOpen, Eye, EyeOff } from "lucide-react";
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -22,7 +22,6 @@ export default function LoginPageClient() {
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const { data: session } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,7 +52,7 @@ export default function LoginPageClient() {
         console.log('✅ Login successful, got URL:', result.url);
         
         // NextAuth returned a URL, prefer it; fallback to callbackUrl
-        window.location.href = result.url ?? callbackUrl;
+        globalThis.location.href = result.url ?? callbackUrl;
       } else if (result?.ok) {
         console.log('✅ Login successful, no URL provided');
         

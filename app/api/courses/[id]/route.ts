@@ -50,7 +50,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "TEACHER") {
+  if (session?.user?.role !== "TEACHER") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -99,7 +99,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
           title,
           description,
           thumbnail,
-          price: isFree ? 0 : parseFloat(price),
+          price: isFree ? 0 : Number.parseFloat(price),
           duration,
           category,
           isFree,
