@@ -6,6 +6,7 @@ export default withAuth(
   function middleware(req) {
     const token = req.nextauth.token;
     const isAuth = !!token;
+    const path = req.nextUrl.pathname;
     
     console.log("MIDDLEWARE:", {
       path: req.nextUrl.pathname,
@@ -14,9 +15,28 @@ export default withAuth(
       role: (token as any)?.role || "no-role"
     });
     
-    const isAuthPage = req.nextUrl.pathname.startsWith("/login") || 
-                      req.nextUrl.pathname.startsWith("/signup") ||
-                      req.nextUrl.pathname.startsWith("/register");
+    const isAuthPage = path.startsWith("/login") || 
+                      path.startsWith("/signup") ||
+                      path.startsWith("/register");
+
+    // For API requests: if not logged in and API is not public, return JSON 401 instead of HTML redirect
+    const publicApiPrefixes = [
+      "/api/auth",
+      "/api/diag",
+      "/api/register",
+      "/api/auth/verify-email",
+      "/api/auth/debug",
+      "/api/auth/check",
+      "/api/oauth-check",
+      "/api/courses",
+      "/api/debug-middleware"
+    ];
+    if (path.startsWith('/api/') && !isAuth) {
+      const isPublicApi = publicApiPrefixes.some(p => path === p || path.startsWith(p + '/'));
+      if (!isPublicApi) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      }
+    }
 
     // If user is authenticated and trying to access auth pages, redirect based on role
     if (isAuthPage && isAuth) {
@@ -50,8 +70,9 @@ export default withAuth(
     }
 
     // Admin-only routes
-    const isAdminRoute = req.nextUrl.pathname.startsWith("/api/teachers") ||
-                        req.nextUrl.pathname.startsWith("/admin");
+    const isAdminRoute = path.startsWith("/api/teachers") ||
+              path.startsWith("/admin") ||
+              path.startsWith("/api/admin");
 
     // Check admin access for admin routes
     if (isAdminRoute && isAuth) {
@@ -70,8 +91,10 @@ export default withAuth(
       const isInstitutePath = path.startsWith('/institute') || path.startsWith('/api/institute');
       if (isInstitutePath) {
         if (!isAuth) {
-          // not authenticated: fall back to default auth flow
-          return null;
+          // Not authenticated: send to custom login and preserve return path
+          const loginUrl = new URL('/login', req.url);
+          loginUrl.searchParams.set('callbackUrl', path);
+          return NextResponse.redirect(loginUrl);
         }
         const role = (token as any)?.role as string | undefined;
         const email = (token as any)?.email as string | undefined;
@@ -87,6 +110,7 @@ export default withAuth(
           }
           const url = new URL('/login', req.url);
           url.searchParams.set('error', 'instituteAccess');
+          url.searchParams.set('callbackUrl', path);
           return NextResponse.redirect(url);
         }
       }

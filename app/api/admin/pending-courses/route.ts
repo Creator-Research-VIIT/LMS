@@ -13,7 +13,12 @@ export async function GET() {
 
     // Get pending courses
     const courses = await prisma.course.findMany({
-      where: { approvalStatus: "pending" },
+        where: {
+          OR: [
+            { approvalStatus: "pending" },
+            { approvalStatus: "PENDING" }
+          ]
+        },
       include: {
         User: {
           select: { name: true }

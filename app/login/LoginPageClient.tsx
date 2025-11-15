@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, BookOpen, Eye, EyeOff } from "lucide-react";
 import { signIn, useSession } from "next-auth/react";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 import type React from "react";
@@ -14,6 +15,8 @@ import { Suspense, useState } from "react";
 
 
 export default function LoginPageClient() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -29,11 +32,12 @@ export default function LoginPageClient() {
     try {
       console.log('🔄 Attempting login for:', email);
       
+      const callbackUrl = searchParams.get("callbackUrl") || "/";
       const result = await signIn("credentials", {
         email,
         password,
         redirect: false,
-        callbackUrl: window.location.origin,
+        callbackUrl,
       })
 
       console.log('🔍 Login result:', result);
@@ -48,13 +52,13 @@ export default function LoginPageClient() {
       } else if (result?.ok && result?.url) {
         console.log('✅ Login successful, got URL:', result.url);
         
-        // NextAuth returned a URL, use it
-        window.location.href = result.url;
+        // NextAuth returned a URL, prefer it; fallback to callbackUrl
+        window.location.href = result.url ?? callbackUrl;
       } else if (result?.ok) {
         console.log('✅ Login successful, no URL provided');
         
-        // No URL provided, redirect to home and let middleware handle it
-        window.location.href = '/';
+        // No URL provided, redirect using callbackUrl (let middleware handle role redirects)
+        router.push(callbackUrl);
       }
     } catch (error: any) {
       console.error('❌ Login exception:', error);
@@ -169,7 +173,7 @@ export default function LoginPageClient() {
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => signIn("google")}
+                  onClick={() => signIn("google", { callbackUrl: searchParams.get("callbackUrl") || "/" })}
                   disabled={isLoading}
                 >
                   <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -185,7 +189,7 @@ export default function LoginPageClient() {
                   type="button"
                   variant="outline"
                   className="w-full"
-                  onClick={() => signIn("github")}
+                  onClick={() => signIn("github", { callbackUrl: searchParams.get("callbackUrl") || "/" })}
                   disabled={isLoading}
                 >
                   <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">

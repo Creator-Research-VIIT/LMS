@@ -101,22 +101,44 @@ export default function ElegantAdminDashboard() {
     try {
       setLoading(true);
       
-      // Fetch pending teachers
-      const teachersResponse = await fetch("/api/teachers/pending");
-      const teachersData = await teachersResponse.json();
-      
-      // Fetch pending courses
-      const coursesResponse = await fetch("/api/courses/pending");
-      const coursesData = await coursesResponse.json();
-      
-      if (teachersResponse.ok) {
+      const [teachersResponse, coursesResponse] = await Promise.all([
+        fetch("/api/teachers/pending"),
+        fetch("/api/courses/pending"),
+      ]);
+
+      const parseJsonSafe = async (res: Response) => {
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          return await res.json();
+        }
+        // Fallback: read text for diagnostics
+        const text = await res.text();
+        console.warn('Non-JSON response for admin fetch:', {
+          url: res.url,
+          status: res.status,
+          contentType: ct,
+          preview: text.slice(0, 200)
+        });
+        return null;
+      };
+
+      const [teachersData, coursesData] = await Promise.all([
+        parseJsonSafe(teachersResponse),
+        parseJsonSafe(coursesResponse),
+      ]);
+
+      if (teachersResponse.ok && teachersData) {
         setPendingTeachers(teachersData.teachers || []);
         setStats(prev => ({ ...prev, pendingTeachers: teachersData.teachers?.length || 0 }));
+      } else if (!teachersResponse.ok) {
+        console.error('Failed to load pending teachers:', teachersResponse.status);
       }
-      
-      if (coursesResponse.ok) {
+
+      if (coursesResponse.ok && coursesData) {
         setPendingCourses(coursesData.courses || []);
         setStats(prev => ({ ...prev, pendingCourses: coursesData.courses?.length || 0 }));
+      } else if (!coursesResponse.ok) {
+        console.error('Failed to load pending courses:', coursesResponse.status);
       }
       
     } catch (err) {
