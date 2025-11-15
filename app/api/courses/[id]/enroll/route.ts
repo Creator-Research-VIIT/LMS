@@ -1,7 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { randomUUID } from 'node:crypto'
 import { NextResponse } from "next/server";
 
 // Enroll user in course

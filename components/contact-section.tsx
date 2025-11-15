@@ -2,12 +2,12 @@
 
 import type React from "react"
 
-import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { MapPin, Phone, Mail, Clock } from "lucide-react"
+import { Clock, Mail, MapPin, Phone } from "lucide-react"
+import { useState } from "react"
 
 export function ContactSection() {
   const [formData, setFormData] = useState({
@@ -118,11 +118,11 @@ export function ContactSection() {
                   <div>
                     <h4 className="font-semibold text-foreground mb-1">Address</h4>
                     <p className="text-muted-foreground">
-                      123 Education Street
+                      73 Pannalal Nagar,
                       <br />
-                      Learning District, LD 12345
+                      Ch. Sambhaji Nagar
                       <br />
-                      United States
+                      India
                     </p>
                   </div>
                 </div>
@@ -133,7 +133,7 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-1">Phone</h4>
-                    <p className="text-muted-foreground">+1 (555) 123-4567</p>
+                    <p className="text-muted-foreground">+91 9545415111</p>
                   </div>
                 </div>
 
@@ -143,7 +143,7 @@ export function ContactSection() {
                   </div>
                   <div>
                     <h4 className="font-semibold text-foreground mb-1">Email</h4>
-                    <p className="text-muted-foreground">support@eduplatform.com</p>
+                    <p className="text-muted-foreground">info@CreatorIt.com</p>
                   </div>
                 </div>
 

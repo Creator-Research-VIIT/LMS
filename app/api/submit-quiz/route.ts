@@ -23,12 +23,10 @@ export async function POST(request: Request) {
     }
 
     // Check if student has already submitted this quiz
-    const existingSubmission = await prisma.quizSubmission.findUnique({
+    const existingSubmission = await prisma.quizSubmission.findFirst({
       where: {
-        studentId_quizId: {
-          studentId: session.user.id,
-          quizId: quizId
-        }
+        studentId: session.user.id,
+        quizId: quizId
       }
     })
 
@@ -42,10 +40,10 @@ export async function POST(request: Request) {
     const quiz = await prisma.quiz.findUnique({
       where: { id: quizId },
       include: {
-        course: true,
-        questions: {
+        Course: true,
+        Question: {
           include: {
-            answers: true
+            Answer: true
           },
           orderBy: {
             orderIndex: 'asc'
@@ -77,21 +75,21 @@ export async function POST(request: Request) {
     let maxScore = 0
     const gradedAnswers = []
 
-    for (const question of quiz.questions) {
+  for (const question of quiz.Question) {
       maxScore += question.points
       const studentAnswer = answers.find((a: any) => a.questionId === question.id)
       
       if (studentAnswer) {
         let isCorrect = false
         
-        if (question.questionType === 'multiple_choice') {
+        if (question.questionType === 'MULTIPLE_CHOICE') {
           // Check if selected answer is correct
-          const correctAnswer = question.answers.find(a => a.isCorrect)
+          const correctAnswer = question.Answer.find((a: any) => a.isCorrect)
           isCorrect = correctAnswer?.id === studentAnswer.selectedAnswerId
-        } else if (question.questionType === 'true_false') {
-          const correctAnswer = question.answers.find(a => a.isCorrect)
-          isCorrect = correctAnswer?.answerText.toLowerCase() === studentAnswer.answer?.toLowerCase()
-        } else if (question.questionType === 'short_answer') {
+        } else if (question.questionType === 'TRUE_FALSE') {
+          const correctAnswer = question.Answer.find((a: any) => a.isCorrect)
+          isCorrect = correctAnswer?.answerText?.toLowerCase() === studentAnswer.answer?.toLowerCase()
+        } else {
           // For short answer, we'll mark as correct for now (manual grading needed)
           isCorrect = true
         }
@@ -137,9 +135,11 @@ export async function POST(request: Request) {
       message: 'Quiz submitted successfully',
       submission: {
         id: submission.id,
-        score: submission.score,
-        maxScore: submission.maxScore,
-        percentage: Math.round((submission.score / submission.maxScore) * 100),
+        score: submission.score ?? 0,
+        maxScore: submission.maxScore ?? 0,
+        percentage: submission.score != null && submission.maxScore 
+          ? Math.round(((submission.score ?? 0) / (submission.maxScore || 1)) * 100)
+          : 0,
         submittedAt: submission.submittedAt
       }
     }, { status: 201 })
@@ -162,7 +162,7 @@ async function updateCourseProgress(studentId: string, courseId: string) {
     const completedQuizzes = await prisma.quizSubmission.count({
       where: {
         studentId,
-        quiz: {
+        Quiz: {
           courseId
         }
       }
@@ -180,15 +180,15 @@ async function updateCourseProgress(studentId: string, courseId: string) {
       },
       update: {
         progressPercent,
-        completed: progressPercent >= 100,
         lastAccessedAt: new Date()
       },
       create: {
+        id: `${studentId}_${courseId}`,
         studentId,
         courseId,
         progressPercent,
-        completed: progressPercent >= 100,
-        lastAccessedAt: new Date()
+        lastAccessedAt: new Date(),
+        updatedAt: new Date()
       }
     })
   } catch (error) {

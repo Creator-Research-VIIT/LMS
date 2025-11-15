@@ -3,17 +3,16 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import confetti from 'canvas-confetti'
-import { ArrowRight, Award, BookOpen, CheckCircle, Loader2, Play, Share2, Star, Trophy, Users } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
-import dynamic from 'next/dynamic'
-// Lazy load jsPDF only on client interaction
-const loadJsPDF = async () => (await import('jspdf')).default
+import confetti from 'canvas-confetti'
+import { ArrowRight, Award, BookOpen, CheckCircle, Loader2, Play, Share2, Star, Trophy, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+// Lazy load jsPDF only on client interaction
+const loadJsPDF = async () => (await import('jspdf')).default
 
 export interface CourseEnrolledClientProps {
   readonly params: {

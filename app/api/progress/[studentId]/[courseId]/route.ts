@@ -6,10 +6,10 @@ import { NextResponse } from 'next/server';
 // GET /api/progress/[studentId]/[courseId] - Get student progress for a course
 export async function GET(
   request: Request,
-  { params }: { params: { studentId: string; courseId: string } }
+  { params }: { params: Promise<{ studentId: string; courseId: string }> }
 ) {
   try {
-    const { studentId, courseId } = params;
+    const { studentId, courseId } = await params;
     const session = await getServerSession(authOptions)
     
     if (!session) {
@@ -48,14 +48,15 @@ export async function GET(
         }
       },
       include: {
-        course: {
+        // Relation names per schema are PascalCase
+        Course: {
           select: {
             id: true,
             title: true,
             description: true
           }
         },
-        student: {
+        User: {
           select: {
             id: true,
             name: true,
@@ -75,16 +76,16 @@ export async function GET(
     const quizSubmissions = await prisma.quizSubmission.findMany({
       where: {
         studentId,
-        quiz: {
+        // Filter through relation field `Quiz`
+        Quiz: {
           courseId
         }
       },
       include: {
-        quiz: {
+        Quiz: {
           select: {
             id: true,
-            title: true,
-            type: true
+            title: true
           }
         }
       },
@@ -98,13 +99,14 @@ export async function GET(
       where: { courseId }
     })
 
+  const validSubmissions = quizSubmissions.filter(sub => sub.score != null && sub.maxScore != null && (sub.maxScore ?? 0) > 0)
     const progressData = {
       ...progress,
       quizSubmissions,
       totalQuizzes,
       completedQuizzes: quizSubmissions.length,
-      averageScore: quizSubmissions.length > 0 
-        ? quizSubmissions.reduce((sum, sub) => sum + (sub.score / sub.maxScore * 100), 0) / quizSubmissions.length 
+      averageScore: validSubmissions.length > 0 
+        ? validSubmissions.reduce((sum, sub) => sum + (((sub.score ?? 0) / (sub.maxScore ?? 1)) * 100), 0) / validSubmissions.length 
         : 0
     }
 

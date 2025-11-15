@@ -1,8 +1,8 @@
-import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/prisma';
 import { emailHasAllowedDomain, isInstituteAccessEnabled } from '@/lib/instituteAccess';
+import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
@@ -48,7 +48,8 @@ export async function GET() {
     // Calculate total revenue (simplified - sum all course prices * enrollments)
     const enrollmentsWithCourses = await prisma.enrollment.findMany({
       include: {
-        course: {
+        // Relation field names follow the schema and are PascalCase here
+        Course: {
           select: {
             price: true
           }
@@ -57,7 +58,7 @@ export async function GET() {
     });
     
     const totalRevenue = enrollmentsWithCourses.reduce((sum, enrollment) => {
-      return sum + enrollment.course.price;
+      return sum + (enrollment.Course?.price || 0);
     }, 0);
 
     // Get recent courses with teacher info
@@ -65,17 +66,19 @@ export async function GET() {
       take: 6,
       orderBy: { createdAt: 'desc' },
       include: {
+        // Teacher relation on Course is named `User` in the schema
         User: {
           select: {
             name: true,
             email: true
           }
         },
-        enrollments: true,
+        // Relation names are PascalCase per schema
+        Enrollment: true,
         _count: {
           select: {
-            enrollments: true,
-            feedbacks: true
+            Enrollment: true,
+            Feedback: true
           }
         }
       }
@@ -83,8 +86,9 @@ export async function GET() {
 
     // Calculate completion rate
     const totalProgressEntries = await prisma.courseProgress.count();
+    // CourseProgress no longer has a dedicated completed flag; infer completion via progressPercent >= 100
     const completedProgressEntries = await prisma.courseProgress.count({
-      where: { completed: true }
+      where: { progressPercent: { gte: 100 } }
     });
     
     const completionRate = totalProgressEntries > 0 
@@ -98,14 +102,14 @@ export async function GET() {
       instructor: course.User.name,
       category: 'Programming', // You might want to add a category field to your schema
       rating: 4.5, // You'd calculate this from feedbacks
-      students: course._count.enrollments,
+      students: course._count.Enrollment,
       price: course.price,
       originalPrice: course.price * 1.5, // Mock original price
       duration: '12 weeks', // You might want to add duration to schema
       image: course.thumbnail || 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg',
       type: 'internal',
       status: course.approvalStatus,
-      isPopular: course._count.enrollments > 50,
+      isPopular: course._count.Enrollment > 50,
       isNew: new Date(course.createdAt) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
     }));
 

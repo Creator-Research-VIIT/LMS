@@ -1,6 +1,6 @@
+import { emailHasAllowedDomain, isInstituteAccessEnabled } from "@/lib/instituteAccess";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import { emailHasAllowedDomain, isInstituteAccessEnabled } from "@/lib/instituteAccess";
 
 export default withAuth(
   function middleware(req) {

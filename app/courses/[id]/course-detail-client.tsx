@@ -74,6 +74,7 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isEnrolled, setIsEnrolled] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   
   const router = useRouter()
   const { data: session } = useSession()
@@ -143,12 +144,30 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
     }
   }
 
-  const handleEnroll = () => {
+  const handleEnroll = async () => {
     if (!session) {
       router.push('/login')
       return
     }
-    router.push(`/courses/${courseId}/enroll`)
+
+    try {
+      setIsProcessing(true)
+      setError('')
+      const res = await fetch('/api/enrollments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to enroll in course')
+      }
+      router.push(`/courses/${courseId}/enrolled`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to enroll in course')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const handleGoToCourse = () => {
@@ -396,10 +415,11 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
                   {!isEnrolled && course.isFree && (
                     <Button 
                       onClick={handleEnroll}
+                      disabled={isProcessing}
                       className="w-full mb-4 bg-blue-600 hover:bg-blue-700"
                     >
                       <BookOpen className="mr-2 h-4 w-4" />
-                      Enroll Now
+                      {isProcessing ? 'Enrolling…' : 'Enroll Now'}
                     </Button>
                   )}
                   

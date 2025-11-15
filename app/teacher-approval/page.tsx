@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '../../components/ui/button'
-import { Clock, Mail, BookOpen } from 'lucide-react'
+import { BookOpen, Clock, Mail } from 'lucide-react'
 import Link from 'next/link'
+import { Button } from '../../components/ui/button'
 
 export default function TeacherApprovalPage() {
   return (

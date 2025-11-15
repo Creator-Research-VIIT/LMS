@@ -1,10 +1,10 @@
 import { sendEmailVerificationOTP, sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
+import { emailHasAllowedDomain, isInstituteAccessEnabled } from '@/lib/instituteAccess';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
 import { NextRequest, NextResponse } from 'next/server';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
-import { emailHasAllowedDomain, isInstituteAccessEnabled } from '@/lib/instituteAccess';
 
 // Validation schema for registration
 const registerSchema = z.object({
