@@ -102,8 +102,8 @@ export default function ElegantAdminDashboard() {
       setLoading(true);
       
       const [teachersResponse, coursesResponse] = await Promise.all([
-        fetch("/api/teachers/pending"),
-        fetch("/api/courses/pending"),
+        fetch("/api/teachers/pending", { credentials: 'include', cache: 'no-store' }),
+        fetch("/api/courses/pending", { credentials: 'include', cache: 'no-store' }),
       ]);
 
       const parseJsonSafe = async (res: Response) => {
