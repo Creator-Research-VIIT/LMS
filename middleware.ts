@@ -188,6 +188,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    String.raw`/((?!api|_next/static|_next/image|favicon.ico|public|.*\.[\w]+$).*)`,
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
