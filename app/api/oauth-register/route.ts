@@ -11,7 +11,7 @@ const oauthRegisterSchema = z.object({
   provider: z.enum(['google', 'github']),
   // 'image' isn't a field on User model; ignore image input to avoid Prisma type error
   image: z.string().optional(),
-  role: z.enum(['STUDENT', 'TEACHER', 'ADMIN'])
+  role: z.enum(['STUDENT', 'TEACHER', 'ADMIN', 'CHARITY'])
 })
 
 export async function POST(request: NextRequest) {
@@ -40,10 +40,10 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         password: "", // OAuth users get empty password (required field)
-        role: validatedData.role,
+        role: validatedData.role as any,
         referralCode: newReferralCode,
         emailVerified: new Date(), // OAuth emails are pre-verified
-  approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved"
+        approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved"
       },
       select: {
         id: true,

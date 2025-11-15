@@ -16,8 +16,9 @@ export default withAuth(
     });
     
     const isAuthPage = path.startsWith("/login") || 
-                      path.startsWith("/signup") ||
-                      path.startsWith("/register");
+              path.startsWith("/signup") ||
+              path.startsWith("/register") ||
+              path.startsWith("/charity/login");
 
     // For API requests: if not logged in and API is not public, return JSON 401 instead of HTML redirect
     const publicApiPrefixes = [
@@ -49,9 +50,26 @@ export default withAuth(
         return NextResponse.redirect(new URL("/teacher", req.url));
       } else if (userRole === "STUDENT") {
         return NextResponse.redirect(new URL("/student", req.url));
+      } else if (userRole === "CHARITY") {
+        return NextResponse.redirect(new URL("/charity", req.url));
       } else {
         // No role assigned, redirect to role selection
         return NextResponse.redirect(new URL("/oauth-role-selection", req.url));
+      }
+    }
+
+    // Protect charity dashboard: only CHARITY role may access
+    if (path.startsWith("/charity/dashboard")) {
+      const userRole = (token as any)?.role;
+      if (!isAuth) {
+        const loginUrl = new URL('/login', req.url);
+        loginUrl.searchParams.set('callbackUrl', path);
+        return NextResponse.redirect(loginUrl);
+      }
+      if (userRole !== "CHARITY") {
+        if (userRole === "ADMIN") return NextResponse.redirect(new URL("/admin", req.url));
+        if (userRole === "TEACHER") return NextResponse.redirect(new URL("/teacher", req.url));
+        return NextResponse.redirect(new URL("/student", req.url));
       }
     }
 
@@ -66,6 +84,8 @@ export default withAuth(
         return NextResponse.redirect(new URL("/teacher", req.url));
       } else if (userRole === "STUDENT") {
         return NextResponse.redirect(new URL("/student", req.url));
+      } else if (userRole === "CHARITY") {
+        return NextResponse.redirect(new URL("/charity", req.url));
       }
     }
 
@@ -135,6 +155,13 @@ export default withAuth(
         if (pathname.startsWith('/api/')) {
           return true;
         }
+
+        // Allow static files from public folder and Next.js internals
+        if (/\.(png|jpg|jpeg|gif|svg|ico|webp|woff|woff2|ttf|eot)$/i.exec(pathname) ||
+            pathname.startsWith('/_next/') ||
+            pathname === '/favicon.ico') {
+          return true;
+        }
         
         // Public routes that don't require authentication
         const publicRoutes = [
@@ -145,6 +172,8 @@ export default withAuth(
           "/verify-email",
           "/oauth-role-selection",
           "/courses",
+          "/charity",
+          "/charity/login",
           "/api/auth",
           "/api/diag",
           "/api/register",
@@ -187,7 +216,10 @@ export default withAuth(
 );
 
 export const config = {
+  // Match all routes except Next.js internals and static files
+  // This allows middleware to process: API routes, pages, auth pages, etc.
+  // while skipping: _next/static, _next/image, and file extensions
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico).*)",
   ],
 };

@@ -75,12 +75,16 @@ export async function POST(req: NextRequest) {
     const completedModules = await prisma.moduleProgress.count({ where: { studentId, courseId, completed: true } })
     const progressPercent = totalModules > 0 ? (completedModules / totalModules) * 100 : 0
 
+    // Determine if course is now fully completed
+    const isFullyCompleted = progressPercent === 100
+
     const courseProgress = await prisma.courseProgress.upsert({
       where: { studentId_courseId: { studentId, courseId } },
       update: {
         completedLessons: completedModules,
         totalLessons: totalModules,
         progressPercent,
+        completedAt: isFullyCompleted ? new Date() : undefined,
         updatedAt: new Date()
       },
       create: {
@@ -90,6 +94,7 @@ export async function POST(req: NextRequest) {
         completedLessons: completedModules,
         totalLessons: totalModules,
         progressPercent,
+        completedAt: isFullyCompleted ? new Date() : null,
         updatedAt: new Date()
       }
     })

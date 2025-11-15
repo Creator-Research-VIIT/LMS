@@ -19,7 +19,7 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "STUDENT" as "STUDENT" | "TEACHER" | "ADMIN"
+    role: "STUDENT" as "STUDENT" | "TEACHER" | "ADMIN" | "CHARITY"
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -188,6 +188,7 @@ export default function SignupPage() {
                   <option value="STUDENT">Student</option>
                   <option value="TEACHER">Teacher</option>
                   <option value="ADMIN">Admin</option>
+                  <option value="CHARITY">Charity</option>
                 </select>
               </div>
 

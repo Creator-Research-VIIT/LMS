@@ -41,13 +41,15 @@ export async function GET(
     // Ensure CourseProgress row exists and keep aggregate in sync
     const completedCount = completed.length
     const progressPercent = totalModules > 0 ? (completedCount / totalModules) * 100 : 0
+    const isFullyCompleted = progressPercent === 100
 
-    await prisma.courseProgress.upsert({
+    const courseProgress = await prisma.courseProgress.upsert({
       where: { studentId_courseId: { studentId, courseId } },
       update: {
         completedLessons: completedCount,
         totalLessons: totalModules,
         progressPercent,
+        completedAt: isFullyCompleted ? new Date() : undefined,
         updatedAt: new Date(),
       },
       create: {
@@ -57,6 +59,7 @@ export async function GET(
         completedLessons: completedCount,
         totalLessons: totalModules,
         progressPercent,
+        completedAt: isFullyCompleted ? new Date() : null,
         updatedAt: new Date(),
       }
     })
@@ -66,6 +69,7 @@ export async function GET(
       totalModules,
       completedCount,
       progressPercent,
+      completedAt: courseProgress.completedAt,
     })
   } catch (error) {
     console.error('GET /api/progress/modules error', error)
