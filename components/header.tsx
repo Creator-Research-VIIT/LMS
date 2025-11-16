@@ -67,7 +67,7 @@ const [searchQuery, setSearchQuery] = useState("")
               />
             </div>
             <div className="flex flex-col justify-center">
-              <span className="font-heading font-bold text-lg text-primary leading-tight">EduLearn</span>
+              <span className="font-heading font-bold text-lg text-primary leading-tight">SkillUP!!</span>
               <span className="text-xs text-gray-500 font-medium">Creator Research</span>
             </div>
           </div>

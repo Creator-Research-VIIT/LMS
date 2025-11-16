@@ -247,8 +247,8 @@ export default function ElegantAdminDashboard() {
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 text-white">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome Admin User</h1>
-            <p className="text-blue-100 text-lg">Education is the passport to the future, so learn more & more</p>
+            <h1 className="text-3xl font-bold mb-2">Welcome to SkillUP!!</h1>
+            <p className="text-blue-100 text-lg">Empower yourself with skills. Learn, grow, and succeed with SkillUP!!</p>
           </div>
           <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
             <div className="w-12 h-12 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
@@ -587,7 +587,7 @@ export default function ElegantAdminDashboard() {
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">EduAdmin</span>
+            <span className="text-xl font-bold text-gray-900">SkillUP!!</span>
           </div>
         </div>
 
