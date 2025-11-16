@@ -315,76 +315,111 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         format: 'a4'
       })
 
-      // Set up page dimensions
       const pageWidth = pdf.internal.pageSize.getWidth()
       const pageHeight = pdf.internal.pageSize.getHeight()
 
-      // Add background gradient effect (light gold)
-      pdf.setFillColor(255, 250, 240)
+      // Premium background - luxury cream with subtle pattern
+      pdf.setFillColor(252, 250, 245) // Luxury cream
       pdf.rect(0, 0, pageWidth, pageHeight, 'F')
 
-      // Add decorative border
-      pdf.setLineWidth(2)
-      pdf.setDrawColor(184, 134, 11) // Dark gold
+      // Subtle watermark background pattern
+      pdf.setTextColor(245, 240, 230)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(80)
+      pdf.text('SkillUP!!', pageWidth / 2, pageHeight / 2, { align: 'center', opacity: 0.05 })
+
+      // Outer premium border - double line with gold gradient
+      pdf.setLineWidth(3)
+      pdf.setDrawColor(212, 175, 55) // Bright gold
+      pdf.rect(8, 8, pageWidth - 16, pageHeight - 16)
+
+      pdf.setLineWidth(1)
+      pdf.setDrawColor(184, 134, 11) // Darker gold
       pdf.rect(10, 10, pageWidth - 20, pageHeight - 20)
 
-      // Inner decorative border
+      // Inner elegant border
       pdf.setLineWidth(0.5)
-      pdf.rect(15, 15, pageWidth - 30, pageHeight - 30)
+      pdf.setDrawColor(212, 175, 55)
+      pdf.rect(14, 14, pageWidth - 28, pageHeight - 28)
 
-      // Add certificate title
-      pdf.setFont('helvetica', 'bold')
-      pdf.setFontSize(48)
-      pdf.setTextColor(51, 51, 51)
-      pdf.text('CERTIFICATE', pageWidth / 2, 45, { align: 'center' })
+      // Top decorative flourish
+      pdf.setLineWidth(0.8)
+      pdf.setDrawColor(212, 175, 55)
+      const flourishY = 22
+      pdf.line(pageWidth / 2 - 40, flourishY, pageWidth / 2 - 20, flourishY)
+      pdf.line(pageWidth / 2 + 20, flourishY, pageWidth / 2 + 40, flourishY)
 
-      // Add subtitle
-      pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(16)
-      pdf.setTextColor(100, 100, 100)
-      pdf.text('OF COMPLETION', pageWidth / 2, 58, { align: 'center' })
+      // Premium seal/emblem circle (top center)
+      pdf.setDrawColor(212, 175, 55)
+      pdf.setLineWidth(1.5)
+      pdf.circle(pageWidth / 2, 32, 8, 'S')
 
-      // Add presentation line
-      pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(12)
-      pdf.setTextColor(100, 100, 100)
-      pdf.text('This certificate is proudly presented to', pageWidth / 2, 78, { align: 'center' })
-
-      // Add student name
-      pdf.setFont('helvetica', 'bold')
-      pdf.setFontSize(32)
-      pdf.setTextColor(184, 134, 11) // Gold
-      const studentName = session.user.name || 'Student'
-      pdf.text(studentName, pageWidth / 2, 105, { align: 'center' })
-
-      // Add decorative line under name
-      pdf.setLineWidth(1)
-      pdf.setDrawColor(184, 134, 11)
-      pdf.line(pageWidth / 2 - 50, 112, pageWidth / 2 + 50, 112)
-
-      // Add course completion text
-      pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(11)
-      pdf.setTextColor(100, 100, 100)
-      const completionText = `For successfully completing the course`
-      pdf.text(completionText, pageWidth / 2, 130, { align: 'center' })
-
-      // Add course title
+      // Seal star icon (using text)
       pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(14)
-      pdf.setTextColor(51, 51, 51)
+      pdf.setTextColor(212, 175, 55)
+      pdf.text('★', pageWidth / 2, 34, { align: 'center' })
+
+      // Premium certificate title
+      pdf.setFont('times', 'bold')
+      pdf.setFontSize(56)
+      pdf.setTextColor(25, 50, 100) // Royal blue
+      pdf.text('CERTIFICATE', pageWidth / 2, 50, { align: 'center' })
+
+      // Elegant subtitle line
+      pdf.setLineWidth(1)
+      pdf.setDrawColor(212, 175, 55)
+      pdf.line(pageWidth / 2 - 60, 56, pageWidth / 2 + 60, 56)
+
+      // Of Completion subtitle
+      pdf.setFont('times', 'italic')
+      pdf.setFontSize(18)
+      pdf.setTextColor(184, 134, 11)
+      pdf.text('of Completion', pageWidth / 2, 65, { align: 'center' })
+
+      // Presented to text
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(13)
+      pdf.setTextColor(80, 80, 80)
+      pdf.text('This is proudly presented to', pageWidth / 2, 78, { align: 'center' })
+
+      // Recipient name - premium highlight
+      pdf.setFont('times', 'bold')
+      pdf.setFontSize(42)
+      pdf.setTextColor(25, 50, 100) // Royal blue
+      const studentName = session.user.name || 'Student'
+      pdf.text(studentName, pageWidth / 2, 102, { align: 'center' })
+
+      // Decorative underline for name with gradient effect
+      pdf.setLineWidth(2.5)
+      pdf.setDrawColor(212, 175, 55)
+      pdf.line(pageWidth / 2 - 65, 108, pageWidth / 2 + 65, 108)
+      pdf.setLineWidth(1)
+      pdf.setDrawColor(184, 134, 11)
+      pdf.line(pageWidth / 2 - 65, 110, pageWidth / 2 + 65, 110)
+
+      // For successfully completing
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(12)
+      pdf.setTextColor(80, 80, 80)
+      pdf.text('For successfully completing and demonstrating mastery in', pageWidth / 2, 123, { align: 'center' })
+
+      // Course title - premium styling
+      pdf.setFont('times', 'bold')
+      pdf.setFontSize(18)
+      pdf.setTextColor(25, 50, 100)
       const words = course.title.split(' ')
-      let currentY = 138
+      let currentY = 133
       let line = ''
-      const maxWidth = 120
-      
+      const maxWidth = 140
+
       for (let word of words) {
         const testLine = line + word + ' '
         const textWidth = pdf.getTextWidth(testLine)
         if (textWidth > maxWidth && line) {
           pdf.text(line, pageWidth / 2, currentY, { align: 'center' })
           line = word + ' '
-          currentY += 7
+          currentY += 8
         } else {
           line = testLine
         }
@@ -393,44 +428,60 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         pdf.text(line, pageWidth / 2, currentY, { align: 'center' })
       }
 
-      // Add completion date
+      // Completion date with premium styling
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(11)
+      pdf.setTextColor(100, 100, 100)
+      const completionDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+      pdf.text(`On this ${completionDate}`, pageWidth / 2, currentY + 15, { align: 'center' })
+
+      // Bottom section - instructor and signature
+      const bottomY = pageHeight - 28
+
+      // Instructor info on left
       pdf.setFont('helvetica', 'normal')
       pdf.setFontSize(10)
       pdf.setTextColor(100, 100, 100)
-      const completionDate = new Date().toLocaleDateString('en-US', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric' 
-      })
-      pdf.text(`Completed on ${completionDate}`, pageWidth / 2, currentY + 18, { align: 'center' })
+      pdf.text('Course Instructor', 28, bottomY - 8, { align: 'left' })
+      pdf.setFont('times', 'bold')
+      pdf.setFontSize(11)
+      pdf.setTextColor(25, 50, 100)
+      pdf.text(course.User.name, 28, bottomY + 2, { align: 'left' })
 
-      // Add instructor info (placeholder)
+      // Signature line on right
+      pdf.setLineWidth(1)
+      pdf.setDrawColor(80, 80, 80)
+      pdf.line(pageWidth - 65, bottomY - 5, pageWidth - 20, bottomY - 5)
       pdf.setFont('helvetica', 'normal')
       pdf.setFontSize(9)
       pdf.setTextColor(100, 100, 100)
-      pdf.text(`Instructor: ${course.User.name}`, 30, pageHeight - 30)
+      pdf.text('Authorized Signature', pageWidth - 42, bottomY + 3, { align: 'center' })
 
-      // Add signature line
-      pdf.setLineWidth(0.5)
-      pdf.line(pageWidth - 60, pageHeight - 22, pageWidth - 15, pageHeight - 22)
-      pdf.setFont('helvetica', 'normal')
-      pdf.setFontSize(9)
-      pdf.text('Authorized Signature', pageWidth - 37, pageHeight - 18, { align: 'center' })
+      // Bottom decorative flourish
+      pdf.setLineWidth(0.8)
+      pdf.setDrawColor(212, 175, 55)
+      const bottomFlourishY = pageHeight - 12
+      pdf.line(pageWidth / 2 - 40, bottomFlourishY, pageWidth / 2 - 20, bottomFlourishY)
+      pdf.line(pageWidth / 2 + 20, bottomFlourishY, pageWidth / 2 + 40, bottomFlourishY)
 
-      // Add decorative corners
-      const cornerSize = 15
-      pdf.setDrawColor(184, 134, 11)
+      // Corner decorative elements - premium style
+      const cornerSize = 12
       pdf.setLineWidth(2)
-      // Top left corner
+      pdf.setDrawColor(212, 175, 55)
+      // Top left
       pdf.line(10, 10, 10 + cornerSize, 10)
       pdf.line(10, 10, 10, 10 + cornerSize)
-      // Top right corner
+      // Top right
       pdf.line(pageWidth - 10, 10, pageWidth - 10 - cornerSize, 10)
       pdf.line(pageWidth - 10, 10, pageWidth - 10, 10 + cornerSize)
-      // Bottom left corner
+      // Bottom left
       pdf.line(10, pageHeight - 10, 10 + cornerSize, pageHeight - 10)
       pdf.line(10, pageHeight - 10, 10, pageHeight - 10 - cornerSize)
-      // Bottom right corner
+      // Bottom right
       pdf.line(pageWidth - 10, pageHeight - 10, pageWidth - 10 - cornerSize, pageHeight - 10)
       pdf.line(pageWidth - 10, pageHeight - 10, pageWidth - 10, pageHeight - 10 - cornerSize)
 
