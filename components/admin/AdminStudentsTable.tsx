@@ -1,7 +1,7 @@
 "use client";
 
+import { GraduationCap, Loader2, Mail, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Users, Mail, GraduationCap, Loader2 } from "lucide-react";
 
 interface Student {
   id: string;

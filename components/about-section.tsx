@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Target, Users, Award, Globe } from "lucide-react"
+import { Award, ChevronLeft, ChevronRight, Globe, Target, Users } from "lucide-react"
+import { useEffect, useState } from "react"
 
 const slides = [
   {

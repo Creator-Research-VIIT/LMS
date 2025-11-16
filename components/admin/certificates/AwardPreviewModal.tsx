@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import Confetti from 'react-confetti'
-import { motion, AnimatePresence } from 'framer-motion'
 
 interface Award {
   id: string

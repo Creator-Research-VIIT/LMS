@@ -1,11 +1,11 @@
 'use client'
 
+import { AwardCelebration } from '@/components/award-celebration'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
-import { AwardCelebration } from '@/components/award-celebration'
 import confetti from 'canvas-confetti'
 import { ArrowRight, Award, BookOpen, CheckCircle, Loader2, Play, Share2, Star, Trophy, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
@@ -326,7 +326,7 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
       pdf.setTextColor(245, 240, 230)
       pdf.setFont('helvetica', 'bold')
       pdf.setFontSize(80)
-      pdf.text('SkillUP!!', pageWidth / 2, pageHeight / 2, { align: 'center', opacity: 0.05 })
+      pdf.text('SkillUP!!', pageWidth / 2, pageHeight / 2, { align: 'center' })
 
       // Outer premium border - double line with gold gradient
       pdf.setLineWidth(3)

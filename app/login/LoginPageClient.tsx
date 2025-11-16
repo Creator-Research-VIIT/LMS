@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, BookOpen, Eye, EyeOff } from "lucide-react";
 import { signIn } from "next-auth/react";
-import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import type React from "react";
 import { Suspense, useState } from "react";

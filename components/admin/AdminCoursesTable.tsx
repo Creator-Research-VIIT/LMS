@@ -1,7 +1,7 @@
 "use client";
 
+import { BookOpen, DollarSign, Loader2, Users } from "lucide-react";
 import { useEffect, useState } from "react";
-import { BookOpen, DollarSign, Users, Loader2 } from "lucide-react";
 
 interface Course {
   id: string;

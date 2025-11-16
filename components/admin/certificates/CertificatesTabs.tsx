@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { Award, FileText } from 'lucide-react'
-import CertificatesSection from './CertificatesSection'
+import { useState } from 'react'
 import AwardPreviewSection from './AwardPreviewSection'
+import CertificatesSection from './CertificatesSection'
 
 export default function CertificatesTabs() {
   const [activeTab, setActiveTab] = useState<'certificates' | 'awards'>('certificates')

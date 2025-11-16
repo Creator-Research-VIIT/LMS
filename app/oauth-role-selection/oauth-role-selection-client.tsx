@@ -1,13 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, User, GraduationCap, BookOpen, AlertCircle, Github } from 'lucide-react'
-import Image from 'next/image'
+import { AlertCircle, BookOpen, Github, GraduationCap, Loader2, User } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function OAuthRoleSelectionClient() {
   const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN' | 'CHARITY' | null>(null)

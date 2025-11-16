@@ -2,8 +2,8 @@
 
 import { Button } from '@/components/ui/button'
 import { AlertCircle, Loader2, Lock } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 interface PaymentButtonProps {

@@ -1,10 +1,10 @@
 "use client";
 
-import CertificatesTabs from "@/components/admin/certificates/CertificatesTabs";
-import AdminStudentsTable from "@/components/admin/AdminStudentsTable";
+import AdminAnalyticsDashboard from "@/components/admin/AdminAnalyticsDashboard";
 import AdminCoursesTable from "@/components/admin/AdminCoursesTable";
 import AdminPaymentsTable from "@/components/admin/AdminPaymentsTable";
-import AdminAnalyticsDashboard from "@/components/admin/AdminAnalyticsDashboard";
+import AdminStudentsTable from "@/components/admin/AdminStudentsTable";
+import CertificatesTabs from "@/components/admin/certificates/CertificatesTabs";
 import { useAuth } from "@/hooks/useAuth";
 import {
     AlertCircle,

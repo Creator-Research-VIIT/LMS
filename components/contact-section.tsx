@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Send, CheckCircle, AlertCircle, Loader2, Mail, Phone, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AlertCircle, CheckCircle, Loader2, Mail, MapPin, Phone, Send } from "lucide-react";
+import { useState } from "react";
 
 interface ContactFormData {
   name: string;

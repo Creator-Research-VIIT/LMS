@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Award, BookOpen, Play, Users, ChevronDown } from "lucide-react"
+import { Award, BookOpen, ChevronDown, Play, Users } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export function HeroSection() {

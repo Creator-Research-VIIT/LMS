@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { Star, ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Star } from "lucide-react"
+import { useEffect, useState } from "react"
 
 const testimonials = [
   {

@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
-  Users,
-  BookOpen,
-  DollarSign,
-  TrendingUp,
-  Loader2,
+    BookOpen,
+    DollarSign,
+    Loader2,
+    TrendingUp,
+    Users,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface AnalyticsStats {
   totalStudents: number;

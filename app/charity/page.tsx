@@ -2,10 +2,10 @@
 
 export const dynamic = "force-dynamic";
 
-import Image from "next/image";
-import { signOut } from "next-auth/react";
 import { motion } from "framer-motion";
-import { Heart, Zap, Users, TrendingUp, Mail, Phone, MapPin, LogOut } from "lucide-react";
+import { Heart, LogOut, Mail, MapPin, Phone, TrendingUp, Users, Zap } from "lucide-react";
+import { signOut } from "next-auth/react";
+import Image from "next/image";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },

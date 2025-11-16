@@ -2,9 +2,9 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Menu, Search, X, ChevronDown } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { ChevronDown, Menu, Search, X } from "lucide-react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 
 export function Header() {

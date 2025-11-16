@@ -1,7 +1,7 @@
 "use client";
 
+import { DollarSign, Loader2, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
-import { DollarSign, Mail, Loader2 } from "lucide-react";
 
 interface Payment {
   id: string;

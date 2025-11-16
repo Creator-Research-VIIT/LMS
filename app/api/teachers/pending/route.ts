@@ -3,8 +3,8 @@ export const revalidate = 0;
 export const runtime = 'nodejs';
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
 import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth/next";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {

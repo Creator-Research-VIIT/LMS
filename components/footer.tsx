@@ -1,4 +1,4 @@
-import { BookOpen, Facebook, Twitter, Instagram, Linkedin, Youtube } from "lucide-react"
+import { BookOpen, Facebook, Instagram, Linkedin, Twitter, Youtube } from "lucide-react"
 
 export function Footer() {
   return (

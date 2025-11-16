@@ -1,6 +1,5 @@
 'use client'
 
-import { AwardCelebration } from '@/components/award-celebration'
 import { triggerAwardCheck } from '@/app/actions/awards'
 import { useCallback, useState } from 'react'
 

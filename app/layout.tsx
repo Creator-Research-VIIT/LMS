@@ -1,8 +1,8 @@
-import type React from "react"
+import SessionProvider from "@/components/providers/SessionProvider"
 import type { Metadata } from "next"
 import { Inter, Poppins } from "next/font/google"
+import type React from "react"
 import "./globals.css"
-import SessionProvider from "@/components/providers/SessionProvider"
 
 const inter = Inter({
   subsets: ["latin"],
