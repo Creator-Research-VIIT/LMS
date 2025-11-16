@@ -587,7 +587,10 @@ export default function ElegantAdminDashboard() {
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">SkillUP!!</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold text-gray-900">SkillUP!!</span>
+              <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Admin</span>
+            </div>
           </div>
         </div>
 

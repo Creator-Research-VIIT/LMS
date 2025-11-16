@@ -121,6 +121,9 @@ const [searchQuery, setSearchQuery] = useState("")
             <a href="#contact" className="text-foreground hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
               Contact
             </a>
+            <a href="/charity" className="text-foreground hover:text-primary transition-colors font-medium text-sm whitespace-nowrap px-3 py-1 rounded-md hover:bg-blue-50">
+              Charity
+            </a>
           </nav>
 
           {/* Search Bar */}
@@ -193,6 +196,9 @@ const [searchQuery, setSearchQuery] = useState("")
                 </a>
                 <a href="#contact" className="text-foreground hover:text-primary transition-colors font-medium py-2">
                   Contact
+                </a>
+                <a href="/charity" className="text-foreground hover:text-primary transition-colors font-medium py-2">
+                  Charity
                 </a>
               </nav>
               <div className="flex flex-col space-y-2 pt-4 border-t">
