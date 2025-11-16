@@ -52,8 +52,8 @@ export default withAuth(
         return NextResponse.redirect(new URL("/student", req.url));
       } else if (userRole === "CHARITY") {
         return NextResponse.redirect(new URL("/charity", req.url));
-      } else {
-        // No role assigned, redirect to role selection
+      } else if (!userRole) {
+        console.warn("⚠️ User authenticated but has no role, redirecting to role selection");
         return NextResponse.redirect(new URL("/oauth-role-selection", req.url));
       }
     }
@@ -76,7 +76,7 @@ export default withAuth(
     // If user is authenticated and accessing home page, redirect based on role
     if (req.nextUrl.pathname === "/" && isAuth) {
       const userRole = (token as any)?.role;
-      console.log("HOME PAGE REDIRECT:", { userRole });
+      console.log("HOME PAGE REDIRECT:", { userRole, hasRole: !!userRole });
       
       if (userRole === "ADMIN") {
         return NextResponse.redirect(new URL("/admin", req.url));
@@ -86,6 +86,9 @@ export default withAuth(
         return NextResponse.redirect(new URL("/student", req.url));
       } else if (userRole === "CHARITY") {
         return NextResponse.redirect(new URL("/charity", req.url));
+      } else if (!userRole) {
+        console.warn("⚠️ No role found for authenticated user, redirecting to role selection");
+        return NextResponse.redirect(new URL("/oauth-role-selection", req.url));
       }
     }
 
