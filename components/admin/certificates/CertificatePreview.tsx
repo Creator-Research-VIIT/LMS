@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { Download, Zap } from 'lucide-react'
+import { Download } from 'lucide-react'
 
 export default function CertificatePreview() {
   const today = new Date().toLocaleDateString('en-US', {
@@ -11,150 +11,198 @@ export default function CertificatePreview() {
   })
 
   return (
-    <div className="w-full space-y-6">
+    <div className="w-full space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Premium Certificate Template</h3>
-          <p className="text-gray-600 text-sm mt-1">HD Quality with luxury design elements</p>
+          <h3 className="text-2xl font-bold text-gray-900">Premium Certificate of Achievement</h3>
+          <p className="text-gray-600 text-sm mt-1">Professional luxury template with HD quality output</p>
         </div>
         <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
-          <Zap className="h-4 w-4" />
+          <Download className="h-4 w-4" />
           Download Sample
         </button>
       </div>
 
-      {/* Certificate Preview */}
-      <div className="relative w-full bg-gradient-to-br from-amber-50 via-yellow-50 to-amber-50 rounded-lg overflow-hidden shadow-2xl">
-        {/* Certificate Frame */}
-        <div className="aspect-video flex items-center justify-center p-8">
+      {/* Single Premium Certificate Preview */}
+      <div className="relative w-full rounded-lg overflow-hidden shadow-2xl">
+        {/* Certificate Container */}
+        <div className="aspect-video flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 p-8">
           <div
-            className="w-full h-full border-4 border-amber-600 rounded-sm relative"
+            className="w-full h-full relative"
             style={{
               backgroundColor: 'rgb(252, 250, 245)',
-              boxShadow:
-                'inset 0 0 0 1px rgb(212, 175, 55), inset 0 0 0 3px rgb(212, 175, 55), 0 20px 40px rgba(0, 0, 0, 0.1)'
+              backgroundImage: `
+                linear-gradient(135deg, transparent 48%, rgba(212, 175, 55, 0.02) 49%, rgba(212, 175, 55, 0.02) 51%, transparent 52%),
+                linear-gradient(45deg, transparent 48%, rgba(212, 175, 55, 0.02) 49%, rgba(212, 175, 55, 0.02) 51%, transparent 52%)
+              `,
+              backgroundSize: '60px 60px',
+              backgroundPosition: '0 0, 30px 30px',
+              boxShadow: `
+                inset 0 0 0 2px rgb(212, 175, 55),
+                inset 0 0 0 4px rgb(252, 250, 245),
+                inset 0 0 0 6px rgb(184, 134, 11),
+                0 25px 50px rgba(0, 0, 0, 0.15)
+              `
             }}
           >
-            {/* Watermark */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none">
-              <span className="text-8xl font-bold text-gray-400">SkillUP!!</span>
+            {/* Watermark Background */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-3 pointer-events-none">
+              <span className="text-9xl font-black text-gray-400" style={{ fontFamily: 'Georgia, serif' }}>
+                SkillUP!!
+              </span>
             </div>
 
-            {/* Content */}
-            <div className="relative h-full flex flex-col justify-between p-12">
-              {/* Top Flourish */}
-              <div className="flex justify-center mb-4">
-                <div className="flex items-center gap-6">
-                  <div className="h-0.5 w-12 bg-amber-600"></div>
-                  <div className="w-8 h-8 border-2 border-amber-600 rounded-full flex items-center justify-center">
-                    <span className="text-amber-600 text-lg">★</span>
-                  </div>
-                  <div className="h-0.5 w-12 bg-amber-600"></div>
+            {/* Main Content */}
+            <div className="relative h-full flex flex-col justify-between p-12 text-center">
+              {/* Top Seal Section */}
+              <div className="flex justify-center mb-2">
+                <div
+                  className="w-16 h-16 rounded-full border-2 border-amber-600 flex items-center justify-center relative"
+                  style={{
+                    boxShadow: '0 4px 12px rgba(212, 175, 55, 0.3), inset 0 2px 4px rgba(212, 175, 55, 0.2)'
+                  }}
+                >
+                  <span className="text-3xl">⭐</span>
                 </div>
               </div>
 
-              {/* Title */}
-              <div className="text-center space-y-2 mb-4">
-                <h1 className="text-5xl font-bold text-blue-900" style={{ fontFamily: 'Georgia, serif' }}>
+              {/* Header Text */}
+              <div className="space-y-3">
+                <h1
+                  className="text-6xl font-black tracking-wider text-blue-950"
+                  style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.15em' }}
+                >
                   CERTIFICATE
                 </h1>
-                <div className="flex justify-center gap-20 my-2">
-                  <div className="h-1 w-16 bg-amber-600"></div>
-                  <div className="h-1 w-16 bg-amber-600"></div>
+                <div className="flex justify-center gap-8">
+                  <div className="h-0.5 w-20 bg-gradient-to-r from-transparent to-amber-600"></div>
+                  <div className="text-2xl text-amber-600">✦</div>
+                  <div className="h-0.5 w-20 bg-gradient-to-l from-transparent to-amber-600"></div>
                 </div>
-                <p className="text-lg text-amber-700 italic" style={{ fontFamily: 'Georgia, serif' }}>
-                  of Completion
+                <p className="text-xl text-amber-700 font-light" style={{ fontFamily: 'Georgia, serif' }}>
+                  of Achievement
                 </p>
               </div>
 
-              {/* Presentation Text */}
-              <div className="text-center space-y-3 mb-2">
-                <p className="text-sm text-gray-700">This is proudly presented to</p>
-                <p className="text-3xl font-bold text-blue-900" style={{ fontFamily: 'Georgia, serif' }}>
-                  John Doe
-                </p>
-                <div className="flex justify-center gap-16">
-                  <div className="h-1.5 w-20 bg-amber-600"></div>
-                  <div className="h-1 w-20 bg-amber-700"></div>
+              {/* Certificate Body */}
+              <div className="space-y-4 my-2">
+                <p className="text-sm tracking-wide text-gray-700">is presented to</p>
+
+                <div className="space-y-2">
+                  <p
+                    className="text-4xl font-black text-blue-950"
+                    style={{ fontFamily: 'Georgia, serif', letterSpacing: '0.05em' }}
+                  >
+                    John Alexander Doe
+                  </p>
+                  <div className="flex justify-center">
+                    <div className="h-1 w-56 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600"></div>
+                  </div>
                 </div>
+
+                <div className="pt-2 space-y-2">
+                  <p className="text-xs tracking-widest text-gray-600 uppercase">for successfully demonstrating excellence in</p>
+                  <p className="text-lg font-bold text-blue-900" style={{ fontFamily: 'Georgia, serif' }}>
+                    Advanced Web Development with React & Next.js
+                  </p>
+                </div>
+
+                <p className="text-xs text-gray-600 pt-2">Awarded on {today}</p>
               </div>
 
-              {/* Achievement Text */}
-              <div className="text-center space-y-2 my-4">
-                <p className="text-xs text-gray-700">For successfully completing and demonstrating mastery in</p>
-                <p className="text-base font-bold text-blue-900" style={{ fontFamily: 'Georgia, serif' }}>
-                  Advanced Web Development with React & Next.js
-                </p>
-                <p className="text-xs text-gray-600">On this {today}</p>
-              </div>
-
-              {/* Bottom Section */}
-              <div className="flex justify-between items-end pt-4 border-t-2 border-gray-200">
+              {/* Bottom Signature Section */}
+              <div className="flex justify-between items-end pt-6 border-t border-gray-300">
                 <div className="text-left">
+                  <div className="h-12 w-20 bg-gradient-to-br from-amber-100 to-amber-50 rounded mb-1"></div>
+                  <p className="text-xs font-bold text-gray-700">Director Signature</p>
+                </div>
+
+                <div className="text-center flex-1">
                   <p className="text-xs text-gray-600 mb-1">Course Instructor</p>
                   <p className="text-sm font-bold text-blue-900">Prof. Sarah Anderson</p>
                 </div>
+
                 <div className="text-right">
-                  <div className="h-0.5 w-32 bg-gray-400 mb-1"></div>
-                  <p className="text-xs text-gray-600">Authorized Signature</p>
+                  <p className="text-xs text-gray-600 mb-1">Certificate ID</p>
+                  <p className="text-sm font-mono font-bold text-amber-600">SKU-2025-001</p>
                 </div>
               </div>
 
-              {/* Bottom Flourish */}
-              <div className="flex justify-center mt-2">
-                <div className="flex items-center gap-6">
-                  <div className="h-0.5 w-12 bg-amber-600"></div>
-                  <div className="h-0.5 w-12 bg-amber-600"></div>
-                </div>
-              </div>
+              {/* Corner Flourishes */}
+              {[
+                'top-3 left-3',
+                'top-3 right-3',
+                'bottom-3 left-3',
+                'bottom-3 right-3'
+              ].map((pos) => (
+                <div
+                  key={pos}
+                  className={`absolute ${pos} w-5 h-5 border-2 border-amber-600`}
+                  style={{
+                    clipPath: 'polygon(0 0, 100% 0, 100% 2px, 2px 2px, 2px 100%, 0 100%)'
+                  }}
+                ></div>
+              ))}
             </div>
-
-            {/* Corner Decorations */}
-            {[
-              'top-4 left-4',
-              'top-4 right-4',
-              'bottom-4 left-4',
-              'bottom-4 right-4'
-            ].map((pos) => (
-              <div key={pos} className={`absolute ${pos} w-6 h-6 border-2 border-amber-600`}></div>
-            ))}
           </div>
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'HD Quality', icon: '🎨' },
-          { label: 'Royal Blue & Gold', icon: '👑' },
-          { label: 'Premium Fonts', icon: '✨' },
-          { label: 'Luxury Elements', icon: '💎' },
-          { label: 'Gold Foil Effect', icon: '🌟' },
-          { label: 'Embossed Style', icon: '📜' },
-          { label: 'Decorative Seal', icon: '⭐' },
-          { label: 'Professional Layout', icon: '🎯' }
-        ].map((feature) => (
-          <div key={feature.label} className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg text-center">
-            <div className="text-2xl mb-2">{feature.icon}</div>
-            <p className="text-xs font-medium text-gray-700">{feature.label}</p>
-          </div>
-        ))}
+      {/* Certificate Specifications */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+          <h4 className="font-bold text-blue-900 mb-4">Design Elements</h4>
+          <ul className="space-y-2 text-sm text-blue-800">
+            <li>✓ Luxury cream background with geometric pattern</li>
+            <li>✓ Premium triple-line gold borders</li>
+            <li>✓ Central embossed star seal</li>
+            <li>✓ Royal blue serif typography (Georgia font)</li>
+            <li>✓ Gradient accent lines and flourishes</li>
+            <li>✓ Corner decorative elements</li>
+          </ul>
+        </div>
+
+        <div className="bg-gradient-to-br from-amber-50 to-amber-100 p-6 rounded-lg border border-amber-200">
+          <h4 className="font-bold text-amber-900 mb-4">Technical Specifications</h4>
+          <ul className="space-y-2 text-sm text-amber-800">
+            <li>✓ HD Quality (300+ DPI)</li>
+            <li>✓ A4 Landscape Format</li>
+            <li>✓ PDF Download with custom filename</li>
+            <li>✓ Recipient name & course auto-populated</li>
+            <li>✓ Completion date & instructor details</li>
+            <li>✓ Unique Certificate ID generated</li>
+          </ul>
+        </div>
       </div>
 
-      {/* Info Box */}
-      <div className="bg-blue-50 border-l-4 border-blue-600 p-4 rounded">
-        <h4 className="font-semibold text-blue-900 mb-2">Certificate Features</h4>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>✓ Luxury cream background with subtle watermark</li>
-          <li>✓ Premium double-line borders with gold accents</li>
-          <li>✓ Central star emblem seal for authenticity</li>
-          <li>✓ Royal blue typography with elegant fonts</li>
-          <li>✓ Decorative flourishes and corner elements</li>
-          <li>✓ Professional layout suitable for official credentials</li>
-          <li>✓ High-resolution PDF output (300+ DPI)</li>
-          <li>✓ Includes recipient name, course, date, and instructor signature line</li>
-        </ul>
+      {/* Premium Features Highlight */}
+      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white p-8 rounded-lg shadow-lg">
+        <h4 className="text-xl font-bold mb-4">🏆 Premium Certificate Features</h4>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex gap-3">
+            <span className="text-2xl">👑</span>
+            <div>
+              <p className="font-semibold">Luxury Design</p>
+              <p className="text-sm text-blue-100">Professional & elegant aesthetic</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <span className="text-2xl">✨</span>
+            <div>
+              <p className="font-semibold">Embossed Effect</p>
+              <p className="text-sm text-blue-100">Premium shadow & depth styling</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <span className="text-2xl">🎨</span>
+            <div>
+              <p className="font-semibold">Gold & Blue Theme</p>
+              <p className="text-sm text-blue-100">Royal color palette</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
+
