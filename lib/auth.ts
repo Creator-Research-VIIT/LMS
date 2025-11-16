@@ -166,6 +166,8 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user, account }) {
+      console.log('🔍 JWT BEFORE:', { token: JSON.stringify(token), user: JSON.stringify(user) });
+      
       console.log('🔍 JWT callback triggered:', { 
         hasUser: !!user, 
         tokenEmail: token?.email,
@@ -247,6 +249,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       console.log('✅ JWT callback returning:', { role: token.role, email: token.email, id: token.id });
+      console.log('🔍 JWT AFTER:', JSON.stringify(token));
       return token;
     },
     async session({ session, token }) {

@@ -1,18 +1,39 @@
 import { emailHasAllowedDomain, isInstituteAccessEnabled } from "@/lib/instituteAccess";
 import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
 export default withAuth(
-  function middleware(req) {
+  async function middleware(req) {
+    console.log("🔍 MIDDLEWARE TOKEN:", req.nextauth.token);
+    
     const token = req.nextauth.token;
     const isAuth = !!token;
     const path = req.nextUrl.pathname;
+    
+    // CRITICAL FIX: If token exists but role is missing, fetch from DB
+    let userRole = (token as any)?.role;
+    if (isAuth && !userRole && (token as any)?.email) {
+      try {
+        console.log("🔄 MIDDLEWARE: Token missing role, fetching from DB for", (token as any)?.email);
+        const dbUser = await prisma.user.findUnique({
+          where: { email: (token as any)?.email },
+          select: { role: true }
+        });
+        if (dbUser?.role) {
+          userRole = dbUser.role;
+          console.log("✅ MIDDLEWARE: Retrieved role from DB:", userRole);
+        }
+      } catch (err) {
+        console.error("❌ MIDDLEWARE: Error fetching role from DB:", err);
+      }
+    }
     
     console.log("MIDDLEWARE:", {
       path: req.nextUrl.pathname,
       isAuth,
       token: token ? "exists" : "null",
-      role: (token as any)?.role || "no-role"
+      role: userRole || "no-role"
     });
     
     const isAuthPage = path.startsWith("/login") || 
@@ -41,7 +62,6 @@ export default withAuth(
 
     // If user is authenticated and trying to access auth pages, redirect based on role
     if (isAuthPage && isAuth) {
-      const userRole = (token as any)?.role;
       console.log("AUTH PAGE REDIRECT:", { userRole, pathname: req.nextUrl.pathname });
       
       if (userRole === "ADMIN") {
@@ -60,7 +80,6 @@ export default withAuth(
 
     // Protect charity dashboard: only CHARITY role may access
     if (path.startsWith("/charity/dashboard")) {
-      const userRole = (token as any)?.role;
       if (!isAuth) {
         const loginUrl = new URL('/login', req.url);
         loginUrl.searchParams.set('callbackUrl', path);
@@ -75,7 +94,6 @@ export default withAuth(
 
     // If user is authenticated and accessing home page, redirect based on role
     if (req.nextUrl.pathname === "/" && isAuth) {
-      const userRole = (token as any)?.role;
       console.log("HOME PAGE REDIRECT:", { userRole, hasRole: !!userRole });
       
       if (userRole === "ADMIN") {
@@ -99,7 +117,6 @@ export default withAuth(
 
     // Check admin access for admin routes
     if (isAdminRoute && isAuth) {
-      const userRole = (token as any)?.role;
       if (userRole !== "ADMIN") {
         return NextResponse.json(
           { error: "Forbidden: Admin access required" },
@@ -119,9 +136,8 @@ export default withAuth(
           loginUrl.searchParams.set('callbackUrl', path);
           return NextResponse.redirect(loginUrl);
         }
-        const role = (token as any)?.role as string | undefined;
         const email = (token as any)?.email as string | undefined;
-        const isAdmin = role === 'ADMIN';
+        const isAdmin = userRole === 'ADMIN';
         const allowed = emailHasAllowedDomain(email || null);
         if (!isAdmin && !allowed) {
           const isApi = path.startsWith('/api/');
@@ -220,6 +236,6 @@ export default withAuth(
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|public|.*\\.[\\w]+$).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|public).*)",
   ],
 };
