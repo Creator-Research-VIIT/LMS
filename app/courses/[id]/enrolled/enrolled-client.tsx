@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
+import { AwardCelebration } from '@/components/award-celebration'
 import confetti from 'canvas-confetti'
 import { ArrowRight, Award, BookOpen, CheckCircle, Loader2, Play, Share2, Star, Trophy, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
@@ -68,6 +69,8 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
   const [quizSubmitting, setQuizSubmitting] = useState(false)
   const [quizMessage, setQuizMessage] = useState<string | null>(null)
   const [courseCompletedAt, setCourseCompletedAt] = useState<Date | null>(null)
+  const [showAwardCelebration, setShowAwardCelebration] = useState(false)
+  const [awardData, setAwardData] = useState<{ name: string; description: string; icon: string; color: string } | null>(null)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -267,6 +270,28 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         setQuizMessage(`Your score: ${data.result.percentage}%`) 
         if (data.result.isPassed) {
           setCertificateReady(true)
+          
+          // Trigger award check for course completion milestone
+          try {
+            const awardRes = await fetch('/api/awards/trigger', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: session?.user?.id })
+            })
+            const awardData = await awardRes.json()
+            if (awardRes.ok && awardData.newAward) {
+              // Show celebration if new award earned
+              setAwardData({
+                name: awardData.newAward.name,
+                description: awardData.newAward.description,
+                icon: awardData.newAward.icon,
+                color: awardData.newAward.color
+              })
+              setShowAwardCelebration(true)
+            }
+          } catch (error) {
+            console.error('Error triggering award check:', error)
+          }
         }
       } else {
         setQuizMessage(data.error || 'Failed to submit quiz')
@@ -462,8 +487,16 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+    <>
+      {showAwardCelebration && awardData && (
+        <AwardCelebration 
+          award={awardData}
+          isOpen={showAwardCelebration}
+          onClose={() => setShowAwardCelebration(false)}
+        />
+      )}
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
         {/* Success Header */}
         {success && (
           <div className="text-center mb-8">
@@ -784,7 +817,8 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
             </Card>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

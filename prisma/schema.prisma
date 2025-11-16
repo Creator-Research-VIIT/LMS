@@ -192,6 +192,7 @@ model User {
   EmailVerification EmailVerification[]
   ModuleProgress ModuleProgress[]
   Payment        Payment[]
+  UserAwards     UserAward[]
 }
 
 model EmailVerification {
@@ -223,6 +224,32 @@ model Payment {
   User            User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   Course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   Enrollment      Enrollment[]
+}
+
+model Award {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  icon        String   // SVG or emoji
+  milestone   Int      // Number of courses to achieve this award
+  color       String   @default("blue") // Color theme: blue, silver, gold, platinum
+  createdAt   DateTime @default(now())
+  
+  UserAwards  UserAward[]
+}
+
+model UserAward {
+  id        String   @id @default(cuid())
+  userId    String
+  awardId   String
+  achievedAt DateTime @default(now())
+  
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Award     Award    @relation(fields: [awardId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, awardId])
+  @@index([userId])
+  @@index([awardId])
 }
 
 enum PaymentStatus {

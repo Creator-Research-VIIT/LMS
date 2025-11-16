@@ -54,31 +54,31 @@ const [searchQuery, setSearchQuery] = useState("")
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <div className="flex items-center space-x-2 cursor-pointer" onClick={() => router.push('/')}>
-            <div className="w-10 h-10 flex items-center justify-center">
+          <div className="flex items-center gap-3 cursor-pointer flex-shrink-0" onClick={() => router.push('/')}>
+            <div className="w-14 h-14 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow-sm">
               <Image 
                 src="/creator-research-logo.svg" 
                 alt="Creator Research Logo" 
-                width={40} 
-                height={40}
-                className="text-blue-600"
+                width={50} 
+                height={50}
+                className="w-full h-full object-contain p-2"
               />
             </div>
-            <div className="flex flex-col">
-              <span className="font-heading font-bold text-lg text-primary">EduLearn</span>
-              <span className="text-xs text-gray-500">Creator Research</span>
+            <div className="flex flex-col justify-center">
+              <span className="font-heading font-bold text-lg text-primary leading-tight">EduLearn</span>
+              <span className="text-xs text-gray-500 font-medium">Creator Research</span>
             </div>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <a href="/" className="text-foreground hover:text-primary transition-colors font-medium">
+          <nav className="hidden md:flex items-center space-x-6 flex-1 px-8">
+            <a href="/" className="text-foreground hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
               Home
             </a>
             <div className="relative group">
-              <button className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-1 py-2">
+              <button className="text-foreground hover:text-primary transition-colors font-medium flex items-center gap-1 py-2 text-sm">
                 Explore
                 <ChevronDown className="h-4 w-4" />
               </button>
@@ -112,13 +112,13 @@ const [searchQuery, setSearchQuery] = useState("")
                 </div>
               </div>
             </div>
-            <a href="/courses" className="text-foreground hover:text-primary transition-colors font-medium">
+            <a href="/courses" className="text-foreground hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
               All Courses
             </a>
-            <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium">
+            <a href="#about" className="text-foreground hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
               About
             </a>
-            <a href="#contact" className="text-foreground hover:text-primary transition-colors font-medium">
+            <a href="#contact" className="text-foreground hover:text-primary transition-colors font-medium text-sm whitespace-nowrap">
               Contact
             </a>
           </nav>

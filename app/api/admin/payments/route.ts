@@ -2,8 +2,8 @@ import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
 /**
- * GET /api/admin/courses
- * Fetch all courses with enrollment and instructor info
+ * GET /api/admin/payments
+ * Fetch all payments with user and course info
  */
 export async function GET(req: Request) {
   try {
@@ -11,17 +11,19 @@ export async function GET(req: Request) {
     const skip = Number.parseInt(searchParams.get('skip') || '0')
     const take = Number.parseInt(searchParams.get('take') || '10')
 
-    const courses = await prisma.course.findMany({
+    const payments = await prisma.payment.findMany({
       include: {
         User: {
           select: {
+            id: true,
             name: true,
             email: true,
           },
         },
-        _count: {
+        Course: {
           select: {
-            Enrollment: true,
+            id: true,
+            title: true,
           },
         },
       },
@@ -32,32 +34,32 @@ export async function GET(req: Request) {
       },
     })
 
-    const totalCourses = await prisma.course.count()
+    const totalPayments = await prisma.payment.count()
 
     return NextResponse.json({
       success: true,
-      data: courses.map(course => ({
-        id: course.id,
-        title: course.title,
-        instructor: course.User.name,
-        instructorEmail: course.User.email,
-        price: course.price,
-        enrollments: course._count.Enrollment,
-        status: course.approvalStatus,
-        thumbnail: course.thumbnail,
-        isFree: course.isFree,
-        createdAt: course.createdAt,
+      data: payments.map(payment => ({
+        id: payment.id,
+        userId: payment.studentId,
+        userName: payment.User.name,
+        userEmail: payment.User.email,
+        courseId: payment.courseId,
+        courseTitle: payment.Course.title,
+        amount: payment.amount,
+        currency: payment.currency,
+        status: payment.status,
+        createdAt: payment.createdAt,
       })),
       pagination: {
-        total: totalCourses,
+        total: totalPayments,
         skip,
         take,
       },
     })
   } catch (error) {
-    console.error('Error fetching courses:', error)
+    console.error('Error fetching payments:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch courses' },
+      { error: 'Failed to fetch payments' },
       { status: 500 }
     )
   }

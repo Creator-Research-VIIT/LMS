@@ -1,5 +1,10 @@
 "use client";
 
+import CertificatesTabs from "@/components/admin/certificates/CertificatesTabs";
+import AdminStudentsTable from "@/components/admin/AdminStudentsTable";
+import AdminCoursesTable from "@/components/admin/AdminCoursesTable";
+import AdminPaymentsTable from "@/components/admin/AdminPaymentsTable";
+import AdminAnalyticsDashboard from "@/components/admin/AdminAnalyticsDashboard";
 import { useAuth } from "@/hooks/useAuth";
 import {
     AlertCircle,
@@ -13,7 +18,6 @@ import {
     GraduationCap,
     LogOut,
     Search,
-    Settings,
     Star,
     TrendingUp,
     UserCheck,
@@ -66,7 +70,7 @@ const sidebarItems = [
   { id: "pending", label: "Pending", icon: Clock },
   { id: "certificates", label: "Certificates", icon: Award },
   { id: "analytics", label: "Analytics", icon: TrendingUp },
-  { id: "settings", label: "Settings", icon: Settings },
+  { id: "payments", label: "Payments", icon: DollarSign },
 ];
 
 export default function ElegantAdminDashboard() {
@@ -536,7 +540,7 @@ export default function ElegantAdminDashboard() {
       </div>
       <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Settings className="w-8 h-8 text-blue-600" />
+          <Clock className="w-8 h-8 text-blue-600" />
         </div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">Coming Soon</h3>
         <p className="text-gray-600">This section is under development and will be available soon.</p>
@@ -551,15 +555,23 @@ export default function ElegantAdminDashboard() {
       case "pending":
         return renderPending();
       case "courses":
-        return renderGenericSection("Courses", "Manage all courses on the platform");
+        return <AdminCoursesTable />;
       case "students":
-        return renderGenericSection("Students", "Manage student accounts and progress");
+        return <AdminStudentsTable />;
       case "certificates":
-        return renderGenericSection("Certificates", "Manage course completion certificates");
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Certificates & Awards</h1>
+              <p className="text-gray-600 mt-1">Manage certificates and preview award animations</p>
+            </div>
+            <CertificatesTabs />
+          </div>
+        );
       case "analytics":
-        return renderGenericSection("Analytics", "View platform analytics and reports");
-      case "settings":
-        return renderGenericSection("Settings", "Configure platform settings and preferences");
+        return <AdminAnalyticsDashboard />;
+      case "payments":
+        return <AdminPaymentsTable />;
       default:
         return renderDashboard();
     }
@@ -645,16 +657,13 @@ export default function ElegantAdminDashboard() {
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+              <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                 <Bell className="w-6 h-6" />
                 {(stats.pendingTeachers + stats.pendingCourses) > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {stats.pendingTeachers + stats.pendingCourses}
                   </span>
                 )}
-              </button>
-              <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                <Settings className="w-6 h-6" />
               </button>
             </div>
           </div>
