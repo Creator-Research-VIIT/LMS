@@ -2,10 +2,13 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { z } from "zod";
 
 const enrollmentSchema = z.object({
-  courseId: z.string().uuid("Invalid course ID format"),
+  // Using .uuid() though it's deprecated in zod v4; keep for validation but suppress TS deprecation by wrapping.
+  // Alternative: regex for UUID. For now we retain for functionality.
+  courseId: z.string().uuid(),
 });
 
 export async function POST(request: NextRequest) {
@@ -25,7 +28,7 @@ export async function POST(request: NextRequest) {
     const { courseId } = enrollmentSchema.parse(body);
 
     // Check if course exists and is approved
-    const course = await prisma.course.findUnique({
+    const course = await prisma.course.findFirst({
       where: { 
         id: courseId,
         approvalStatus: "approved"
@@ -70,11 +73,12 @@ export async function POST(request: NextRequest) {
     // Create enrollment
     const enrollment = await prisma.enrollment.create({
       data: {
+        id: randomUUID(),
         studentId: session.user.id,
         courseId: courseId
       },
       include: {
-        course: {
+        Course: {
           select: {
             id: true,
             title: true,
@@ -90,10 +94,13 @@ export async function POST(request: NextRequest) {
     // Initialize course progress
     await prisma.courseProgress.create({
       data: {
+        id: randomUUID(),
         studentId: session.user.id,
         courseId: courseId,
         progressPercent: 0,
-        completed: false
+        totalLessons: 0,
+        completedLessons: 0,
+        updatedAt: new Date()
       }
     });
 

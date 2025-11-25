@@ -1,16 +1,19 @@
 import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 
+export const runtime = 'nodejs'
+
+// Single implementation: verify SMTP connectivity & auth
 export async function GET() {
   try {
-    const host = process.env.EMAIL_HOST
+    const host = process.env.EMAIL_HOST || 'smtp.gmail.com'
+    const port = Number(process.env.EMAIL_PORT || 587)
     const user = process.env.EMAIL_USER
     const pass = process.env.EMAIL_PASS
-    const port = parseInt(process.env.EMAIL_PORT || '587')
 
-    if (!host || !user || !pass) {
+    if (!user || !pass) {
       return NextResponse.json(
-        { ok: false, reason: 'Missing EMAIL_* env vars', vars: { host: !!host, user: !!user, pass: !!pass } },
+        { ok: false, reason: 'Missing EMAIL_USER or EMAIL_PASS', present: { user: !!user, pass: !!pass } },
         { status: 500 }
       )
     }
@@ -26,10 +29,9 @@ export async function GET() {
       socketTimeout: 15000,
     })
 
-    const verified = await transporter.verify().then(() => true).catch(() => false)
-
-    return NextResponse.json({ ok: verified, host, port })
+    await transporter.verify()
+    return NextResponse.json({ ok: true, host, port })
   } catch (err: any) {
-    return NextResponse.json({ ok: false, error: err?.message || 'unknown' }, { status: 500 })
+    return NextResponse.json({ ok: false, code: err.code, message: err.message }, { status: 500 })
   }
 }

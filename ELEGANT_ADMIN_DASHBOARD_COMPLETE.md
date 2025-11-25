@@ -4,7 +4,7 @@
 
 ### 🎨 **Beautiful Admin Dashboard UI**
 - **Design**: Matches the elegant design from your screenshot
-- **Layout**: Professional sidebar navigation with EduAdmin branding
+- **Layout**: Professional sidebar navigation with SkillUP!! branding
 - **Styling**: Modern blue gradient theme with rounded corners and shadows
 - **Responsive**: Works on desktop and mobile devices
 

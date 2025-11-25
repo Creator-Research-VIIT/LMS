@@ -1,12 +1,21 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const runtime = 'nodejs';
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { NextResponse } from "next/server";
+import { getToken } from "next-auth/jwt";
+import { NextRequest, NextResponse } from "next/server";
 
 // GET pending courses for admin
-export async function GET() {
+export async function GET(request: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session || session.user.role !== "ADMIN") {
+  let role = session?.user.role as string | undefined;
+  if (!role) {
+    const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+    role = (token as any)?.role;
+  }
+  if (!role || role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -14,7 +23,12 @@ export async function GET() {
     console.log("🔍 Fetching pending courses for admin...");
 
     const pendingCourses = await prisma.course.findMany({
-      where: { approvalStatus: "PENDING" },
+      where: {
+        OR: [
+          { approvalStatus: "pending" },
+          { approvalStatus: "PENDING" }
+        ]
+      },
       include: { 
         User: { 
           select: { name: true, email: true, id: true } 

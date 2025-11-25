@@ -1,16 +1,17 @@
 import { sendEmailVerificationOTP, sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email';
+import { emailHasAllowedDomain, isInstituteAccessEnabled } from '@/lib/instituteAccess';
 import { prisma } from '@/lib/prisma';
-import { randomUUID } from 'node:crypto';
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 import bcrypt from 'bcrypt';
+import { NextRequest, NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
+import { z } from 'zod';
 
 // Validation schema for registration
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['STUDENT', 'TEACHER', 'ADMIN']),
+  role: z.enum(['STUDENT', 'TEACHER', 'ADMIN', 'CHARITY']),
   referralCode: z.string().optional(),
 });
 
@@ -20,6 +21,17 @@ export async function POST(request: NextRequest) {
     console.log('Registration request body:', body);
     // Validate input
     const validatedData = registerSchema.parse(body);
+
+    // Institute access enforcement (if enabled): only allow configured email domains
+    if (isInstituteAccessEnabled()) {
+      const isAdmin = validatedData.role === 'ADMIN';
+      if (!isAdmin && !emailHasAllowedDomain(validatedData.email)) {
+        return NextResponse.json(
+          { error: 'Registration restricted: only approved institute email domains may register.' },
+          { status: 403 }
+        );
+      }
+    }
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -57,7 +69,7 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
-        role: validatedData.role,
+        role: validatedData.role as any,
         referralCode: newReferralCode,
         referredBy: referredBy,
         emailVerified: null, // Not verified initially
@@ -87,9 +99,11 @@ export async function POST(request: NextRequest) {
     // Log OTP for development (remove in production)
     console.log(`📧 EMAIL VERIFICATION OTP for ${newUser.email}: ${emailOtp}`)
 
-    // Send email verification OTP to all users
+    // Send email verification OTP to all users and capture flag
+    let emailSent = false
     try {
       await sendEmailVerificationOTP(newUser.email, newUser.name, emailOtp)
+      emailSent = true
       console.log(`✅ Email verification OTP sent to: ${newUser.email}`)
     } catch (emailError) {
       console.error('❌ Failed to send email verification OTP:', emailError)
@@ -112,12 +126,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Return success with verification redirect
+    // Return success with verification redirect and emailSent indicator
     return NextResponse.json(
       {
         message: 'User registered successfully. Please check your email for verification code.',
         user: newUser,
         redirectUrl: `/verify-email?userId=${newUser.id}&email=${encodeURIComponent(newUser.email)}`,
+        emailSent,
       },
       { status: 201 }
     );

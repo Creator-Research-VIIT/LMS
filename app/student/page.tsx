@@ -1,5 +1,8 @@
 "use client";
 
+"use client";
+
+import AwardsDisplay from "@/components/awards-display";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -613,11 +616,40 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* Other views */}
+        {/* Profile View */}
         {activeView === 'profile' && (
-          <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Profile</h2>
-            <p className="text-gray-600">This section is coming soon!</p>
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Profile</h2>
+              
+              {/* User Info Card */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <CardTitle>Account Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center space-x-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                      <User className="h-8 w-8 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Name</p>
+                      <p className="text-lg font-semibold text-gray-900">{session?.user?.name || 'Student'}</p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Email</p>
+                    <p className="text-gray-900 font-medium">{session?.user?.email}</p>
+                  </div>
+                  <Button variant="outline" className="w-full mt-4">
+                    Edit Profile
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Awards Display */}
+              {session?.user?.id && <AwardsDisplay userId={session.user.id} />}
+            </div>
           </div>
         )}
       </div>

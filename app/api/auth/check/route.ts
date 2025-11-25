@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       userRole: (session?.user as any)?.role
     });
 
-    if (!session || !session.user) {
+    if (!session?.user) {
       return NextResponse.json(
         { 
           authenticated: false, 

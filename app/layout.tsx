@@ -1,8 +1,8 @@
-import type React from "react"
+import SessionProvider from "@/components/providers/SessionProvider"
 import type { Metadata } from "next"
 import { Inter, Poppins } from "next/font/google"
+import type React from "react"
 import "./globals.css"
-import SessionProvider from "@/components/providers/SessionProvider"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -18,7 +18,7 @@ const poppins = Poppins({
 })
 
 export const metadata: Metadata = {
-  title: "EduPlatform - Learn, Grow, Succeed",
+  title: "EduLearn - Learn, Grow, Succeed | Creator Research",
   description: "Professional online learning platform with expert-led courses",
   generator: "v0.app",
 }

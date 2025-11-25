@@ -1,33 +1,33 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { 
-  BookOpen, 
-  Users, 
-  BarChart3, 
-  Bell,
-  Plus,
-  Search,
-  Star,
-  Clock,
-  Award,
-  DollarSign,
-  FileText,
-  Play,
-  ExternalLink,
-  Calendar,
-  ChevronRight,
-  Activity
-} from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+    Activity,
+    Award,
+    BarChart3,
+    Bell,
+    BookOpen,
+    Calendar,
+    ChevronRight,
+    Clock,
+    DollarSign,
+    ExternalLink,
+    FileText,
+    Play,
+    Plus,
+    Search,
+    Star,
+    Users
+} from 'lucide-react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface Course {
   id: string;
@@ -265,7 +265,7 @@ export default function InstituteMainPage() {
                 </button>
               ))}
               <a 
-                href="/dashboard"
+                href="/"
                 className="text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
               >
                 ← Back to LMS

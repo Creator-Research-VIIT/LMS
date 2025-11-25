@@ -20,6 +20,15 @@ const nextConfig = {
   publicRuntimeConfig: {
     // Will be available on both server and client
   },
+  async redirects() {
+    return [
+      {
+        source: "/dashboard",
+        destination: "/",
+        permanent: true,
+      },
+    ];
+  },
 }
 
 export default nextConfig

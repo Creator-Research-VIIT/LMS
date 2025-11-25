@@ -1,0 +1,30 @@
+
+> my-v0-project@0.1.0 build
+> prisma generate && next build
+
+warn The configuration property `package.json#prisma` is deprecated and will be removed in Prisma 7. Please migrate to a Prisma config file (e.g., `prisma.config.ts`).
+For more information, see: https://pris.ly/prisma-config
+
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+
+✔ Generated Prisma Client (v6.14.0) to .\node_modules\@prisma\client in 166ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+ ⚠ Warning: Found multiple lockfiles. Selecting c:\Users\Ayush\Desktop\LMS@\package-lock.json.
+   Consider removing the lockfiles at:
+   * c:\Users\Ayush\Desktop\LMS@\LMS\pnpm-lock.yaml
+
+   ▲ Next.js 15.4.4
+   - Environments: .env.local, .env.production, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully in 9.0s
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+Terminate batch job (Y/N)? Terminate batch job (Y/N)? Terminate batch job (Y/N)? Terminate batch job (Y/N)? Terminate batch job (Y/N)? 
+^C

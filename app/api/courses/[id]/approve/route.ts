@@ -8,7 +8,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const session = await getServerSession(authOptions);
 
   // Only allow admin to approve courses
-  if (!session || session.user.role !== "ADMIN") {
+  if (session?.user?.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -33,7 +33,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
-    if (existingCourse.approvalStatus !== "PENDING") {
+    if (existingCourse.approvalStatus?.toLowerCase() !== "pending") {
       return NextResponse.json({ error: "Course is not in pending status" }, { status: 400 });
     }
 
@@ -41,6 +41,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     const course = await prisma.course.update({
       where: { id: id },
       data: { 
+        // Normalize to lowercase going forward
         approvalStatus: "approved"
       }
     });

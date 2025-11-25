@@ -197,6 +197,46 @@ async function main() {
     },
   })
 
+  // Create Awards
+  const awards = [
+    {
+      name: 'Course Beginner',
+      description: 'Complete your first course and start your learning journey',
+      icon: '🌟',
+      milestone: 1,
+      color: 'blue',
+    },
+    {
+      name: 'Course Master',
+      description: 'Completed 5 courses - you\'re on your way to expertise',
+      icon: '🎯',
+      milestone: 5,
+      color: 'silver',
+    },
+    {
+      name: 'Course Expert',
+      description: 'Mastered 10 courses - you\'re becoming an expert',
+      icon: '👑',
+      milestone: 10,
+      color: 'gold',
+    },
+    {
+      name: 'Course Legend',
+      description: 'Completed 20 courses - you are a true learning legend',
+      icon: '⭐',
+      milestone: 20,
+      color: 'platinum',
+    },
+  ]
+
+  for (const award of awards) {
+    await prisma.award.upsert({
+      where: { name: award.name },
+      update: {},
+      create: award,
+    })
+  }
+
   console.log('✅ Seeding completed successfully!')
   console.log('\n📋 Test Accounts Created:')
   console.log('┌─────────────────────────────────────────────────────────┐')

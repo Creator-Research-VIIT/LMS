@@ -1,16 +1,17 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { generateReferralCode } from '@/lib/utils'
-import { getRoleBasedDashboard } from '@/lib/redirects'
 import { sendTeacherApplicationConfirmation, sendTeacherApplicationNotification } from '@/lib/email'
+import { prisma } from '@/lib/prisma'
+import { getRoleBasedDashboard } from '@/lib/redirects'
+import { generateReferralCode } from '@/lib/utils'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const oauthRegisterSchema = z.object({
   email: z.string().email("Invalid email format"),
   name: z.string().min(1),
   provider: z.enum(['google', 'github']),
+  // 'image' isn't a field on User model; ignore image input to avoid Prisma type error
   image: z.string().optional(),
-  role: z.enum(['STUDENT', 'TEACHER', 'ADMIN'])
+  role: z.enum(['STUDENT', 'TEACHER', 'ADMIN', 'CHARITY'])
 })
 
 export async function POST(request: NextRequest) {
@@ -39,11 +40,10 @@ export async function POST(request: NextRequest) {
         name: validatedData.name,
         email: validatedData.email,
         password: "", // OAuth users get empty password (required field)
-        role: validatedData.role,
+        role: validatedData.role as any,
         referralCode: newReferralCode,
         emailVerified: new Date(), // OAuth emails are pre-verified
-        approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved",
-        image: validatedData.image || null
+        approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved"
       },
       select: {
         id: true,

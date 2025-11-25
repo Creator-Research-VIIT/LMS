@@ -1,5 +1,10 @@
 "use client";
 
+import AdminAnalyticsDashboard from "@/components/admin/AdminAnalyticsDashboard";
+import AdminCoursesTable from "@/components/admin/AdminCoursesTable";
+import AdminPaymentsTable from "@/components/admin/AdminPaymentsTable";
+import AdminStudentsTable from "@/components/admin/AdminStudentsTable";
+import CertificatesTabs from "@/components/admin/certificates/CertificatesTabs";
 import { useAuth } from "@/hooks/useAuth";
 import {
     AlertCircle,
@@ -13,7 +18,6 @@ import {
     GraduationCap,
     LogOut,
     Search,
-    Settings,
     Star,
     TrendingUp,
     UserCheck,
@@ -66,7 +70,7 @@ const sidebarItems = [
   { id: "pending", label: "Pending", icon: Clock },
   { id: "certificates", label: "Certificates", icon: Award },
   { id: "analytics", label: "Analytics", icon: TrendingUp },
-  { id: "settings", label: "Settings", icon: Settings },
+  { id: "payments", label: "Payments", icon: DollarSign },
 ];
 
 export default function ElegantAdminDashboard() {
@@ -101,22 +105,44 @@ export default function ElegantAdminDashboard() {
     try {
       setLoading(true);
       
-      // Fetch pending teachers
-      const teachersResponse = await fetch("/api/teachers/pending");
-      const teachersData = await teachersResponse.json();
-      
-      // Fetch pending courses
-      const coursesResponse = await fetch("/api/courses/pending");
-      const coursesData = await coursesResponse.json();
-      
-      if (teachersResponse.ok) {
+      const [teachersResponse, coursesResponse] = await Promise.all([
+        fetch("/api/teachers/pending", { credentials: 'include', cache: 'no-store' }),
+        fetch("/api/courses/pending", { credentials: 'include', cache: 'no-store' }),
+      ]);
+
+      const parseJsonSafe = async (res: Response) => {
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('application/json')) {
+          return await res.json();
+        }
+        // Fallback: read text for diagnostics
+        const text = await res.text();
+        console.warn('Non-JSON response for admin fetch:', {
+          url: res.url,
+          status: res.status,
+          contentType: ct,
+          preview: text.slice(0, 200)
+        });
+        return null;
+      };
+
+      const [teachersData, coursesData] = await Promise.all([
+        parseJsonSafe(teachersResponse),
+        parseJsonSafe(coursesResponse),
+      ]);
+
+      if (teachersResponse.ok && teachersData) {
         setPendingTeachers(teachersData.teachers || []);
         setStats(prev => ({ ...prev, pendingTeachers: teachersData.teachers?.length || 0 }));
+      } else if (!teachersResponse.ok) {
+        console.error('Failed to load pending teachers:', teachersResponse.status);
       }
-      
-      if (coursesResponse.ok) {
+
+      if (coursesResponse.ok && coursesData) {
         setPendingCourses(coursesData.courses || []);
         setStats(prev => ({ ...prev, pendingCourses: coursesData.courses?.length || 0 }));
+      } else if (!coursesResponse.ok) {
+        console.error('Failed to load pending courses:', coursesResponse.status);
       }
       
     } catch (err) {
@@ -221,8 +247,8 @@ export default function ElegantAdminDashboard() {
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl p-8 text-white">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome Admin User</h1>
-            <p className="text-blue-100 text-lg">Education is the passport to the future, so learn more & more</p>
+            <h1 className="text-3xl font-bold mb-2">Welcome to SkillUP!!</h1>
+            <p className="text-blue-100 text-lg">Empower yourself with skills. Learn, grow, and succeed with SkillUP!!</p>
           </div>
           <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
             <div className="w-12 h-12 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
@@ -514,7 +540,7 @@ export default function ElegantAdminDashboard() {
       </div>
       <div className="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 text-center">
         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Settings className="w-8 h-8 text-blue-600" />
+          <Clock className="w-8 h-8 text-blue-600" />
         </div>
         <h3 className="text-xl font-semibold text-gray-900 mb-2">Coming Soon</h3>
         <p className="text-gray-600">This section is under development and will be available soon.</p>
@@ -529,15 +555,23 @@ export default function ElegantAdminDashboard() {
       case "pending":
         return renderPending();
       case "courses":
-        return renderGenericSection("Courses", "Manage all courses on the platform");
+        return <AdminCoursesTable />;
       case "students":
-        return renderGenericSection("Students", "Manage student accounts and progress");
+        return <AdminStudentsTable />;
       case "certificates":
-        return renderGenericSection("Certificates", "Manage course completion certificates");
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Certificates & Awards</h1>
+              <p className="text-gray-600 mt-1">Manage certificates and preview award animations</p>
+            </div>
+            <CertificatesTabs />
+          </div>
+        );
       case "analytics":
-        return renderGenericSection("Analytics", "View platform analytics and reports");
-      case "settings":
-        return renderGenericSection("Settings", "Configure platform settings and preferences");
+        return <AdminAnalyticsDashboard />;
+      case "payments":
+        return <AdminPaymentsTable />;
       default:
         return renderDashboard();
     }
@@ -553,7 +587,10 @@ export default function ElegantAdminDashboard() {
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
               <GraduationCap className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900">EduAdmin</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold text-gray-900">SkillUP!!</span>
+              <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Admin</span>
+            </div>
           </div>
         </div>
 
@@ -623,16 +660,13 @@ export default function ElegantAdminDashboard() {
                   className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
-              <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+              <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
                 <Bell className="w-6 h-6" />
                 {(stats.pendingTeachers + stats.pendingCourses) > 0 && (
                   <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
                     {stats.pendingTeachers + stats.pendingCourses}
                   </span>
                 )}
-              </button>
-              <button className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                <Settings className="w-6 h-6" />
               </button>
             </div>
           </div>

@@ -449,7 +449,7 @@ export default function TeacherDashboard() {
                         type="number"
                         min="1"
                         value={question.points}
-                        onChange={(e) => updateQuestion(qIndex, 'points', parseInt(e.target.value))}
+                        onChange={(e) => updateQuestion(qIndex, 'points', Number.parseInt(e.target.value))}
                         className="w-20 p-2 border rounded"
                       />
                     </div>

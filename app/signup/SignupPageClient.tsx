@@ -19,7 +19,7 @@ export default function SignupPage() {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "STUDENT" as "STUDENT" | "TEACHER" | "ADMIN"
+    role: "STUDENT" as "STUDENT" | "TEACHER" | "ADMIN" | "CHARITY"
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -101,7 +101,7 @@ export default function SignupPage() {
       if (signInResult?.error) {
         setError("Account created but automatic login failed. Please sign in manually.")
       } else if (signInResult?.ok) {
-        const callbackUrl = searchParams.get("callbackUrl") || "/dashboard"
+  const callbackUrl = searchParams.get("callbackUrl") || "/"
         router.push(callbackUrl)
       }
     } catch (error) {
@@ -188,6 +188,7 @@ export default function SignupPage() {
                   <option value="STUDENT">Student</option>
                   <option value="TEACHER">Teacher</option>
                   <option value="ADMIN">Admin</option>
+                  <option value="CHARITY">Charity</option>
                 </select>
               </div>
 

@@ -4,7 +4,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model Answer {
@@ -40,6 +39,8 @@ model Course {
   Feedback       Feedback[]
   Module         Module[]
   Quiz           Quiz[]
+  ModuleProgress ModuleProgress[]
+  Payment        Payment[]
 }
 
 model Module {
@@ -53,6 +54,7 @@ model Module {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   Course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  ModuleProgress ModuleProgress[]
 }
 
 model CourseContent {
@@ -72,6 +74,7 @@ model CourseProgress {
   completedLessons Int      @default(0)
   totalLessons     Int      @default(0)
   progressPercent  Float    @default(0)
+  completedAt      DateTime?  // Timestamp when course was fully completed
   lastAccessedAt   DateTime @default(now())
   updatedAt        DateTime
   Course           Course   @relation(fields: [courseId], references: [id])
@@ -80,13 +83,36 @@ model CourseProgress {
   @@unique([studentId, courseId])
 }
 
-model Enrollment {
-  id         String   @id
+// Track per-student completion of each module
+model ModuleProgress {
+  id         String   @id @default(cuid())
   studentId  String
   courseId   String
-  enrolledAt DateTime @default(now())
-  Course     Course   @relation(fields: [courseId], references: [id])
-  User       User     @relation(fields: [studentId], references: [id])
+  moduleId   String
+  completed  Boolean  @default(false)
+  completedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  User   User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, moduleId])
+  @@index([studentId, courseId])
+}
+
+model Enrollment {
+  id            String   @id
+  studentId     String
+  courseId      String
+  enrolledAt    DateTime @default(now())
+  isPaid        Boolean  @default(false)    // true for free courses or paid students
+  paymentId     String?  // Foreign key to Payment model
+  payment       Payment? @relation(fields: [paymentId], references: [id])
+  Course        Course   @relation(fields: [courseId], references: [id])
+  User          User     @relation(fields: [studentId], references: [id])
 }
 
 model Feedback {
@@ -163,6 +189,9 @@ model User {
   Feedback       Feedback[]
   QuizSubmission QuizSubmission[]
   EmailVerification EmailVerification[]
+  ModuleProgress ModuleProgress[]
+  Payment        Payment[]
+  UserAwards     UserAward[]
 }
 
 model EmailVerification {
@@ -176,6 +205,57 @@ model EmailVerification {
   User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, otp])
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  studentId       String
+  courseId        String
+  amount          Float
+  currency        String   @default("INR")
+  razorpayOrderId String   @unique
+  razorpayPaymentId String? @unique
+  razorpaySignature String?
+  status          PaymentStatus @default(PENDING)  // PENDING, SUCCESS, FAILED, CANCELLED
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  User            User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  Course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  Enrollment      Enrollment[]
+}
+
+model Award {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String
+  icon        String   // SVG or emoji
+  milestone   Int      // Number of courses to achieve this award
+  color       String   @default("blue") // Color theme: blue, silver, gold, platinum
+  createdAt   DateTime @default(now())
+  
+  UserAwards  UserAward[]
+}
+
+model UserAward {
+  id        String   @id @default(cuid())
+  userId    String
+  awardId   String
+  achievedAt DateTime @default(now())
+  
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Award     Award    @relation(fields: [awardId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, awardId])
+  @@index([userId])
+  @@index([awardId])
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
 }
 
 enum ContentType {
@@ -194,4 +274,5 @@ enum Role {
   STUDENT
   TEACHER
   ADMIN
+  CHARITY
 }

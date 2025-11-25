@@ -2,6 +2,7 @@
 
 import { Footer } from '@/components/footer'
 import { Header } from '@/components/header'
+import { PaymentButton } from '@/components/payment-button'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
@@ -74,6 +75,7 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isEnrolled, setIsEnrolled] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false)
   
   const router = useRouter()
   const { data: session } = useSession()
@@ -143,12 +145,30 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
     }
   }
 
-  const handleEnroll = () => {
+  const handleEnroll = async () => {
     if (!session) {
       router.push('/login')
       return
     }
-    router.push(`/courses/${courseId}/enroll`)
+
+    try {
+      setIsProcessing(true)
+      setError('')
+      const res = await fetch('/api/enrollments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId })
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data?.error || 'Failed to enroll in course')
+      }
+      router.push(`/courses/${courseId}/enrolled`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to enroll in course')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const handleGoToCourse = () => {
@@ -393,29 +413,19 @@ export default function CourseDetailClient({ courseId }: CourseDetailClientProps
                     </Button>
                   )}
                   
-                  {!isEnrolled && course.isFree && (
-                    <Button 
-                      onClick={handleEnroll}
-                      className="w-full mb-4 bg-blue-600 hover:bg-blue-700"
-                    >
-                      <BookOpen className="mr-2 h-4 w-4" />
-                      Enroll Now
-                    </Button>
-                  )}
-                  
-                  {!isEnrolled && !course.isFree && (
-                    <>
-                      <Button 
-                        onClick={handleEnroll}
-                        className="w-full mb-4 bg-purple-600 hover:bg-purple-700"
-                      >
-                        Add to Cart
-                      </Button>
-                      {/* Buy Now Button */}
-                      <Button variant="outline" className="w-full mb-4">
-                        Buy Now
-                      </Button>
-                    </>
+                  {!isEnrolled && (
+                    <PaymentButton
+                      courseId={course.id}
+                      courseName={course.title}
+                      price={course.price}
+                      isFree={course.isFree}
+                      onSuccess={() => {
+                        setIsEnrolled(true)
+                        checkEnrollmentStatus()
+                      }}
+                      className="w-full mb-4"
+                      size="default"
+                    />
                   )}
 
                   {!course.isFree && (

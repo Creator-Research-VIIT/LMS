@@ -7,7 +7,12 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const courses = await prisma.course.findMany({
-      where: { approvalStatus: "approved" },
+      where: {
+        OR: [
+          { approvalStatus: "approved" },
+          { approvalStatus: "APPROVED" }
+        ]
+      },
       include: { User: { select: { name: true, id: true } } }
     });
     return NextResponse.json({ courses }, { status: 200 });
@@ -59,7 +64,8 @@ export async function POST(req: Request) {
         category,
         isFree,
         teacherId: session.user.id,
-        approvalStatus: "PENDING",
+        // Normalize to lowercase going forward
+        approvalStatus: "pending",
         Module: {
           create: modules.map((module: any, index: number) => ({
             title: module.title,

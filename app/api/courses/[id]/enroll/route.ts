@@ -6,7 +6,7 @@ import { NextResponse } from "next/server";
 // Enroll user in course
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -19,7 +19,7 @@ export async function POST(
       return NextResponse.json({ error: "Only students can enroll in courses" }, { status: 403 });
     }
 
-    const { id: courseId } = await params;
+  const { id: courseId } = params;
     
     // Check if course exists and is approved
     const course = await prisma.course.findFirst({
@@ -48,6 +48,7 @@ export async function POST(
     // Create enrollment
     const enrollment = await prisma.enrollment.create({
       data: {
+        id: `${session.user.id}_${courseId}`,
         courseId,
         studentId: session.user.id
       }

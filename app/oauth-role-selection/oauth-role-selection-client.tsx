@@ -1,16 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, User, GraduationCap, BookOpen, AlertCircle, Github } from 'lucide-react'
-import Image from 'next/image'
+import { AlertCircle, BookOpen, Github, GraduationCap, Loader2, User } from 'lucide-react'
 import { signIn } from 'next-auth/react'
+import Image from 'next/image'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 export default function OAuthRoleSelectionClient() {
-  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN' | null>(null)
+  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN' | 'CHARITY' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   
@@ -194,6 +194,25 @@ export default function OAuthRoleSelectionClient() {
                     <h4 className="font-medium text-gray-900">Teacher</h4>
                     <p className="text-sm text-gray-600">Create and manage courses</p>
                     <p className="text-xs text-orange-600 mt-1">Requires admin approval</p>
+                  </div>
+                </div>
+              </button>
+
+              {/* Charity Role */}
+              <button
+                type="button"
+                className={`w-full p-4 border-2 rounded-lg transition-all text-left ${
+                  selectedRole === 'CHARITY'
+                    ? 'border-purple-500 bg-purple-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+                onClick={() => setSelectedRole('CHARITY')}
+              >
+                <div className="flex items-center space-x-3">
+                  <BookOpen className="w-6 h-6 text-purple-600" />
+                  <div>
+                    <h4 className="font-medium text-gray-900">Charity</h4>
+                    <p className="text-sm text-gray-600">Access sponsorship tools and impact</p>
                   </div>
                 </div>
               </button>

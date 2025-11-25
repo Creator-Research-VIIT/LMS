@@ -1,14 +1,19 @@
 'use client'
 
+import { AwardCelebration } from '@/components/award-celebration'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Progress } from '@/components/ui/progress'
 import confetti from 'canvas-confetti'
 import { ArrowRight, Award, BookOpen, CheckCircle, Loader2, Play, Share2, Star, Trophy, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
+// Lazy load jsPDF only on client interaction
+const loadJsPDF = async () => (await import('jspdf')).default
 
 export interface CourseEnrolledClientProps {
   readonly params: {
@@ -51,6 +56,21 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [hasPlayedConfetti, setHasPlayedConfetti] = useState(false)
+  const [completedModuleIds, setCompletedModuleIds] = useState<string[]>([])
+  const [progressPercent, setProgressPercent] = useState(0)
+  const [togglingModuleId, setTogglingModuleId] = useState<string | null>(null)
+  const [certificateReady, setCertificateReady] = useState(false)
+  const [quizLoading, setQuizLoading] = useState(true)
+  type QuizAnswerOption = { id: string; answerText: string; orderIndex: number }
+  type QuizQuestion = { id: string; questionText: string; questionType: string; points: number; Answer: QuizAnswerOption[] }
+  type FinalQuiz = { id: string; title: string; passingScore: number; Question: QuizQuestion[]; QuizSubmission?: Array<{ isPassed: boolean }> }
+  const [finalQuiz, setFinalQuiz] = useState<FinalQuiz | null>(null)
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, any>>({})
+  const [quizSubmitting, setQuizSubmitting] = useState(false)
+  const [quizMessage, setQuizMessage] = useState<string | null>(null)
+  const [courseCompletedAt, setCourseCompletedAt] = useState<Date | null>(null)
+  const [showAwardCelebration, setShowAwardCelebration] = useState(false)
+  const [awardData, setAwardData] = useState<{ name: string; description: string; icon: string; color: string } | null>(null)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -64,6 +84,8 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
       return
     }
     fetchCourse()
+    fetchModuleProgress()
+    fetchFinalQuiz()
   }, [courseId, session, status])
 
   useEffect(() => {
@@ -108,21 +130,367 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
     }
   }
 
+  const fetchModuleProgress = async () => {
+    try {
+      const res = await fetch(`/api/progress/modules/${courseId}`)
+      if (!res.ok) {
+        if (res.status === 403) {
+          console.warn('Not enrolled in this course or course not found')
+          setProgressPercent(0)
+          setCompletedModuleIds([])
+          setCourseCompletedAt(null)
+        }
+        return
+      }
+      const data = await res.json()
+      setCompletedModuleIds(data.completedModuleIds || [])
+      setProgressPercent(data.progressPercent || 0)
+      setCourseCompletedAt(data.completedAt ? new Date(data.completedAt) : null)
+    } catch (e) {
+      console.warn('Failed to fetch module progress', e)
+    }
+  }
+
+  const toggleModule = async (moduleId: string) => {
+    // Optimistic update - toggle immediately
+    const isCurrentlyCompleted = completedModuleIds.includes(moduleId)
+    const newCompletedIds = isCurrentlyCompleted
+      ? completedModuleIds.filter(id => id !== moduleId)
+      : [...completedModuleIds, moduleId]
+    
+    setCompletedModuleIds(newCompletedIds)
+    setTogglingModuleId(moduleId)
+    
+    // Calculate optimistic progress
+    const totalModules = course?.Module?.length || 1
+    const optimisticProgress = (newCompletedIds.length / totalModules) * 100
+    setProgressPercent(optimisticProgress)
+    
+    try {
+      const res = await fetch('/api/progress/modules/toggle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moduleId })
+      })
+      if (!res.ok) {
+        // Revert on error - toggle back
+        setCompletedModuleIds(isCurrentlyCompleted ? [...newCompletedIds, moduleId] : newCompletedIds.filter(id => id !== moduleId))
+        return
+      }
+      const data = await res.json()
+      // Sync with server response
+      setProgressPercent(data.aggregate?.progressPercent || optimisticProgress)
+    } catch (e) {
+      console.error('Failed toggling module', e)
+      // Revert on error - toggle back
+      setCompletedModuleIds(isCurrentlyCompleted ? [...newCompletedIds, moduleId] : newCompletedIds.filter(id => id !== moduleId))
+    } finally {
+      setTogglingModuleId(null)
+    }
+  }
+
   const handleShareCourse = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: `I just enrolled in ${course?.title}!`,
           text: `Check out this amazing course: ${course?.title}`,
-          url: `${window.location.origin}/courses/${courseId}`
+          url: `${globalThis.location?.origin}/courses/${courseId}`
         })
       } catch (error) {
         console.log('Error sharing:', error)
       }
-    } else {
-      // Fallback: copy to clipboard
-      navigator.clipboard.writeText(`${window.location.origin}/courses/${courseId}`)
+    } else if (globalThis.navigator?.clipboard) {
+      navigator.clipboard.writeText(`${globalThis.location?.origin}/courses/${courseId}`)
       alert('Course link copied to clipboard!')
+    }
+  }
+
+  const getQuizCertificateMessage = (): string => {
+    if (progressPercent < 100) {
+      return 'Complete all modules to unlock the final quiz and generate your certificate.'
+    }
+    if (finalQuiz) {
+      return 'Pass the final quiz to generate your certificate.'
+    }
+    return 'Congratulations! You can now generate your certificate.'
+  }
+
+  const fetchFinalQuiz = async () => {
+    setQuizLoading(true)
+    try {
+      const res = await fetch(`/api/quizzes/course/${courseId}`)
+      if (!res.ok) {
+        setFinalQuiz(null)
+        return
+      }
+      const data = await res.json()
+      const quizzes = data.quizzes || []
+      // Treat the latest quiz (sorted desc) as final
+      const last = quizzes[0] || null
+      if (last) {
+        setFinalQuiz(last)
+        // If any submission for this quiz is passed, unlock certificate
+        if (last.QuizSubmission?.some((s: any) => s.isPassed)) {
+          setCertificateReady(true)
+        }
+      } else {
+        setFinalQuiz(null)
+      }
+    } catch (e) {
+      console.warn('Failed to fetch quizzes', e)
+      setFinalQuiz(null)
+    } finally {
+      setQuizLoading(false)
+    }
+  }
+
+  const startFinalQuiz = () => {
+    // Expands the inline quiz section; nothing to navigate
+    const el = document.getElementById('final-quiz-section')
+    if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const selectAnswer = (questionId: string, answerId: string) => {
+    setQuizAnswers(prev => ({ ...prev, [questionId]: answerId }))
+  }
+
+  const submitFinalQuiz = async () => {
+    if (!finalQuiz) return
+    setQuizSubmitting(true)
+    setQuizMessage(null)
+    try {
+      const res = await fetch(`/api/quizzes/${finalQuiz.id}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers: quizAnswers })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setQuizMessage(`Your score: ${data.result.percentage}%`) 
+        if (data.result.isPassed) {
+          setCertificateReady(true)
+          
+          // Trigger award check for course completion milestone
+          try {
+            const awardRes = await fetch('/api/awards/trigger', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ userId: session?.user?.id })
+            })
+            const awardData = await awardRes.json()
+            if (awardRes.ok && awardData.newAward) {
+              // Show celebration if new award earned
+              setAwardData({
+                name: awardData.newAward.name,
+                description: awardData.newAward.description,
+                icon: awardData.newAward.icon,
+                color: awardData.newAward.color
+              })
+              setShowAwardCelebration(true)
+            }
+          } catch (error) {
+            console.error('Error triggering award check:', error)
+          }
+        }
+      } else {
+        setQuizMessage(data.error || 'Failed to submit quiz')
+      }
+    } catch (e: unknown) {
+      const errorMessage = e instanceof Error ? e.message : 'An error occurred submitting the quiz'
+      setQuizMessage(errorMessage)
+    } finally {
+      setQuizSubmitting(false)
+    }
+  }
+
+  const generateCertificate = async () => {
+    if (!course || !session?.user) return
+
+    try {
+      const jsPDF = await loadJsPDF()
+      const pdf = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      })
+
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+
+      // Premium background - luxury cream with subtle pattern
+      pdf.setFillColor(252, 250, 245) // Luxury cream
+      pdf.rect(0, 0, pageWidth, pageHeight, 'F')
+
+      // Subtle watermark background pattern
+      pdf.setTextColor(245, 240, 230)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(80)
+      pdf.text('SkillUP!!', pageWidth / 2, pageHeight / 2, { align: 'center' })
+
+      // Outer premium border - double line with gold gradient
+      pdf.setLineWidth(3)
+      pdf.setDrawColor(212, 175, 55) // Bright gold
+      pdf.rect(8, 8, pageWidth - 16, pageHeight - 16)
+
+      pdf.setLineWidth(1)
+      pdf.setDrawColor(184, 134, 11) // Darker gold
+      pdf.rect(10, 10, pageWidth - 20, pageHeight - 20)
+
+      // Inner elegant border
+      pdf.setLineWidth(0.5)
+      pdf.setDrawColor(212, 175, 55)
+      pdf.rect(14, 14, pageWidth - 28, pageHeight - 28)
+
+      // Top decorative flourish
+      pdf.setLineWidth(0.8)
+      pdf.setDrawColor(212, 175, 55)
+      const flourishY = 22
+      pdf.line(pageWidth / 2 - 40, flourishY, pageWidth / 2 - 20, flourishY)
+      pdf.line(pageWidth / 2 + 20, flourishY, pageWidth / 2 + 40, flourishY)
+
+      // Premium seal/emblem circle (top center)
+      pdf.setDrawColor(212, 175, 55)
+      pdf.setLineWidth(1.5)
+      pdf.circle(pageWidth / 2, 32, 8, 'S')
+
+      // Seal star icon (using text)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(14)
+      pdf.setTextColor(212, 175, 55)
+      pdf.text('★', pageWidth / 2, 34, { align: 'center' })
+
+      // Premium certificate title
+      pdf.setFont('times', 'bold')
+      pdf.setFontSize(56)
+      pdf.setTextColor(25, 50, 100) // Royal blue
+      pdf.text('CERTIFICATE', pageWidth / 2, 50, { align: 'center' })
+
+      // Elegant subtitle line
+      pdf.setLineWidth(1)
+      pdf.setDrawColor(212, 175, 55)
+      pdf.line(pageWidth / 2 - 60, 56, pageWidth / 2 + 60, 56)
+
+      // Of Completion subtitle
+      pdf.setFont('times', 'italic')
+      pdf.setFontSize(18)
+      pdf.setTextColor(184, 134, 11)
+      pdf.text('of Completion', pageWidth / 2, 65, { align: 'center' })
+
+      // Presented to text
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(13)
+      pdf.setTextColor(80, 80, 80)
+      pdf.text('This is proudly presented to', pageWidth / 2, 78, { align: 'center' })
+
+      // Recipient name - premium highlight
+      pdf.setFont('times', 'bold')
+      pdf.setFontSize(42)
+      pdf.setTextColor(25, 50, 100) // Royal blue
+      const studentName = session.user.name || 'Student'
+      pdf.text(studentName, pageWidth / 2, 102, { align: 'center' })
+
+      // Decorative underline for name with gradient effect
+      pdf.setLineWidth(2.5)
+      pdf.setDrawColor(212, 175, 55)
+      pdf.line(pageWidth / 2 - 65, 108, pageWidth / 2 + 65, 108)
+      pdf.setLineWidth(1)
+      pdf.setDrawColor(184, 134, 11)
+      pdf.line(pageWidth / 2 - 65, 110, pageWidth / 2 + 65, 110)
+
+      // For successfully completing
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(12)
+      pdf.setTextColor(80, 80, 80)
+      pdf.text('For successfully completing and demonstrating mastery in', pageWidth / 2, 123, { align: 'center' })
+
+      // Course title - premium styling
+      pdf.setFont('times', 'bold')
+      pdf.setFontSize(18)
+      pdf.setTextColor(25, 50, 100)
+      const words = course.title.split(' ')
+      let currentY = 133
+      let line = ''
+      const maxWidth = 140
+
+      for (let word of words) {
+        const testLine = line + word + ' '
+        const textWidth = pdf.getTextWidth(testLine)
+        if (textWidth > maxWidth && line) {
+          pdf.text(line, pageWidth / 2, currentY, { align: 'center' })
+          line = word + ' '
+          currentY += 8
+        } else {
+          line = testLine
+        }
+      }
+      if (line) {
+        pdf.text(line, pageWidth / 2, currentY, { align: 'center' })
+      }
+
+      // Completion date with premium styling
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(11)
+      pdf.setTextColor(100, 100, 100)
+      const completionDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+      pdf.text(`On this ${completionDate}`, pageWidth / 2, currentY + 15, { align: 'center' })
+
+      // Bottom section - instructor and signature
+      const bottomY = pageHeight - 28
+
+      // Instructor info on left
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(10)
+      pdf.setTextColor(100, 100, 100)
+      pdf.text('Course Instructor', 28, bottomY - 8, { align: 'left' })
+      pdf.setFont('times', 'bold')
+      pdf.setFontSize(11)
+      pdf.setTextColor(25, 50, 100)
+      pdf.text(course.User.name, 28, bottomY + 2, { align: 'left' })
+
+      // Signature line on right
+      pdf.setLineWidth(1)
+      pdf.setDrawColor(80, 80, 80)
+      pdf.line(pageWidth - 65, bottomY - 5, pageWidth - 20, bottomY - 5)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(9)
+      pdf.setTextColor(100, 100, 100)
+      pdf.text('Authorized Signature', pageWidth - 42, bottomY + 3, { align: 'center' })
+
+      // Bottom decorative flourish
+      pdf.setLineWidth(0.8)
+      pdf.setDrawColor(212, 175, 55)
+      const bottomFlourishY = pageHeight - 12
+      pdf.line(pageWidth / 2 - 40, bottomFlourishY, pageWidth / 2 - 20, bottomFlourishY)
+      pdf.line(pageWidth / 2 + 20, bottomFlourishY, pageWidth / 2 + 40, bottomFlourishY)
+
+      // Corner decorative elements - premium style
+      const cornerSize = 12
+      pdf.setLineWidth(2)
+      pdf.setDrawColor(212, 175, 55)
+      // Top left
+      pdf.line(10, 10, 10 + cornerSize, 10)
+      pdf.line(10, 10, 10, 10 + cornerSize)
+      // Top right
+      pdf.line(pageWidth - 10, 10, pageWidth - 10 - cornerSize, 10)
+      pdf.line(pageWidth - 10, 10, pageWidth - 10, 10 + cornerSize)
+      // Bottom left
+      pdf.line(10, pageHeight - 10, 10 + cornerSize, pageHeight - 10)
+      pdf.line(10, pageHeight - 10, 10, pageHeight - 10 - cornerSize)
+      // Bottom right
+      pdf.line(pageWidth - 10, pageHeight - 10, pageWidth - 10 - cornerSize, pageHeight - 10)
+      pdf.line(pageWidth - 10, pageHeight - 10, pageWidth - 10, pageHeight - 10 - cornerSize)
+
+      // Download the PDF
+      const fileName = `${course.title.replaceAll(' ', '_')}_Certificate_${studentName.replaceAll(' ', '_')}.pdf`
+      pdf.save(fileName)
+    } catch (error) {
+      console.error('Error generating certificate:', error)
+      alert('Failed to generate certificate. Please try again.')
     }
   }
 
@@ -170,8 +538,16 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
+    <>
+      {showAwardCelebration && awardData && (
+        <AwardCelebration 
+          award={awardData}
+          isOpen={showAwardCelebration}
+          onClose={() => setShowAwardCelebration(false)}
+        />
+      )}
+      <div className="container mx-auto px-4 py-8">
+        <div className="max-w-4xl mx-auto">
         {/* Success Header */}
         {success && (
           <div className="text-center mb-8">
@@ -235,6 +611,21 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   </div>
                 </div>
 
+                {/* Progress Summary */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Progress</h3>
+                  <div className="flex items-center gap-3 mb-1">
+                    <Progress value={progressPercent} className="w-full" />
+                    <span className="text-sm font-medium w-16 text-right">{Math.round(progressPercent)}%</span>
+                  </div>
+                  <p className="text-xs text-gray-500">Mark modules as completed to advance your progress.</p>
+                  {courseCompletedAt && (
+                    <p className="text-xs text-green-600 mt-2">
+                      ✓ Completed on {courseCompletedAt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                  )}
+                </div>
+
                 {/* Course Modules */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900">Course Modules</h3>
@@ -242,30 +633,124 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   <div className="space-y-3">
                     {course.Module && course.Module.length > 0 ? (
                       course.Module.map((module, index) => (
-                        <Button key={module.id} variant="ghost" className="flex items-start space-x-3 p-4 bg-white border rounded-lg hover:shadow-md transition-shadow h-auto w-full justify-start" onClick={() => handleModuleClick(module)}>
+                        <div key={module.id} className={`flex items-start gap-3 p-4 bg-white border rounded-lg hover:shadow-md transition-all ${togglingModuleId === module.id ? 'opacity-75' : ''}`}>
+                          <Checkbox 
+                            checked={completedModuleIds.includes(module.id)}
+                            onCheckedChange={() => toggleModule(module.id)}
+                            disabled={togglingModuleId === module.id}
+                            className="mt-1 cursor-pointer"
+                          />
                           <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
                             {index + 1}
                           </div>
-                          <div className="flex-1">
+                          <button onClick={() => handleModuleClick(module)} className="flex-1 text-left">
                             <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-gray-900">{module.title}</h4>
-                              {module.videoUrl && (
-                                <Play className="h-4 w-4 text-blue-600" />
-                              )}
+                              <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                                {module.title}
+                                {completedModuleIds.includes(module.id) && <CheckCircle className="h-4 w-4 text-green-600" />}
+                              </h4>
+                              {module.videoUrl && <Play className="h-4 w-4 text-blue-600" />}
                             </div>
                             <p className="text-sm text-gray-600 mt-1">{module.description}</p>
                             {module.resources && (
                               <p className="text-xs text-green-600 mt-1">+ Additional resources available</p>
                             )}
-                          </div>
+                          </button>
                           <ArrowRight className="h-4 w-4 text-gray-400" />
-                        </Button>
+                        </div>
                       ))
                     ) : (
                       <div className="text-center py-8 text-gray-500">
                         <BookOpen className="h-12 w-12 mx-auto mb-2 text-gray-300" />
                         <p>No modules available yet</p>
                         <p className="text-sm">Check back later for course content</p>
+                      </div>
+                    )}
+                  </div>
+                  {/* Quiz & Certificate Section */}
+                  <div id="final-quiz-section" className="mt-8 border-t pt-6 space-y-4">
+                    <h3 className="text-lg font-semibold">Final Quiz & Certificate</h3>
+                    <p className="text-sm text-gray-600">
+                      {getQuizCertificateMessage()}
+                    </p>
+                    {progressPercent < 100 && (
+                      <div className="text-sm text-yellow-600 flex items-center gap-2">
+                        <Award className="h-4 w-4" />
+                        Finish remaining modules to unlock the quiz.
+                      </div>
+                    )}
+                    {(progressPercent === 100 || courseCompletedAt) && (
+                      <div className="space-y-3">
+                        {/* If there's a quiz and it's not completed, show quiz button */}
+                        {finalQuiz && !certificateReady && (
+                          <>
+                            <Button variant="default" className="w-full" onClick={startFinalQuiz}>
+                              <Trophy className="h-4 w-4 mr-2" />
+                              Take Final Quiz: {finalQuiz.title}
+                            </Button>
+                            {/* Inline simple quiz UI */}
+                            {!certificateReady && (
+                              <div className="border rounded-lg p-4 space-y-4 bg-gray-50">
+                                <div className="flex items-center justify-between">
+                                  <h4 className="font-semibold">{finalQuiz.title}</h4>
+                                  <span className="text-xs text-gray-600">Passing: {finalQuiz.passingScore}%</span>
+                                </div>
+                                <div className="space-y-4">
+                                  {finalQuiz.Question?.map((q, qi) => (
+                                    <div key={q.id} className="bg-white p-3 rounded border">
+                                      <div className="font-medium mb-2">{qi + 1}. {q.questionText}</div>
+                                      {(q.questionType === 'MULTIPLE_CHOICE' || q.questionType === 'TRUE_FALSE') ? (
+                                        <div className="space-y-2">
+                                          {q.Answer.map(opt => (
+                                            <label key={opt.id} className="flex items-center gap-2 cursor-pointer">
+                                              <input
+                                                type="radio"
+                                                name={`q-${q.id}`}
+                                                checked={quizAnswers[q.id] === opt.id}
+                                                onChange={() => selectAnswer(q.id, opt.id)}
+                                              />
+                                              <span>{opt.answerText}</span>
+                                            </label>
+                                          ))}
+                                        </div>
+                                      ) : (
+                                        <div className="text-xs text-gray-500">Question type not supported in inline mode.</div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                {quizMessage && <div className={`text-sm ${quizMessage.includes('Your score') ? 'text-blue-700' : 'text-red-700'}`}>{quizMessage}</div>}
+                                <Button onClick={submitFinalQuiz} disabled={quizSubmitting} className="w-full">
+                                  {quizSubmitting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                                  Submit Quiz
+                                </Button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                        
+                        {/* If quiz is passed or no quiz exists, show certificate button */}
+                        {(certificateReady || !finalQuiz) && !quizLoading && (
+                          <>
+                            {finalQuiz && certificateReady && (
+                              <Button variant="default" className="w-full" disabled>
+                                <CheckCircle className="h-4 w-4 mr-2" /> Quiz Passed ✓
+                              </Button>
+                            )}
+                            <Button onClick={generateCertificate} className="w-full bg-green-600 hover:bg-green-700">
+                              <Award className="h-4 w-4 mr-2" />
+                              Download Certificate PDF
+                            </Button>
+                          </>
+                        )}
+
+                        {/* Loading state for quiz */}
+                        {quizLoading && (
+                          <Button variant="outline" className="w-full" disabled>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Loading Quiz...
+                          </Button>
+                        )}
                       </div>
                     )}
                   </div>
@@ -276,7 +761,7 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
 
           {/* Action Panel */}
           <div className="lg:col-span-1 space-y-6">
-            {/* Start Learning Card */}
+            {/* Start Learning / Certificate Card */}
             <Card>
               <CardHeader className="text-center">
                 <Trophy className="h-12 w-12 text-yellow-500 mx-auto mb-2" />
@@ -293,6 +778,15 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   <Play className="h-4 w-4 mr-2" />
                   Start Learning
                 </Button>
+                {(progressPercent === 100 || courseCompletedAt) && (certificateReady || !finalQuiz) && (
+                  <Button 
+                    onClick={generateCertificate}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Award className="h-4 w-4 mr-2" />
+                    Generate Certificate
+                  </Button>
+                )}
                 
                 <Button 
                   variant="outline"
@@ -374,7 +868,8 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
             </Card>
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   )
 }

@@ -3,6 +3,7 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
+import { emailHasAllowedDomain, isInstituteAccessEnabled } from "./instituteAccess";
 import { prisma } from "./prisma";
 
 export const authOptions: NextAuthOptions = {
@@ -62,6 +63,15 @@ export const authOptions: NextAuthOptions = {
             approvalStatus: user.approvalStatus,
             hasPassword: !!user.password
           });
+
+          // Institute access enforcement (if enabled): only allow configured email domains (admins bypass)
+          if (isInstituteAccessEnabled()) {
+            const isAdmin = user.role === "ADMIN";
+            if (!isAdmin && !emailHasAllowedDomain(user.email)) {
+              console.log('❌ Access denied (domain not allowed):', user.email);
+              throw new Error('Access restricted to institute members');
+            }
+          }
 
           // Only allow teachers to log in if they are approved
           if (user.role === "TEACHER" && user.approvalStatus !== "approved") {
@@ -129,9 +139,22 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (existingUser) {
+            // Enforce institute access for OAuth as well (admins bypass)
+            if (isInstituteAccessEnabled()) {
+              const isAdmin = existingUser.role === 'ADMIN';
+              if (!isAdmin && !emailHasAllowedDomain(existingUser.email)) {
+                console.log('❌ OAuth access denied (domain not allowed):', existingUser.email);
+                return "/login?error=instituteAccess";
+              }
+            }
             console.log('✅ Existing OAuth user found, allowing sign in');
             return true;
           } else {
+            // New OAuth user: if restricted mode is on and email domain not allowed, block
+            if (isInstituteAccessEnabled() && !emailHasAllowedDomain(user.email || '')) {
+              console.log('❌ OAuth registration denied (domain not allowed):', user.email);
+              return "/login?error=instituteAccess";
+            }
             console.log('🆕 New OAuth user detected, redirecting to role selection');
             return `/oauth-role-selection?email=${encodeURIComponent(user.email || '')}&name=${encodeURIComponent(user.name || '')}&provider=${account.provider}`;
           }

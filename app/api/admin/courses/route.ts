@@ -1,61 +1,64 @@
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { getServerSession } from "next-auth/next";
-import { NextResponse } from "next/server";
+import { prisma } from '@/lib/prisma'
+import { NextResponse } from 'next/server'
 
-export async function GET() {
+/**
+ * GET /api/admin/courses
+ * Fetch all courses with enrollment and instructor info
+ */
+export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { searchParams } = new URL(req.url)
+    const skip = Number.parseInt(searchParams.get('skip') || '0')
+    const take = Number.parseInt(searchParams.get('take') || '10')
 
-    // Get courses with progress and ratings
     const courses = await prisma.course.findMany({
-      where: { approvalStatus: "approved" },
       include: {
         User: {
-          select: { name: true }
+          select: {
+            name: true,
+            email: true,
+          },
         },
-        enrollments: {
-          select: { id: true }
+        _count: {
+          select: {
+            Enrollment: true,
+          },
         },
-        feedbacks: {
-          select: { rating: true }
-        },
-        progresses: {
-          select: { progressPercent: true }
-        }
       },
-      take: 10,
-      orderBy: { createdAt: 'desc' }
-    });
+      skip,
+      take,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
 
-    // Transform data for dashboard
-    const transformedCourses = courses.map(course => {
-      const totalEnrollments = course.enrollments.length;
-      const averageRating = course.feedbacks.length > 0 
-        ? course.feedbacks.reduce((sum, feedback) => sum + feedback.rating, 0) / course.feedbacks.length
-        : 0;
-      
-      const averageProgress = course.progresses.length > 0
-        ? course.progresses.reduce((sum, progress) => sum + progress.progressPercent, 0) / course.progresses.length
-        : 0;
+    const totalCourses = await prisma.course.count()
 
-      return {
+    return NextResponse.json({
+      success: true,
+      data: courses.map(course => ({
         id: course.id,
         title: course.title,
-        progress: Math.round(averageProgress),
-        students: totalEnrollments,
-        rating: Math.round(averageRating * 10) / 10,
-        status: 'running' as const
-      };
-    });
-
-    return NextResponse.json({ courses: transformedCourses }, { status: 200 });
+        instructor: course.User.name,
+        instructorEmail: course.User.email,
+        price: course.price,
+        enrollments: course._count.Enrollment,
+        status: course.approvalStatus,
+        thumbnail: course.thumbnail,
+        isFree: course.isFree,
+        createdAt: course.createdAt,
+      })),
+      pagination: {
+        total: totalCourses,
+        skip,
+        take,
+      },
+    })
   } catch (error) {
-    console.error("Failed to fetch admin courses:", error);
-    return NextResponse.json({ error: "Failed to fetch courses" }, { status: 500 });
+    console.error('Error fetching courses:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch courses' },
+      { status: 500 }
+    )
   }
 }

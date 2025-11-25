@@ -1,5 +1,9 @@
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const runtime = 'nodejs';
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getToken } from "next-auth/jwt";
 import { getServerSession } from "next-auth/next";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,8 +11,15 @@ export async function GET(request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);
-    
-    if (!session) {
+
+    // Fallback to JWT token if session is unavailable in prod
+    let role = session?.user.role as string | undefined;
+    if (!role) {
+      const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+      role = (token as any)?.role;
+    }
+
+    if (!role) {
       return NextResponse.json(
         { error: "Unauthorized" },
         { status: 401 }
@@ -16,7 +27,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is admin
-    if (session.user.role !== "ADMIN") {
+    if (role !== "ADMIN") {
       return NextResponse.json(
         { error: "Forbidden: Admin access required" },
         { status: 403 }

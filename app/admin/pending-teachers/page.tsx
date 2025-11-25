@@ -13,8 +13,11 @@ export default function PendingTeachersPage() {
       try {
         const res = await axios.get("/api/teachers/pending");
         setPendingTeachers(res.data.teachers || []);
-      } catch (err) {
-        setError("Failed to fetch pending teachers.");
+      } catch (err: unknown) {
+        // Log the error and surface a useful message to state
+        console.error(err);
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message || "Failed to fetch pending teachers.");
       } finally {
         setLoading(false);
       }
@@ -26,8 +29,11 @@ export default function PendingTeachersPage() {
     try {
       await axios.patch(`/api/teachers/${teacherId}/approve`);
       setPendingTeachers((prev) => prev.filter((t: any) => t.id !== teacherId));
-    } catch (err) {
-      alert("Failed to approve teacher.");
+    } catch (err: unknown) {
+      // Log the error and show a helpful message
+      console.error(err);
+      const message = err instanceof Error ? err.message : String(err);
+      alert(`Failed to approve teacher: ${message || "Unknown error"}`);
     }
   };
 
