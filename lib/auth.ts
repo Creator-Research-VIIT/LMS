@@ -112,7 +112,7 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 60 * 60, // Force update every hour to refresh role
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   jwt: {
     maxAge: 30 * 24 * 60 * 60, // 30 days
@@ -166,114 +166,59 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
     async jwt({ token, user, account }) {
-      console.log('🔍 JWT BEFORE:', { token: JSON.stringify(token), user: JSON.stringify(user) });
-      
       console.log('🔍 JWT callback triggered:', { 
         hasUser: !!user, 
-        tokenEmail: token?.email,
-        tokenRole: token?.role,
-        userRole: (user as any)?.role 
+        hasAccount: !!account, 
+        provider: account?.provider,
+        userEmail: user?.email,
+        tokenSub: token.sub
       });
 
-      // 1) First-time sign-in: persist role/id/approvalStatus into token
       if (user) {
         try {
+          // For OAuth users, fetch role from database
           if (account?.provider === "google" || account?.provider === "github") {
-            // For OAuth, read the DB to get role
             const dbUser = await prisma.user.findUnique({
               where: { email: user.email || "" }
             });
+            
             if (dbUser) {
               token.role = dbUser.role;
               token.id = dbUser.id;
               token.approvalStatus = dbUser.approvalStatus;
-              token.email = dbUser.email;
-              console.log('✅ JWT set from DB (OAuth):', { role: token.role, id: token.id, email: token.email });
+              console.log('✅ OAuth user role set:', dbUser.role);
             }
           } else {
-            // Credentials provider sets role directly from user returned by authorize()
+            // For credentials login
             token.role = (user as any).role;
             token.id = user.id;
             token.approvalStatus = (user as any).approvalStatus;
-            token.email = user.email;
-            console.log('✅ JWT set from credentials user:', { role: token.role, id: token.id, email: token.email });
+            console.log('✅ Credentials user role set:', (user as any).role);
           }
-        } catch (err) {
-          console.error('❌ Error setting initial JWT:', err);
+        } catch (error) {
+          console.error('❌ Error in JWT callback:', error);
         }
       }
-
-      // 2) CRITICAL FIX: If token.role is missing, ALWAYS restore from DB using token.email
-      // This handles the case where JWT loses role field on subsequent requests
-      if (token?.email) {
-        if (!token.role || token.role === undefined) {
-          try {
-            console.log("🔄 JWT missing role — reloading from DB for", token.email);
-
-            const dbUser = await prisma.user.findUnique({
-              where: { email: token.email }
-            });
-
-            if (dbUser) {
-              token.role = dbUser.role;
-              token.id = dbUser.id;
-              token.approvalStatus = dbUser.approvalStatus;
-              console.log("✅ Restored token role from DB:", token.role);
-            } else {
-              console.warn("⚠️ No DB user found for token.email", token.email);
-            }
-          } catch (err) {
-            console.error("❌ Error restoring JWT role from DB:", err);
-          }
-        } else {
-          // Role exists, but verify it's still valid (refresh on every request to be safe)
-          try {
-            const dbUser = await prisma.user.findUnique({
-              where: { email: token.email },
-              select: { role: true, id: true, approvalStatus: true }
-            });
-
-            if (dbUser) {
-              // Only update if role changed (e.g., user was promoted/demoted)
-              if (token.role !== dbUser.role) {
-                console.log("🔄 Role changed in DB, updating token:", { old: token.role, new: dbUser.role });
-                token.role = dbUser.role;
-              }
-              token.id = dbUser.id;
-              token.approvalStatus = dbUser.approvalStatus;
-            }
-          } catch (err) {
-            console.error("❌ Error verifying JWT role from DB:", err);
-          }
-        }
-      }
-
-      console.log('✅ JWT callback returning:', { role: token.role, email: token.email, id: token.id });
-      console.log('🔍 JWT AFTER:', JSON.stringify(token));
       return token;
     },
     async session({ session, token }) {
       console.log('🔍 Session callback triggered:', { 
+        hasToken: !!token, 
         tokenRole: token?.role,
-        tokenEmail: token?.email,
         sessionEmail: session.user?.email,
         tokenId: token?.id
       });
 
-      if (session.user) {
-        if (token) {
-          (session.user as any).id = token.id || "";
-          (session.user as any).role = token.role || "UNKNOWN";
-          (session.user as any).approvalStatus = token.approvalStatus || "pending";
-          
-          console.log('✅ Session established with role:', {
-            id: (session.user as any).id,
-            role: (session.user as any).role,
-            email: session.user.email
-          });
-        } else {
-          console.warn('⚠️ Session callback: token is missing!');
-        }
+      if (token && session.user) {
+        (session.user as any).id = token.id;
+        (session.user as any).role = token.role;
+        (session.user as any).approvalStatus = token.approvalStatus;
+        
+        console.log('✅ Session established:', {
+          id: token.id,
+          role: token.role,
+          email: session.user.email
+        });
       }
       return session;
     }
