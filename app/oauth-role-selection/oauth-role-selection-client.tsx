@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 export default function OAuthRoleSelectionClient() {
-  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN' | 'CHARITY' | null>(null)
+  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'TEACHER' | 'ADMIN' | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   
@@ -178,26 +178,7 @@ export default function OAuthRoleSelectionClient() {
                 </div>
               </button>
               
-              {/* Teacher Role */}
-              <button
-                type="button"
-                className={`w-full p-4 border-2 rounded-lg transition-all text-left ${
-                  selectedRole === 'TEACHER'
-                    ? 'border-green-500 bg-green-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                onClick={() => setSelectedRole('TEACHER')}
-              >
-                <div className="flex items-center space-x-3">
-                  <BookOpen className="w-6 h-6 text-green-600" />
-                  <div>
-                    <h4 className="font-medium text-gray-900">Teacher</h4>
-                    <p className="text-sm text-gray-600">Create and manage courses</p>
-                    <p className="text-xs text-orange-600 mt-1">Requires admin approval</p>
-                  </div>
-                </div>
-              </button>
-
+              {/* Charity role removed */}
               {/* Charity Role */}
               <button
                 type="button"

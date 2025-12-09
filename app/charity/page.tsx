@@ -3,9 +3,9 @@
 export const dynamic = "force-dynamic";
 
 import { motion } from "framer-motion";
-import { Heart, LogOut, Mail, MapPin, Phone, TrendingUp, Users, Zap } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { Heart, Mail, MapPin, Phone, TrendingUp, Users, Zap, AlertCircle, Loader2 } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 
 const fadeInUp = {
   initial: { opacity: 0, y: 20 },
@@ -23,22 +23,109 @@ const staggerContainer = {
 };
 
 export default function CharityPage() {
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/login" });
+  const [customAmount, setCustomAmount] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadRazorpayScript = () =>
+    new Promise<boolean>((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+
+  const initiateDonation = async (amountINR: number, description: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID) {
+        setError("Payment keys not configured. Set NEXT_PUBLIC_RAZORPAY_KEY_ID.");
+        setLoading(false);
+        return;
+      }
+
+      const ok = await loadRazorpayScript();
+      if (!ok) {
+        setError("Failed to load payment SDK.");
+        setLoading(false);
+        return;
+      }
+
+      // Create a donation order via API (backend must implement this)
+      const res = await fetch("/api/payments/donations/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: amountINR }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error || "Donation order API not available.");
+        setLoading(false);
+        return;
+      }
+
+      const data = await res.json();
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        order_id: data.orderId,
+        amount: Math.round(amountINR * 100),
+        currency: "INR",
+        name: "LearnHub Charity",
+        description,
+        image: "/placeholder-logo.png",
+        handler: async (response: any) => {
+          try {
+            const verify = await fetch("/api/payments/donations/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+            if (!verify.ok) {
+              const v = await verify.json().catch(() => ({}));
+              setError(v.error || "Payment verification failed.");
+            }
+          } catch (e) {
+            setError("Payment verification error.");
+          } finally {
+            setLoading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            setError("Payment cancelled.");
+          },
+        },
+        theme: { color: "#6366F1" },
+      } as any;
+
+      const rzp = new (window as any).Razorpay(options);
+      rzp.open();
+    } catch (e) {
+      setError("Unable to start donation.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <main className="min-h-screen bg-white text-slate-900 overflow-hidden">
-      {/* Logout Button */}
-      <motion.button
-        onClick={handleLogout}
-        className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <LogOut className="w-4 h-4" />
-        Logout
-      </motion.button>
+      {/* Payment status */}
+      {error && (
+        <div className="fixed top-4 right-4 z-50 flex items-start gap-2 px-4 py-2 bg-red-50 border border-red-200 text-red-800 rounded-lg">
+          <AlertCircle className="w-4 h-4 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center px-4 py-20 overflow-hidden bg-gradient-to-br from-blue-50 to-purple-50">
@@ -119,8 +206,14 @@ export default function CharityPage() {
               className="px-8 py-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-semibold text-white shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={() => initiateDonation(2500, "General Donation")}
+              disabled={loading}
             >
-              Donate Now
+              {loading ? (
+                <span className="inline-flex items-center gap-2"><Loader2 className="w-4 h-4 animate-spin" /> Processing...</span>
+              ) : (
+                <>Donate Now</>
+              )}
             </motion.button>
             <motion.button
               className="px-8 py-4 border border-white/30 rounded-xl font-semibold hover:bg-white/10"
@@ -158,6 +251,8 @@ export default function CharityPage() {
                   variants={fadeInUp}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => initiateDonation(amount, `Quick Donate ₹${amount}`)}
+                  disabled={loading}
                 >
                   ₹{(amount / 1000).toFixed(0)}K
                 </motion.button>
@@ -167,11 +262,22 @@ export default function CharityPage() {
               <input
                 placeholder="Custom amount"
                 className="flex-1 px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 focus:border-blue-500 focus:outline-none text-slate-900 placeholder-slate-500"
+                value={customAmount}
+                onChange={(e) => setCustomAmount(e.target.value)}
               />
               <motion.button
                 className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-xl font-semibold"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  const amt = Number(customAmount);
+                  if (!amt || amt <= 0) {
+                    setError("Enter a valid amount in INR.");
+                    return;
+                  }
+                  initiateDonation(amt, `Custom Donation ₹${amt}`);
+                }}
+                disabled={loading}
               >
                 Donate
               </motion.button>
@@ -257,6 +363,11 @@ export default function CharityPage() {
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    const tierAmount = tier.name === "Silver" ? 10000 : tier.name === "Gold" ? 25000 : 100000;
+                    initiateDonation(tierAmount, `${tier.name} Sponsorship`);
+                  }}
+                  disabled={loading}
                 >
                   Become a Sponsor
                 </motion.button>
