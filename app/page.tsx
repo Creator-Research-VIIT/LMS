@@ -9,6 +9,7 @@ import { Header } from "@/components/header";
 import { HeroSection } from "@/components/hero-section";
 import { NewCourses } from "@/components/new-courses";
 import { Testimonials } from "@/components/testimonials";
+import { ChatWidget } from "@/components/chatbot/ChatWidget";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -79,6 +80,7 @@ export default function HomePage() {
         <ContactSection />
       </main>
       <Footer />
+      <ChatWidget />
     </div>
   )
 }
