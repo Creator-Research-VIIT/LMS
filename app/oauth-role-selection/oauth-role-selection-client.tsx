@@ -17,10 +17,10 @@ export default function OAuthRoleSelectionClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  const email = searchParams.get('email')
-  const name = searchParams.get('name')
-  const provider = searchParams.get('provider')
-  const image = searchParams.get('image')
+  const email = searchParams?.get('email')
+  const name = searchParams?.get('name')
+  const provider = searchParams?.get('provider')
+  const image = searchParams?.get('image')
   
   useEffect(() => {
     if (!email || !name || !provider) {
@@ -174,26 +174,6 @@ export default function OAuthRoleSelectionClient() {
                   <div>
                     <h4 className="font-medium text-gray-900">Student</h4>
                     <p className="text-sm text-gray-600">Learn and take courses</p>
-                  </div>
-                </div>
-              </button>
-              
-              {/* Charity role removed */}
-              {/* Charity Role */}
-              <button
-                type="button"
-                className={`w-full p-4 border-2 rounded-lg transition-all text-left ${
-                  selectedRole === 'CHARITY'
-                    ? 'border-purple-500 bg-purple-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                onClick={() => setSelectedRole('CHARITY')}
-              >
-                <div className="flex items-center space-x-3">
-                  <BookOpen className="w-6 h-6 text-purple-600" />
-                  <div>
-                    <h4 className="font-medium text-gray-900">Charity</h4>
-                    <p className="text-sm text-gray-600">Access sponsorship tools and impact</p>
                   </div>
                 </div>
               </button>

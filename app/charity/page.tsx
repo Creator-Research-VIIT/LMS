@@ -3,7 +3,7 @@
 export const dynamic = "force-dynamic";
 
 import { motion } from "framer-motion";
-import { Heart, Mail, MapPin, Phone, TrendingUp, Users, Zap, AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Heart, Loader2, Mail, MapPin, Phone, TrendingUp, Users, Zap } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 
