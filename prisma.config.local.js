@@ -1,4 +1,5 @@
-// Version 2: Force Vercel cache clear - engineType library applied
+// Version 3: Force Vercel full rebuild - engineType library applied
+// This ensures Vercel clears cache and rebuilds with the new schema
 module.exports = {
   datasources: {
     db: {
