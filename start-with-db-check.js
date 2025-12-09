@@ -43,11 +43,7 @@ async function checkDatabaseConnection() {
     // Try to connect to database
     console.log('🌐 Testing database connection...');
     const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient({
-      datasources: {
-        db: { url: process.env.DATABASE_URL }
-      }
-    });
+    const prisma = new PrismaClient();
     
     await prisma.$queryRaw`SELECT NOW()`;
     console.log('✅ Database connection successful!');

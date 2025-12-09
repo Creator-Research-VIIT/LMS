@@ -5,11 +5,6 @@ const { PrismaClient } = require('@prisma/client');
 const directUrl = 'postgresql://neondb_owner:npg_VOtGCn4b8QcD@ep-billowing-pond-a1rs6mm9.ap-southeast-1.aws.neon.tech/neondb?sslmode=require';
 
 const prisma = new PrismaClient({
-  datasources: {
-    db: {
-      url: directUrl
-    }
-  },
   log: ['query', 'info', 'warn', 'error'],
 });
 

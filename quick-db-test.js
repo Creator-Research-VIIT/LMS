@@ -7,13 +7,7 @@ async function quickTest() {
   try {
     console.log('🔍 Quick connection test (10 second timeout)...');
     
-    const prisma = new PrismaClient({
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL + '&connect_timeout=10'
-        }
-      }
-    });
+    const prisma = new PrismaClient();
     
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error('10 second timeout reached')), 10000)
