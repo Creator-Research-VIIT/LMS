@@ -2,7 +2,9 @@ import { PrismaClient, Role } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 import crypto from 'crypto'
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient({
+  log: ['error'],
+})
 
 async function main() {
   console.log('🌱 Starting seeding...')
