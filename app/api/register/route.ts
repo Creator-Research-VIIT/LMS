@@ -59,6 +59,20 @@ export async function POST(request: NextRequest) {
 
     const newReferralCode = randomUUID();
 
+    // Extract email domain and find matching institute
+    const emailDomain = validatedData.email.split('@')[1]?.toLowerCase()
+    let instituteId = null
+    
+    if (emailDomain) {
+      const institute = await prisma.institute.findUnique({
+        where: { domain: emailDomain, isActive: true },
+      })
+      if (institute) {
+        instituteId = institute.id
+        console.log(`✅ Auto-assigned to institute: ${institute.name}`)
+      }
+    }
+
     // Generate email verification OTP
     const emailOtp = Math.floor(100000 + Math.random() * 900000).toString()
     const otpExpiresAt = new Date(Date.now() + 30 * 60 * 1000) // 30 minutes
@@ -73,7 +87,8 @@ export async function POST(request: NextRequest) {
         referralCode: newReferralCode,
         referredBy: referredBy,
         emailVerified: null, // Not verified initially
-        approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved"
+        approvalStatus: validatedData.role === "TEACHER" ? "pending" : "approved",
+        instituteId: instituteId, // Auto-assign institute based on email domain
       },
       select: {
         id: true,
@@ -83,6 +98,13 @@ export async function POST(request: NextRequest) {
         referralCode: true,
         approvalStatus: true,
         createdAt: true,
+        Institute: {
+          select: {
+            id: true,
+            name: true,
+            domain: true,
+          },
+        },
       },
     });
 

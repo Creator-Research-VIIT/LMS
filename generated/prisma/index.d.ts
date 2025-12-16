@@ -93,6 +93,11 @@ export type Award = $Result.DefaultSelection<Prisma.$AwardPayload>
  * 
  */
 export type UserAward = $Result.DefaultSelection<Prisma.$UserAwardPayload>
+/**
+ * Model Institute
+ * 
+ */
+export type Institute = $Result.DefaultSelection<Prisma.$InstitutePayload>
 
 /**
  * Enums
@@ -134,6 +139,14 @@ export const Role: {
 
 export type Role = (typeof Role)[keyof typeof Role]
 
+
+export const FeedbackType: {
+  COURSE: 'COURSE',
+  TEACHER: 'TEACHER'
+};
+
+export type FeedbackType = (typeof FeedbackType)[keyof typeof FeedbackType]
+
 }
 
 export type PaymentStatus = $Enums.PaymentStatus
@@ -151,6 +164,10 @@ export const QuestionType: typeof $Enums.QuestionType
 export type Role = $Enums.Role
 
 export const Role: typeof $Enums.Role
+
+export type FeedbackType = $Enums.FeedbackType
+
+export const FeedbackType: typeof $Enums.FeedbackType
 
 /**
  * ##  Prisma Client ʲˢ
@@ -434,6 +451,16 @@ export class PrismaClient<
     * ```
     */
   get userAward(): Prisma.UserAwardDelegate<ExtArgs>;
+
+  /**
+   * `prisma.institute`: Exposes CRUD operations for the **Institute** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Institutes
+    * const institutes = await prisma.institute.findMany()
+    * ```
+    */
+  get institute(): Prisma.InstituteDelegate<ExtArgs>;
 }
 
 export namespace Prisma {
@@ -889,7 +916,8 @@ export namespace Prisma {
     EmailVerification: 'EmailVerification',
     Payment: 'Payment',
     Award: 'Award',
-    UserAward: 'UserAward'
+    UserAward: 'UserAward',
+    Institute: 'Institute'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -905,7 +933,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "answer" | "course" | "module" | "courseContent" | "courseProgress" | "moduleProgress" | "enrollment" | "feedback" | "question" | "quiz" | "quizSubmission" | "user" | "emailVerification" | "payment" | "award" | "userAward"
+      modelProps: "answer" | "course" | "module" | "courseContent" | "courseProgress" | "moduleProgress" | "enrollment" | "feedback" | "question" | "quiz" | "quizSubmission" | "user" | "emailVerification" | "payment" | "award" | "userAward" | "institute"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2029,6 +2057,76 @@ export namespace Prisma {
           }
         }
       }
+      Institute: {
+        payload: Prisma.$InstitutePayload<ExtArgs>
+        fields: Prisma.InstituteFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.InstituteFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.InstituteFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload>
+          }
+          findFirst: {
+            args: Prisma.InstituteFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.InstituteFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload>
+          }
+          findMany: {
+            args: Prisma.InstituteFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload>[]
+          }
+          create: {
+            args: Prisma.InstituteCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload>
+          }
+          createMany: {
+            args: Prisma.InstituteCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.InstituteCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload>[]
+          }
+          delete: {
+            args: Prisma.InstituteDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload>
+          }
+          update: {
+            args: Prisma.InstituteUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload>
+          }
+          deleteMany: {
+            args: Prisma.InstituteDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.InstituteUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.InstituteUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$InstitutePayload>
+          }
+          aggregate: {
+            args: Prisma.InstituteAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateInstitute>
+          }
+          groupBy: {
+            args: Prisma.InstituteGroupByArgs<ExtArgs>
+            result: $Utils.Optional<InstituteGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.InstituteCountArgs<ExtArgs>
+            result: $Utils.Optional<InstituteCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -2543,6 +2641,37 @@ export namespace Prisma {
    */
   export type AwardCountOutputTypeCountUserAwardsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: UserAwardWhereInput
+  }
+
+
+  /**
+   * Count Type InstituteCountOutputType
+   */
+
+  export type InstituteCountOutputType = {
+    Users: number
+  }
+
+  export type InstituteCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Users?: boolean | InstituteCountOutputTypeCountUsersArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * InstituteCountOutputType without action
+   */
+  export type InstituteCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the InstituteCountOutputType
+     */
+    select?: InstituteCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * InstituteCountOutputType without action
+   */
+  export type InstituteCountOutputTypeCountUsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
   }
 
 
@@ -9816,27 +9945,36 @@ export namespace Prisma {
     id: string | null
     userId: string | null
     courseId: string | null
+    teacherId: string | null
     rating: number | null
     comment: string | null
+    type: $Enums.FeedbackType | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type FeedbackMaxAggregateOutputType = {
     id: string | null
     userId: string | null
     courseId: string | null
+    teacherId: string | null
     rating: number | null
     comment: string | null
+    type: $Enums.FeedbackType | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type FeedbackCountAggregateOutputType = {
     id: number
     userId: number
     courseId: number
+    teacherId: number
     rating: number
     comment: number
+    type: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -9853,27 +9991,36 @@ export namespace Prisma {
     id?: true
     userId?: true
     courseId?: true
+    teacherId?: true
     rating?: true
     comment?: true
+    type?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type FeedbackMaxAggregateInputType = {
     id?: true
     userId?: true
     courseId?: true
+    teacherId?: true
     rating?: true
     comment?: true
+    type?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type FeedbackCountAggregateInputType = {
     id?: true
     userId?: true
     courseId?: true
+    teacherId?: true
     rating?: true
     comment?: true
+    type?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -9966,10 +10113,13 @@ export namespace Prisma {
   export type FeedbackGroupByOutputType = {
     id: string
     userId: string
-    courseId: string
+    courseId: string | null
+    teacherId: string | null
     rating: number
     comment: string
+    type: $Enums.FeedbackType
     createdAt: Date
+    updatedAt: Date
     _count: FeedbackCountAggregateOutputType | null
     _avg: FeedbackAvgAggregateOutputType | null
     _sum: FeedbackSumAggregateOutputType | null
@@ -9995,10 +10145,13 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     courseId?: boolean
+    teacherId?: boolean
     rating?: boolean
     comment?: boolean
+    type?: boolean
     createdAt?: boolean
-    Course?: boolean | CourseDefaultArgs<ExtArgs>
+    updatedAt?: boolean
+    Course?: boolean | Feedback$CourseArgs<ExtArgs>
     User?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["feedback"]>
 
@@ -10006,10 +10159,13 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     courseId?: boolean
+    teacherId?: boolean
     rating?: boolean
     comment?: boolean
+    type?: boolean
     createdAt?: boolean
-    Course?: boolean | CourseDefaultArgs<ExtArgs>
+    updatedAt?: boolean
+    Course?: boolean | Feedback$CourseArgs<ExtArgs>
     User?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["feedback"]>
 
@@ -10017,33 +10173,39 @@ export namespace Prisma {
     id?: boolean
     userId?: boolean
     courseId?: boolean
+    teacherId?: boolean
     rating?: boolean
     comment?: boolean
+    type?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
   export type FeedbackInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    Course?: boolean | CourseDefaultArgs<ExtArgs>
+    Course?: boolean | Feedback$CourseArgs<ExtArgs>
     User?: boolean | UserDefaultArgs<ExtArgs>
   }
   export type FeedbackIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    Course?: boolean | CourseDefaultArgs<ExtArgs>
+    Course?: boolean | Feedback$CourseArgs<ExtArgs>
     User?: boolean | UserDefaultArgs<ExtArgs>
   }
 
   export type $FeedbackPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Feedback"
     objects: {
-      Course: Prisma.$CoursePayload<ExtArgs>
+      Course: Prisma.$CoursePayload<ExtArgs> | null
       User: Prisma.$UserPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
-      courseId: string
+      courseId: string | null
+      teacherId: string | null
       rating: number
       comment: string
+      type: $Enums.FeedbackType
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["feedback"]>
     composites: {}
   }
@@ -10408,7 +10570,7 @@ export namespace Prisma {
    */
   export interface Prisma__FeedbackClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    Course<T extends CourseDefaultArgs<ExtArgs> = {}>(args?: Subset<T, CourseDefaultArgs<ExtArgs>>): Prisma__CourseClient<$Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    Course<T extends Feedback$CourseArgs<ExtArgs> = {}>(args?: Subset<T, Feedback$CourseArgs<ExtArgs>>): Prisma__CourseClient<$Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     User<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -10442,9 +10604,12 @@ export namespace Prisma {
     readonly id: FieldRef<"Feedback", 'String'>
     readonly userId: FieldRef<"Feedback", 'String'>
     readonly courseId: FieldRef<"Feedback", 'String'>
+    readonly teacherId: FieldRef<"Feedback", 'String'>
     readonly rating: FieldRef<"Feedback", 'Int'>
     readonly comment: FieldRef<"Feedback", 'String'>
+    readonly type: FieldRef<"Feedback", 'FeedbackType'>
     readonly createdAt: FieldRef<"Feedback", 'DateTime'>
+    readonly updatedAt: FieldRef<"Feedback", 'DateTime'>
   }
     
 
@@ -10760,6 +10925,21 @@ export namespace Prisma {
      * Filter which Feedbacks to delete
      */
     where?: FeedbackWhereInput
+  }
+
+  /**
+   * Feedback.Course
+   */
+  export type Feedback$CourseArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Course
+     */
+    select?: CourseSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CourseInclude<ExtArgs> | null
+    where?: CourseWhereInput
   }
 
   /**
@@ -13969,6 +14149,9 @@ export namespace Prisma {
     emailVerified: Date | null
     referralCode: string | null
     referredBy: string | null
+    isVIP: boolean | null
+    vipGrantedAt: Date | null
+    instituteId: string | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -13982,6 +14165,9 @@ export namespace Prisma {
     emailVerified: Date | null
     referralCode: string | null
     referredBy: string | null
+    isVIP: boolean | null
+    vipGrantedAt: Date | null
+    instituteId: string | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -13995,6 +14181,9 @@ export namespace Prisma {
     emailVerified: number
     referralCode: number
     referredBy: number
+    isVIP: number
+    vipGrantedAt: number
+    instituteId: number
     _all: number
   }
 
@@ -14010,6 +14199,9 @@ export namespace Prisma {
     emailVerified?: true
     referralCode?: true
     referredBy?: true
+    isVIP?: true
+    vipGrantedAt?: true
+    instituteId?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -14023,6 +14215,9 @@ export namespace Prisma {
     emailVerified?: true
     referralCode?: true
     referredBy?: true
+    isVIP?: true
+    vipGrantedAt?: true
+    instituteId?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -14036,6 +14231,9 @@ export namespace Prisma {
     emailVerified?: true
     referralCode?: true
     referredBy?: true
+    isVIP?: true
+    vipGrantedAt?: true
+    instituteId?: true
     _all?: true
   }
 
@@ -14122,6 +14320,9 @@ export namespace Prisma {
     emailVerified: Date | null
     referralCode: string | null
     referredBy: string | null
+    isVIP: boolean
+    vipGrantedAt: Date | null
+    instituteId: string | null
     _count: UserCountAggregateOutputType | null
     _min: UserMinAggregateOutputType | null
     _max: UserMaxAggregateOutputType | null
@@ -14152,6 +14353,10 @@ export namespace Prisma {
     emailVerified?: boolean
     referralCode?: boolean
     referredBy?: boolean
+    isVIP?: boolean
+    vipGrantedAt?: boolean
+    instituteId?: boolean
+    Institute?: boolean | User$InstituteArgs<ExtArgs>
     Course?: boolean | User$CourseArgs<ExtArgs>
     CourseProgress?: boolean | User$CourseProgressArgs<ExtArgs>
     Enrollment?: boolean | User$EnrollmentArgs<ExtArgs>
@@ -14175,6 +14380,10 @@ export namespace Prisma {
     emailVerified?: boolean
     referralCode?: boolean
     referredBy?: boolean
+    isVIP?: boolean
+    vipGrantedAt?: boolean
+    instituteId?: boolean
+    Institute?: boolean | User$InstituteArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -14188,9 +14397,13 @@ export namespace Prisma {
     emailVerified?: boolean
     referralCode?: boolean
     referredBy?: boolean
+    isVIP?: boolean
+    vipGrantedAt?: boolean
+    instituteId?: boolean
   }
 
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Institute?: boolean | User$InstituteArgs<ExtArgs>
     Course?: boolean | User$CourseArgs<ExtArgs>
     CourseProgress?: boolean | User$CourseProgressArgs<ExtArgs>
     Enrollment?: boolean | User$EnrollmentArgs<ExtArgs>
@@ -14202,11 +14415,14 @@ export namespace Prisma {
     UserAwards?: boolean | User$UserAwardsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Institute?: boolean | User$InstituteArgs<ExtArgs>
+  }
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
     objects: {
+      Institute: Prisma.$InstitutePayload<ExtArgs> | null
       Course: Prisma.$CoursePayload<ExtArgs>[]
       CourseProgress: Prisma.$CourseProgressPayload<ExtArgs>[]
       Enrollment: Prisma.$EnrollmentPayload<ExtArgs>[]
@@ -14228,6 +14444,9 @@ export namespace Prisma {
       emailVerified: Date | null
       referralCode: string | null
       referredBy: string | null
+      isVIP: boolean
+      vipGrantedAt: Date | null
+      instituteId: string | null
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -14592,6 +14811,7 @@ export namespace Prisma {
    */
   export interface Prisma__UserClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    Institute<T extends User$InstituteArgs<ExtArgs> = {}>(args?: Subset<T, User$InstituteArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     Course<T extends User$CourseArgs<ExtArgs> = {}>(args?: Subset<T, User$CourseArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CoursePayload<ExtArgs>, T, "findMany"> | Null>
     CourseProgress<T extends User$CourseProgressArgs<ExtArgs> = {}>(args?: Subset<T, User$CourseProgressArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CourseProgressPayload<ExtArgs>, T, "findMany"> | Null>
     Enrollment<T extends User$EnrollmentArgs<ExtArgs> = {}>(args?: Subset<T, User$EnrollmentArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$EnrollmentPayload<ExtArgs>, T, "findMany"> | Null>
@@ -14640,6 +14860,9 @@ export namespace Prisma {
     readonly emailVerified: FieldRef<"User", 'DateTime'>
     readonly referralCode: FieldRef<"User", 'String'>
     readonly referredBy: FieldRef<"User", 'String'>
+    readonly isVIP: FieldRef<"User", 'Boolean'>
+    readonly vipGrantedAt: FieldRef<"User", 'DateTime'>
+    readonly instituteId: FieldRef<"User", 'String'>
   }
     
 
@@ -14861,6 +15084,10 @@ export namespace Prisma {
      */
     data: UserCreateManyInput | UserCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -14951,6 +15178,21 @@ export namespace Prisma {
      * Filter which Users to delete
      */
     where?: UserWhereInput
+  }
+
+  /**
+   * User.Institute
+   */
+  export type User$InstituteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    where?: InstituteWhereInput
   }
 
   /**
@@ -19110,6 +19352,1050 @@ export namespace Prisma {
 
 
   /**
+   * Model Institute
+   */
+
+  export type AggregateInstitute = {
+    _count: InstituteCountAggregateOutputType | null
+    _min: InstituteMinAggregateOutputType | null
+    _max: InstituteMaxAggregateOutputType | null
+  }
+
+  export type InstituteMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    domain: string | null
+    description: string | null
+    address: string | null
+    phone: string | null
+    email: string | null
+    website: string | null
+    logo: string | null
+    established: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type InstituteMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    domain: string | null
+    description: string | null
+    address: string | null
+    phone: string | null
+    email: string | null
+    website: string | null
+    logo: string | null
+    established: string | null
+    isActive: boolean | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type InstituteCountAggregateOutputType = {
+    id: number
+    name: number
+    domain: number
+    description: number
+    address: number
+    phone: number
+    email: number
+    website: number
+    logo: number
+    established: number
+    isActive: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type InstituteMinAggregateInputType = {
+    id?: true
+    name?: true
+    domain?: true
+    description?: true
+    address?: true
+    phone?: true
+    email?: true
+    website?: true
+    logo?: true
+    established?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type InstituteMaxAggregateInputType = {
+    id?: true
+    name?: true
+    domain?: true
+    description?: true
+    address?: true
+    phone?: true
+    email?: true
+    website?: true
+    logo?: true
+    established?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type InstituteCountAggregateInputType = {
+    id?: true
+    name?: true
+    domain?: true
+    description?: true
+    address?: true
+    phone?: true
+    email?: true
+    website?: true
+    logo?: true
+    established?: true
+    isActive?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type InstituteAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Institute to aggregate.
+     */
+    where?: InstituteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Institutes to fetch.
+     */
+    orderBy?: InstituteOrderByWithRelationInput | InstituteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: InstituteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Institutes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Institutes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Institutes
+    **/
+    _count?: true | InstituteCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: InstituteMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: InstituteMaxAggregateInputType
+  }
+
+  export type GetInstituteAggregateType<T extends InstituteAggregateArgs> = {
+        [P in keyof T & keyof AggregateInstitute]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateInstitute[P]>
+      : GetScalarType<T[P], AggregateInstitute[P]>
+  }
+
+
+
+
+  export type InstituteGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: InstituteWhereInput
+    orderBy?: InstituteOrderByWithAggregationInput | InstituteOrderByWithAggregationInput[]
+    by: InstituteScalarFieldEnum[] | InstituteScalarFieldEnum
+    having?: InstituteScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: InstituteCountAggregateInputType | true
+    _min?: InstituteMinAggregateInputType
+    _max?: InstituteMaxAggregateInputType
+  }
+
+  export type InstituteGroupByOutputType = {
+    id: string
+    name: string
+    domain: string
+    description: string | null
+    address: string | null
+    phone: string | null
+    email: string | null
+    website: string | null
+    logo: string | null
+    established: string | null
+    isActive: boolean
+    createdAt: Date
+    updatedAt: Date
+    _count: InstituteCountAggregateOutputType | null
+    _min: InstituteMinAggregateOutputType | null
+    _max: InstituteMaxAggregateOutputType | null
+  }
+
+  type GetInstituteGroupByPayload<T extends InstituteGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<InstituteGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof InstituteGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], InstituteGroupByOutputType[P]>
+            : GetScalarType<T[P], InstituteGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type InstituteSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    domain?: boolean
+    description?: boolean
+    address?: boolean
+    phone?: boolean
+    email?: boolean
+    website?: boolean
+    logo?: boolean
+    established?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    Users?: boolean | Institute$UsersArgs<ExtArgs>
+    _count?: boolean | InstituteCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["institute"]>
+
+  export type InstituteSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    domain?: boolean
+    description?: boolean
+    address?: boolean
+    phone?: boolean
+    email?: boolean
+    website?: boolean
+    logo?: boolean
+    established?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["institute"]>
+
+  export type InstituteSelectScalar = {
+    id?: boolean
+    name?: boolean
+    domain?: boolean
+    description?: boolean
+    address?: boolean
+    phone?: boolean
+    email?: boolean
+    website?: boolean
+    logo?: boolean
+    established?: boolean
+    isActive?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type InstituteInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    Users?: boolean | Institute$UsersArgs<ExtArgs>
+    _count?: boolean | InstituteCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type InstituteIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $InstitutePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Institute"
+    objects: {
+      Users: Prisma.$UserPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      domain: string
+      description: string | null
+      address: string | null
+      phone: string | null
+      email: string | null
+      website: string | null
+      logo: string | null
+      established: string | null
+      isActive: boolean
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["institute"]>
+    composites: {}
+  }
+
+  type InstituteGetPayload<S extends boolean | null | undefined | InstituteDefaultArgs> = $Result.GetResult<Prisma.$InstitutePayload, S>
+
+  type InstituteCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<InstituteFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: InstituteCountAggregateInputType | true
+    }
+
+  export interface InstituteDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Institute'], meta: { name: 'Institute' } }
+    /**
+     * Find zero or one Institute that matches the filter.
+     * @param {InstituteFindUniqueArgs} args - Arguments to find a Institute
+     * @example
+     * // Get one Institute
+     * const institute = await prisma.institute.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends InstituteFindUniqueArgs>(args: SelectSubset<T, InstituteFindUniqueArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one Institute that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {InstituteFindUniqueOrThrowArgs} args - Arguments to find a Institute
+     * @example
+     * // Get one Institute
+     * const institute = await prisma.institute.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends InstituteFindUniqueOrThrowArgs>(args: SelectSubset<T, InstituteFindUniqueOrThrowArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first Institute that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InstituteFindFirstArgs} args - Arguments to find a Institute
+     * @example
+     * // Get one Institute
+     * const institute = await prisma.institute.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends InstituteFindFirstArgs>(args?: SelectSubset<T, InstituteFindFirstArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first Institute that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InstituteFindFirstOrThrowArgs} args - Arguments to find a Institute
+     * @example
+     * // Get one Institute
+     * const institute = await prisma.institute.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends InstituteFindFirstOrThrowArgs>(args?: SelectSubset<T, InstituteFindFirstOrThrowArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more Institutes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InstituteFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Institutes
+     * const institutes = await prisma.institute.findMany()
+     * 
+     * // Get first 10 Institutes
+     * const institutes = await prisma.institute.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const instituteWithIdOnly = await prisma.institute.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends InstituteFindManyArgs>(args?: SelectSubset<T, InstituteFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a Institute.
+     * @param {InstituteCreateArgs} args - Arguments to create a Institute.
+     * @example
+     * // Create one Institute
+     * const Institute = await prisma.institute.create({
+     *   data: {
+     *     // ... data to create a Institute
+     *   }
+     * })
+     * 
+     */
+    create<T extends InstituteCreateArgs>(args: SelectSubset<T, InstituteCreateArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many Institutes.
+     * @param {InstituteCreateManyArgs} args - Arguments to create many Institutes.
+     * @example
+     * // Create many Institutes
+     * const institute = await prisma.institute.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends InstituteCreateManyArgs>(args?: SelectSubset<T, InstituteCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Institutes and returns the data saved in the database.
+     * @param {InstituteCreateManyAndReturnArgs} args - Arguments to create many Institutes.
+     * @example
+     * // Create many Institutes
+     * const institute = await prisma.institute.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Institutes and only return the `id`
+     * const instituteWithIdOnly = await prisma.institute.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends InstituteCreateManyAndReturnArgs>(args?: SelectSubset<T, InstituteCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a Institute.
+     * @param {InstituteDeleteArgs} args - Arguments to delete one Institute.
+     * @example
+     * // Delete one Institute
+     * const Institute = await prisma.institute.delete({
+     *   where: {
+     *     // ... filter to delete one Institute
+     *   }
+     * })
+     * 
+     */
+    delete<T extends InstituteDeleteArgs>(args: SelectSubset<T, InstituteDeleteArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one Institute.
+     * @param {InstituteUpdateArgs} args - Arguments to update one Institute.
+     * @example
+     * // Update one Institute
+     * const institute = await prisma.institute.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends InstituteUpdateArgs>(args: SelectSubset<T, InstituteUpdateArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more Institutes.
+     * @param {InstituteDeleteManyArgs} args - Arguments to filter Institutes to delete.
+     * @example
+     * // Delete a few Institutes
+     * const { count } = await prisma.institute.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends InstituteDeleteManyArgs>(args?: SelectSubset<T, InstituteDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Institutes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InstituteUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Institutes
+     * const institute = await prisma.institute.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends InstituteUpdateManyArgs>(args: SelectSubset<T, InstituteUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one Institute.
+     * @param {InstituteUpsertArgs} args - Arguments to update or create a Institute.
+     * @example
+     * // Update or create a Institute
+     * const institute = await prisma.institute.upsert({
+     *   create: {
+     *     // ... data to create a Institute
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Institute we want to update
+     *   }
+     * })
+     */
+    upsert<T extends InstituteUpsertArgs>(args: SelectSubset<T, InstituteUpsertArgs<ExtArgs>>): Prisma__InstituteClient<$Result.GetResult<Prisma.$InstitutePayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of Institutes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InstituteCountArgs} args - Arguments to filter Institutes to count.
+     * @example
+     * // Count the number of Institutes
+     * const count = await prisma.institute.count({
+     *   where: {
+     *     // ... the filter for the Institutes we want to count
+     *   }
+     * })
+    **/
+    count<T extends InstituteCountArgs>(
+      args?: Subset<T, InstituteCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], InstituteCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Institute.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InstituteAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends InstituteAggregateArgs>(args: Subset<T, InstituteAggregateArgs>): Prisma.PrismaPromise<GetInstituteAggregateType<T>>
+
+    /**
+     * Group by Institute.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {InstituteGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends InstituteGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: InstituteGroupByArgs['orderBy'] }
+        : { orderBy?: InstituteGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, InstituteGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetInstituteGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Institute model
+   */
+  readonly fields: InstituteFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Institute.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__InstituteClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    Users<T extends Institute$UsersArgs<ExtArgs> = {}>(args?: Subset<T, Institute$UsersArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany"> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Institute model
+   */ 
+  interface InstituteFieldRefs {
+    readonly id: FieldRef<"Institute", 'String'>
+    readonly name: FieldRef<"Institute", 'String'>
+    readonly domain: FieldRef<"Institute", 'String'>
+    readonly description: FieldRef<"Institute", 'String'>
+    readonly address: FieldRef<"Institute", 'String'>
+    readonly phone: FieldRef<"Institute", 'String'>
+    readonly email: FieldRef<"Institute", 'String'>
+    readonly website: FieldRef<"Institute", 'String'>
+    readonly logo: FieldRef<"Institute", 'String'>
+    readonly established: FieldRef<"Institute", 'String'>
+    readonly isActive: FieldRef<"Institute", 'Boolean'>
+    readonly createdAt: FieldRef<"Institute", 'DateTime'>
+    readonly updatedAt: FieldRef<"Institute", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Institute findUnique
+   */
+  export type InstituteFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * Filter, which Institute to fetch.
+     */
+    where: InstituteWhereUniqueInput
+  }
+
+  /**
+   * Institute findUniqueOrThrow
+   */
+  export type InstituteFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * Filter, which Institute to fetch.
+     */
+    where: InstituteWhereUniqueInput
+  }
+
+  /**
+   * Institute findFirst
+   */
+  export type InstituteFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * Filter, which Institute to fetch.
+     */
+    where?: InstituteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Institutes to fetch.
+     */
+    orderBy?: InstituteOrderByWithRelationInput | InstituteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Institutes.
+     */
+    cursor?: InstituteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Institutes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Institutes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Institutes.
+     */
+    distinct?: InstituteScalarFieldEnum | InstituteScalarFieldEnum[]
+  }
+
+  /**
+   * Institute findFirstOrThrow
+   */
+  export type InstituteFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * Filter, which Institute to fetch.
+     */
+    where?: InstituteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Institutes to fetch.
+     */
+    orderBy?: InstituteOrderByWithRelationInput | InstituteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Institutes.
+     */
+    cursor?: InstituteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Institutes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Institutes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Institutes.
+     */
+    distinct?: InstituteScalarFieldEnum | InstituteScalarFieldEnum[]
+  }
+
+  /**
+   * Institute findMany
+   */
+  export type InstituteFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * Filter, which Institutes to fetch.
+     */
+    where?: InstituteWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Institutes to fetch.
+     */
+    orderBy?: InstituteOrderByWithRelationInput | InstituteOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Institutes.
+     */
+    cursor?: InstituteWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Institutes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Institutes.
+     */
+    skip?: number
+    distinct?: InstituteScalarFieldEnum | InstituteScalarFieldEnum[]
+  }
+
+  /**
+   * Institute create
+   */
+  export type InstituteCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Institute.
+     */
+    data: XOR<InstituteCreateInput, InstituteUncheckedCreateInput>
+  }
+
+  /**
+   * Institute createMany
+   */
+  export type InstituteCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Institutes.
+     */
+    data: InstituteCreateManyInput | InstituteCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Institute createManyAndReturn
+   */
+  export type InstituteCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many Institutes.
+     */
+    data: InstituteCreateManyInput | InstituteCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Institute update
+   */
+  export type InstituteUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Institute.
+     */
+    data: XOR<InstituteUpdateInput, InstituteUncheckedUpdateInput>
+    /**
+     * Choose, which Institute to update.
+     */
+    where: InstituteWhereUniqueInput
+  }
+
+  /**
+   * Institute updateMany
+   */
+  export type InstituteUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Institutes.
+     */
+    data: XOR<InstituteUpdateManyMutationInput, InstituteUncheckedUpdateManyInput>
+    /**
+     * Filter which Institutes to update
+     */
+    where?: InstituteWhereInput
+  }
+
+  /**
+   * Institute upsert
+   */
+  export type InstituteUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Institute to update in case it exists.
+     */
+    where: InstituteWhereUniqueInput
+    /**
+     * In case the Institute found by the `where` argument doesn't exist, create a new Institute with this data.
+     */
+    create: XOR<InstituteCreateInput, InstituteUncheckedCreateInput>
+    /**
+     * In case the Institute was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<InstituteUpdateInput, InstituteUncheckedUpdateInput>
+  }
+
+  /**
+   * Institute delete
+   */
+  export type InstituteDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+    /**
+     * Filter which Institute to delete.
+     */
+    where: InstituteWhereUniqueInput
+  }
+
+  /**
+   * Institute deleteMany
+   */
+  export type InstituteDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Institutes to delete
+     */
+    where?: InstituteWhereInput
+  }
+
+  /**
+   * Institute.Users
+   */
+  export type Institute$UsersArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * Institute without action
+   */
+  export type InstituteDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Institute
+     */
+    select?: InstituteSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: InstituteInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -19226,9 +20512,12 @@ export namespace Prisma {
     id: 'id',
     userId: 'userId',
     courseId: 'courseId',
+    teacherId: 'teacherId',
     rating: 'rating',
     comment: 'comment',
-    createdAt: 'createdAt'
+    type: 'type',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type FeedbackScalarFieldEnum = (typeof FeedbackScalarFieldEnum)[keyof typeof FeedbackScalarFieldEnum]
@@ -19291,7 +20580,10 @@ export namespace Prisma {
     createdAt: 'createdAt',
     emailVerified: 'emailVerified',
     referralCode: 'referralCode',
-    referredBy: 'referredBy'
+    referredBy: 'referredBy',
+    isVIP: 'isVIP',
+    vipGrantedAt: 'vipGrantedAt',
+    instituteId: 'instituteId'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -19348,6 +20640,25 @@ export namespace Prisma {
   };
 
   export type UserAwardScalarFieldEnum = (typeof UserAwardScalarFieldEnum)[keyof typeof UserAwardScalarFieldEnum]
+
+
+  export const InstituteScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    domain: 'domain',
+    description: 'description',
+    address: 'address',
+    phone: 'phone',
+    email: 'email',
+    website: 'website',
+    logo: 'logo',
+    established: 'established',
+    isActive: 'isActive',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type InstituteScalarFieldEnum = (typeof InstituteScalarFieldEnum)[keyof typeof InstituteScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -19477,6 +20788,20 @@ export namespace Prisma {
    * Reference to a field of type 'ContentType[]'
    */
   export type ListEnumContentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ContentType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'FeedbackType'
+   */
+  export type EnumFeedbackTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FeedbackType'>
+    
+
+
+  /**
+   * Reference to a field of type 'FeedbackType[]'
+   */
+  export type ListEnumFeedbackTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'FeedbackType[]'>
     
 
 
@@ -20087,21 +21412,27 @@ export namespace Prisma {
     NOT?: FeedbackWhereInput | FeedbackWhereInput[]
     id?: StringFilter<"Feedback"> | string
     userId?: StringFilter<"Feedback"> | string
-    courseId?: StringFilter<"Feedback"> | string
+    courseId?: StringNullableFilter<"Feedback"> | string | null
+    teacherId?: StringNullableFilter<"Feedback"> | string | null
     rating?: IntFilter<"Feedback"> | number
     comment?: StringFilter<"Feedback"> | string
+    type?: EnumFeedbackTypeFilter<"Feedback"> | $Enums.FeedbackType
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
-    Course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
+    updatedAt?: DateTimeFilter<"Feedback"> | Date | string
+    Course?: XOR<CourseNullableScalarRelationFilter, CourseWhereInput> | null
     User?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
 
   export type FeedbackOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
-    courseId?: SortOrder
+    courseId?: SortOrderInput | SortOrder
+    teacherId?: SortOrderInput | SortOrder
     rating?: SortOrder
     comment?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     Course?: CourseOrderByWithRelationInput
     User?: UserOrderByWithRelationInput
   }
@@ -20112,21 +21443,27 @@ export namespace Prisma {
     OR?: FeedbackWhereInput[]
     NOT?: FeedbackWhereInput | FeedbackWhereInput[]
     userId?: StringFilter<"Feedback"> | string
-    courseId?: StringFilter<"Feedback"> | string
+    courseId?: StringNullableFilter<"Feedback"> | string | null
+    teacherId?: StringNullableFilter<"Feedback"> | string | null
     rating?: IntFilter<"Feedback"> | number
     comment?: StringFilter<"Feedback"> | string
+    type?: EnumFeedbackTypeFilter<"Feedback"> | $Enums.FeedbackType
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
-    Course?: XOR<CourseScalarRelationFilter, CourseWhereInput>
+    updatedAt?: DateTimeFilter<"Feedback"> | Date | string
+    Course?: XOR<CourseNullableScalarRelationFilter, CourseWhereInput> | null
     User?: XOR<UserScalarRelationFilter, UserWhereInput>
   }, "id">
 
   export type FeedbackOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
-    courseId?: SortOrder
+    courseId?: SortOrderInput | SortOrder
+    teacherId?: SortOrderInput | SortOrder
     rating?: SortOrder
     comment?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: FeedbackCountOrderByAggregateInput
     _avg?: FeedbackAvgOrderByAggregateInput
     _max?: FeedbackMaxOrderByAggregateInput
@@ -20140,10 +21477,13 @@ export namespace Prisma {
     NOT?: FeedbackScalarWhereWithAggregatesInput | FeedbackScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Feedback"> | string
     userId?: StringWithAggregatesFilter<"Feedback"> | string
-    courseId?: StringWithAggregatesFilter<"Feedback"> | string
+    courseId?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
+    teacherId?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
     rating?: IntWithAggregatesFilter<"Feedback"> | number
     comment?: StringWithAggregatesFilter<"Feedback"> | string
+    type?: EnumFeedbackTypeWithAggregatesFilter<"Feedback"> | $Enums.FeedbackType
     createdAt?: DateTimeWithAggregatesFilter<"Feedback"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Feedback"> | Date | string
   }
 
   export type QuestionWhereInput = {
@@ -20413,6 +21753,10 @@ export namespace Prisma {
     emailVerified?: DateTimeNullableFilter<"User"> | Date | string | null
     referralCode?: StringNullableFilter<"User"> | string | null
     referredBy?: StringNullableFilter<"User"> | string | null
+    isVIP?: BoolFilter<"User"> | boolean
+    vipGrantedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    instituteId?: StringNullableFilter<"User"> | string | null
+    Institute?: XOR<InstituteNullableScalarRelationFilter, InstituteWhereInput> | null
     Course?: CourseListRelationFilter
     CourseProgress?: CourseProgressListRelationFilter
     Enrollment?: EnrollmentListRelationFilter
@@ -20435,6 +21779,10 @@ export namespace Prisma {
     emailVerified?: SortOrderInput | SortOrder
     referralCode?: SortOrderInput | SortOrder
     referredBy?: SortOrderInput | SortOrder
+    isVIP?: SortOrder
+    vipGrantedAt?: SortOrderInput | SortOrder
+    instituteId?: SortOrderInput | SortOrder
+    Institute?: InstituteOrderByWithRelationInput
     Course?: CourseOrderByRelationAggregateInput
     CourseProgress?: CourseProgressOrderByRelationAggregateInput
     Enrollment?: EnrollmentOrderByRelationAggregateInput
@@ -20460,6 +21808,10 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"User"> | Date | string
     emailVerified?: DateTimeNullableFilter<"User"> | Date | string | null
     referredBy?: StringNullableFilter<"User"> | string | null
+    isVIP?: BoolFilter<"User"> | boolean
+    vipGrantedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    instituteId?: StringNullableFilter<"User"> | string | null
+    Institute?: XOR<InstituteNullableScalarRelationFilter, InstituteWhereInput> | null
     Course?: CourseListRelationFilter
     CourseProgress?: CourseProgressListRelationFilter
     Enrollment?: EnrollmentListRelationFilter
@@ -20482,6 +21834,9 @@ export namespace Prisma {
     emailVerified?: SortOrderInput | SortOrder
     referralCode?: SortOrderInput | SortOrder
     referredBy?: SortOrderInput | SortOrder
+    isVIP?: SortOrder
+    vipGrantedAt?: SortOrderInput | SortOrder
+    instituteId?: SortOrderInput | SortOrder
     _count?: UserCountOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
     _min?: UserMinOrderByAggregateInput
@@ -20501,6 +21856,9 @@ export namespace Prisma {
     emailVerified?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     referralCode?: StringNullableWithAggregatesFilter<"User"> | string | null
     referredBy?: StringNullableWithAggregatesFilter<"User"> | string | null
+    isVIP?: BoolWithAggregatesFilter<"User"> | boolean
+    vipGrantedAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    instituteId?: StringNullableWithAggregatesFilter<"User"> | string | null
   }
 
   export type EmailVerificationWhereInput = {
@@ -20781,6 +22139,101 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"UserAward"> | string
     awardId?: StringWithAggregatesFilter<"UserAward"> | string
     achievedAt?: DateTimeWithAggregatesFilter<"UserAward"> | Date | string
+  }
+
+  export type InstituteWhereInput = {
+    AND?: InstituteWhereInput | InstituteWhereInput[]
+    OR?: InstituteWhereInput[]
+    NOT?: InstituteWhereInput | InstituteWhereInput[]
+    id?: StringFilter<"Institute"> | string
+    name?: StringFilter<"Institute"> | string
+    domain?: StringFilter<"Institute"> | string
+    description?: StringNullableFilter<"Institute"> | string | null
+    address?: StringNullableFilter<"Institute"> | string | null
+    phone?: StringNullableFilter<"Institute"> | string | null
+    email?: StringNullableFilter<"Institute"> | string | null
+    website?: StringNullableFilter<"Institute"> | string | null
+    logo?: StringNullableFilter<"Institute"> | string | null
+    established?: StringNullableFilter<"Institute"> | string | null
+    isActive?: BoolFilter<"Institute"> | boolean
+    createdAt?: DateTimeFilter<"Institute"> | Date | string
+    updatedAt?: DateTimeFilter<"Institute"> | Date | string
+    Users?: UserListRelationFilter
+  }
+
+  export type InstituteOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    domain?: SortOrder
+    description?: SortOrderInput | SortOrder
+    address?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    email?: SortOrderInput | SortOrder
+    website?: SortOrderInput | SortOrder
+    logo?: SortOrderInput | SortOrder
+    established?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    Users?: UserOrderByRelationAggregateInput
+  }
+
+  export type InstituteWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    domain?: string
+    AND?: InstituteWhereInput | InstituteWhereInput[]
+    OR?: InstituteWhereInput[]
+    NOT?: InstituteWhereInput | InstituteWhereInput[]
+    name?: StringFilter<"Institute"> | string
+    description?: StringNullableFilter<"Institute"> | string | null
+    address?: StringNullableFilter<"Institute"> | string | null
+    phone?: StringNullableFilter<"Institute"> | string | null
+    email?: StringNullableFilter<"Institute"> | string | null
+    website?: StringNullableFilter<"Institute"> | string | null
+    logo?: StringNullableFilter<"Institute"> | string | null
+    established?: StringNullableFilter<"Institute"> | string | null
+    isActive?: BoolFilter<"Institute"> | boolean
+    createdAt?: DateTimeFilter<"Institute"> | Date | string
+    updatedAt?: DateTimeFilter<"Institute"> | Date | string
+    Users?: UserListRelationFilter
+  }, "id" | "domain">
+
+  export type InstituteOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    domain?: SortOrder
+    description?: SortOrderInput | SortOrder
+    address?: SortOrderInput | SortOrder
+    phone?: SortOrderInput | SortOrder
+    email?: SortOrderInput | SortOrder
+    website?: SortOrderInput | SortOrder
+    logo?: SortOrderInput | SortOrder
+    established?: SortOrderInput | SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: InstituteCountOrderByAggregateInput
+    _max?: InstituteMaxOrderByAggregateInput
+    _min?: InstituteMinOrderByAggregateInput
+  }
+
+  export type InstituteScalarWhereWithAggregatesInput = {
+    AND?: InstituteScalarWhereWithAggregatesInput | InstituteScalarWhereWithAggregatesInput[]
+    OR?: InstituteScalarWhereWithAggregatesInput[]
+    NOT?: InstituteScalarWhereWithAggregatesInput | InstituteScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Institute"> | string
+    name?: StringWithAggregatesFilter<"Institute"> | string
+    domain?: StringWithAggregatesFilter<"Institute"> | string
+    description?: StringNullableWithAggregatesFilter<"Institute"> | string | null
+    address?: StringNullableWithAggregatesFilter<"Institute"> | string | null
+    phone?: StringNullableWithAggregatesFilter<"Institute"> | string | null
+    email?: StringNullableWithAggregatesFilter<"Institute"> | string | null
+    website?: StringNullableWithAggregatesFilter<"Institute"> | string | null
+    logo?: StringNullableWithAggregatesFilter<"Institute"> | string | null
+    established?: StringNullableWithAggregatesFilter<"Institute"> | string | null
+    isActive?: BoolWithAggregatesFilter<"Institute"> | boolean
+    createdAt?: DateTimeWithAggregatesFilter<"Institute"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Institute"> | Date | string
   }
 
   export type AnswerCreateInput = {
@@ -21354,64 +22807,85 @@ export namespace Prisma {
   }
 
   export type FeedbackCreateInput = {
-    id: string
+    id?: string
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
-    Course: CourseCreateNestedOneWithoutFeedbackInput
+    updatedAt?: Date | string
+    Course?: CourseCreateNestedOneWithoutFeedbackInput
     User: UserCreateNestedOneWithoutFeedbackInput
   }
 
   export type FeedbackUncheckedCreateInput = {
-    id: string
+    id?: string
     userId: string
-    courseId: string
+    courseId?: string | null
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type FeedbackUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    Course?: CourseUpdateOneRequiredWithoutFeedbackNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Course?: CourseUpdateOneWithoutFeedbackNestedInput
     User?: UserUpdateOneRequiredWithoutFeedbackNestedInput
   }
 
   export type FeedbackUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    courseId?: StringFieldUpdateOperationsInput | string
+    courseId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FeedbackCreateManyInput = {
-    id: string
+    id?: string
     userId: string
-    courseId: string
+    courseId?: string | null
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type FeedbackUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FeedbackUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
-    courseId?: StringFieldUpdateOperationsInput | string
+    courseId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type QuestionCreateInput = {
@@ -21699,6 +23173,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
@@ -21721,6 +23198,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
@@ -21743,6 +23223,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
@@ -21765,6 +23248,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
@@ -21787,6 +23273,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
   }
 
   export type UserUpdateManyMutationInput = {
@@ -21800,6 +23289,8 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -21813,6 +23304,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type EmailVerificationCreateInput = {
@@ -22103,6 +23597,122 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     awardId?: StringFieldUpdateOperationsInput | string
     achievedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InstituteCreateInput = {
+    id?: string
+    name: string
+    domain: string
+    description?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    website?: string | null
+    logo?: string | null
+    established?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    Users?: UserCreateNestedManyWithoutInstituteInput
+  }
+
+  export type InstituteUncheckedCreateInput = {
+    id?: string
+    name: string
+    domain: string
+    description?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    website?: string | null
+    logo?: string | null
+    established?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    Users?: UserUncheckedCreateNestedManyWithoutInstituteInput
+  }
+
+  export type InstituteUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    established?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Users?: UserUpdateManyWithoutInstituteNestedInput
+  }
+
+  export type InstituteUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    established?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Users?: UserUncheckedUpdateManyWithoutInstituteNestedInput
+  }
+
+  export type InstituteCreateManyInput = {
+    id?: string
+    name: string
+    domain: string
+    description?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    website?: string | null
+    logo?: string | null
+    established?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type InstituteUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    established?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InstituteUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    established?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type StringFilter<$PrismaModel = never> = {
@@ -22732,13 +24342,28 @@ export namespace Prisma {
     paymentId?: SortOrder
   }
 
+  export type EnumFeedbackTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.FeedbackType | EnumFeedbackTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FeedbackType[] | ListEnumFeedbackTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FeedbackType[] | ListEnumFeedbackTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFeedbackTypeFilter<$PrismaModel> | $Enums.FeedbackType
+  }
+
+  export type CourseNullableScalarRelationFilter = {
+    is?: CourseWhereInput | null
+    isNot?: CourseWhereInput | null
+  }
+
   export type FeedbackCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
     courseId?: SortOrder
+    teacherId?: SortOrder
     rating?: SortOrder
     comment?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type FeedbackAvgOrderByAggregateInput = {
@@ -22749,22 +24374,38 @@ export namespace Prisma {
     id?: SortOrder
     userId?: SortOrder
     courseId?: SortOrder
+    teacherId?: SortOrder
     rating?: SortOrder
     comment?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type FeedbackMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
     courseId?: SortOrder
+    teacherId?: SortOrder
     rating?: SortOrder
     comment?: SortOrder
+    type?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type FeedbackSumOrderByAggregateInput = {
     rating?: SortOrder
+  }
+
+  export type EnumFeedbackTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FeedbackType | EnumFeedbackTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FeedbackType[] | ListEnumFeedbackTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FeedbackType[] | ListEnumFeedbackTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFeedbackTypeWithAggregatesFilter<$PrismaModel> | $Enums.FeedbackType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFeedbackTypeFilter<$PrismaModel>
+    _max?: NestedEnumFeedbackTypeFilter<$PrismaModel>
   }
 
   export type EnumQuestionTypeFilter<$PrismaModel = never> = {
@@ -23095,6 +24736,11 @@ export namespace Prisma {
     not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
+  export type InstituteNullableScalarRelationFilter = {
+    is?: InstituteWhereInput | null
+    isNot?: InstituteWhereInput | null
+  }
+
   export type CourseListRelationFilter = {
     every?: CourseWhereInput
     some?: CourseWhereInput
@@ -23136,6 +24782,9 @@ export namespace Prisma {
     emailVerified?: SortOrder
     referralCode?: SortOrder
     referredBy?: SortOrder
+    isVIP?: SortOrder
+    vipGrantedAt?: SortOrder
+    instituteId?: SortOrder
   }
 
   export type UserMaxOrderByAggregateInput = {
@@ -23149,6 +24798,9 @@ export namespace Prisma {
     emailVerified?: SortOrder
     referralCode?: SortOrder
     referredBy?: SortOrder
+    isVIP?: SortOrder
+    vipGrantedAt?: SortOrder
+    instituteId?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -23162,6 +24814,9 @@ export namespace Prisma {
     emailVerified?: SortOrder
     referralCode?: SortOrder
     referredBy?: SortOrder
+    isVIP?: SortOrder
+    vipGrantedAt?: SortOrder
+    instituteId?: SortOrder
   }
 
   export type EnumRoleWithAggregatesFilter<$PrismaModel = never> = {
@@ -23343,6 +24998,64 @@ export namespace Prisma {
     userId?: SortOrder
     awardId?: SortOrder
     achievedAt?: SortOrder
+  }
+
+  export type UserListRelationFilter = {
+    every?: UserWhereInput
+    some?: UserWhereInput
+    none?: UserWhereInput
+  }
+
+  export type UserOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type InstituteCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    domain?: SortOrder
+    description?: SortOrder
+    address?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    website?: SortOrder
+    logo?: SortOrder
+    established?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type InstituteMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    domain?: SortOrder
+    description?: SortOrder
+    address?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    website?: SortOrder
+    logo?: SortOrder
+    established?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type InstituteMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    domain?: SortOrder
+    description?: SortOrder
+    address?: SortOrder
+    phone?: SortOrder
+    email?: SortOrder
+    website?: SortOrder
+    logo?: SortOrder
+    established?: SortOrder
+    isActive?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type QuestionCreateNestedOneWithoutAnswerInput = {
@@ -23953,10 +25666,16 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
-  export type CourseUpdateOneRequiredWithoutFeedbackNestedInput = {
+  export type EnumFeedbackTypeFieldUpdateOperationsInput = {
+    set?: $Enums.FeedbackType
+  }
+
+  export type CourseUpdateOneWithoutFeedbackNestedInput = {
     create?: XOR<CourseCreateWithoutFeedbackInput, CourseUncheckedCreateWithoutFeedbackInput>
     connectOrCreate?: CourseCreateOrConnectWithoutFeedbackInput
     upsert?: CourseUpsertWithoutFeedbackInput
+    disconnect?: CourseWhereInput | boolean
+    delete?: CourseWhereInput | boolean
     connect?: CourseWhereUniqueInput
     update?: XOR<XOR<CourseUpdateToOneWithWhereWithoutFeedbackInput, CourseUpdateWithoutFeedbackInput>, CourseUncheckedUpdateWithoutFeedbackInput>
   }
@@ -24163,6 +25882,12 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutQuizSubmissionInput, UserUpdateWithoutQuizSubmissionInput>, UserUncheckedUpdateWithoutQuizSubmissionInput>
   }
 
+  export type InstituteCreateNestedOneWithoutUsersInput = {
+    create?: XOR<InstituteCreateWithoutUsersInput, InstituteUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: InstituteCreateOrConnectWithoutUsersInput
+    connect?: InstituteWhereUniqueInput
+  }
+
   export type CourseCreateNestedManyWithoutUserInput = {
     create?: XOR<CourseCreateWithoutUserInput, CourseUncheckedCreateWithoutUserInput> | CourseCreateWithoutUserInput[] | CourseUncheckedCreateWithoutUserInput[]
     connectOrCreate?: CourseCreateOrConnectWithoutUserInput | CourseCreateOrConnectWithoutUserInput[]
@@ -24291,6 +26016,16 @@ export namespace Prisma {
 
   export type EnumRoleFieldUpdateOperationsInput = {
     set?: $Enums.Role
+  }
+
+  export type InstituteUpdateOneWithoutUsersNestedInput = {
+    create?: XOR<InstituteCreateWithoutUsersInput, InstituteUncheckedCreateWithoutUsersInput>
+    connectOrCreate?: InstituteCreateOrConnectWithoutUsersInput
+    upsert?: InstituteUpsertWithoutUsersInput
+    disconnect?: InstituteWhereInput | boolean
+    delete?: InstituteWhereInput | boolean
+    connect?: InstituteWhereUniqueInput
+    update?: XOR<XOR<InstituteUpdateToOneWithWhereWithoutUsersInput, InstituteUpdateWithoutUsersInput>, InstituteUncheckedUpdateWithoutUsersInput>
   }
 
   export type CourseUpdateManyWithoutUserNestedInput = {
@@ -24703,6 +26438,48 @@ export namespace Prisma {
     update?: XOR<XOR<AwardUpdateToOneWithWhereWithoutUserAwardsInput, AwardUpdateWithoutUserAwardsInput>, AwardUncheckedUpdateWithoutUserAwardsInput>
   }
 
+  export type UserCreateNestedManyWithoutInstituteInput = {
+    create?: XOR<UserCreateWithoutInstituteInput, UserUncheckedCreateWithoutInstituteInput> | UserCreateWithoutInstituteInput[] | UserUncheckedCreateWithoutInstituteInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutInstituteInput | UserCreateOrConnectWithoutInstituteInput[]
+    createMany?: UserCreateManyInstituteInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutInstituteInput = {
+    create?: XOR<UserCreateWithoutInstituteInput, UserUncheckedCreateWithoutInstituteInput> | UserCreateWithoutInstituteInput[] | UserUncheckedCreateWithoutInstituteInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutInstituteInput | UserCreateOrConnectWithoutInstituteInput[]
+    createMany?: UserCreateManyInstituteInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type UserUpdateManyWithoutInstituteNestedInput = {
+    create?: XOR<UserCreateWithoutInstituteInput, UserUncheckedCreateWithoutInstituteInput> | UserCreateWithoutInstituteInput[] | UserUncheckedCreateWithoutInstituteInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutInstituteInput | UserCreateOrConnectWithoutInstituteInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutInstituteInput | UserUpsertWithWhereUniqueWithoutInstituteInput[]
+    createMany?: UserCreateManyInstituteInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutInstituteInput | UserUpdateWithWhereUniqueWithoutInstituteInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutInstituteInput | UserUpdateManyWithWhereWithoutInstituteInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type UserUncheckedUpdateManyWithoutInstituteNestedInput = {
+    create?: XOR<UserCreateWithoutInstituteInput, UserUncheckedCreateWithoutInstituteInput> | UserCreateWithoutInstituteInput[] | UserUncheckedCreateWithoutInstituteInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutInstituteInput | UserCreateOrConnectWithoutInstituteInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutInstituteInput | UserUpsertWithWhereUniqueWithoutInstituteInput[]
+    createMany?: UserCreateManyInstituteInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutInstituteInput | UserUpdateWithWhereUniqueWithoutInstituteInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutInstituteInput | UserUpdateManyWithWhereWithoutInstituteInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -24937,6 +26714,23 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedEnumFeedbackTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.FeedbackType | EnumFeedbackTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FeedbackType[] | ListEnumFeedbackTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FeedbackType[] | ListEnumFeedbackTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFeedbackTypeFilter<$PrismaModel> | $Enums.FeedbackType
+  }
+
+  export type NestedEnumFeedbackTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.FeedbackType | EnumFeedbackTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.FeedbackType[] | ListEnumFeedbackTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.FeedbackType[] | ListEnumFeedbackTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumFeedbackTypeWithAggregatesFilter<$PrismaModel> | $Enums.FeedbackType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumFeedbackTypeFilter<$PrismaModel>
+    _max?: NestedEnumFeedbackTypeFilter<$PrismaModel>
+  }
+
   export type NestedEnumQuestionTypeFilter<$PrismaModel = never> = {
     equals?: $Enums.QuestionType | EnumQuestionTypeFieldRefInput<$PrismaModel>
     in?: $Enums.QuestionType[] | ListEnumQuestionTypeFieldRefInput<$PrismaModel>
@@ -25119,6 +26913,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
     Feedback?: FeedbackCreateNestedManyWithoutUserInput
@@ -25140,6 +26937,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
     Feedback?: FeedbackUncheckedCreateNestedManyWithoutUserInput
@@ -25240,19 +27040,25 @@ export namespace Prisma {
   }
 
   export type FeedbackCreateWithoutCourseInput = {
-    id: string
+    id?: string
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
+    updatedAt?: Date | string
     User: UserCreateNestedOneWithoutFeedbackInput
   }
 
   export type FeedbackUncheckedCreateWithoutCourseInput = {
-    id: string
+    id?: string
     userId: string
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type FeedbackCreateOrConnectWithoutCourseInput = {
@@ -25427,6 +27233,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
     Feedback?: FeedbackUpdateManyWithoutUserNestedInput
@@ -25448,6 +27257,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
     Feedback?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
@@ -25567,10 +27379,13 @@ export namespace Prisma {
     NOT?: FeedbackScalarWhereInput | FeedbackScalarWhereInput[]
     id?: StringFilter<"Feedback"> | string
     userId?: StringFilter<"Feedback"> | string
-    courseId?: StringFilter<"Feedback"> | string
+    courseId?: StringNullableFilter<"Feedback"> | string | null
+    teacherId?: StringNullableFilter<"Feedback"> | string | null
     rating?: IntFilter<"Feedback"> | number
     comment?: StringFilter<"Feedback"> | string
+    type?: EnumFeedbackTypeFilter<"Feedback"> | $Enums.FeedbackType
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
+    updatedAt?: DateTimeFilter<"Feedback"> | Date | string
   }
 
   export type ModuleUpsertWithWhereUniqueWithoutCourseInput = {
@@ -26013,6 +27828,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
     Feedback?: FeedbackCreateNestedManyWithoutUserInput
@@ -26034,6 +27852,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
     Feedback?: FeedbackUncheckedCreateNestedManyWithoutUserInput
@@ -26126,6 +27947,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
     Feedback?: FeedbackUpdateManyWithoutUserNestedInput
@@ -26147,6 +27971,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
     Feedback?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
@@ -26168,6 +27995,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
@@ -26189,6 +28019,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
@@ -26304,6 +28137,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
@@ -26325,6 +28161,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
@@ -26518,6 +28357,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Feedback?: FeedbackCreateNestedManyWithoutUserInput
@@ -26539,6 +28381,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Feedback?: FeedbackUncheckedCreateNestedManyWithoutUserInput
@@ -26670,6 +28515,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Feedback?: FeedbackUpdateManyWithoutUserNestedInput
@@ -26691,6 +28539,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Feedback?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
@@ -26761,6 +28612,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
@@ -26782,6 +28636,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
@@ -26874,6 +28731,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
@@ -26895,6 +28755,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
@@ -27313,6 +29176,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
@@ -27334,6 +29200,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
@@ -27410,6 +29279,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
@@ -27431,6 +29303,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
@@ -27439,6 +29314,43 @@ export namespace Prisma {
     ModuleProgress?: ModuleProgressUncheckedUpdateManyWithoutUserNestedInput
     Payment?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     UserAwards?: UserAwardUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type InstituteCreateWithoutUsersInput = {
+    id?: string
+    name: string
+    domain: string
+    description?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    website?: string | null
+    logo?: string | null
+    established?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type InstituteUncheckedCreateWithoutUsersInput = {
+    id?: string
+    name: string
+    domain: string
+    description?: string | null
+    address?: string | null
+    phone?: string | null
+    email?: string | null
+    website?: string | null
+    logo?: string | null
+    established?: string | null
+    isActive?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type InstituteCreateOrConnectWithoutUsersInput = {
+    where: InstituteWhereUniqueInput
+    create: XOR<InstituteCreateWithoutUsersInput, InstituteUncheckedCreateWithoutUsersInput>
   }
 
   export type CourseCreateWithoutUserInput = {
@@ -27554,19 +29466,25 @@ export namespace Prisma {
   }
 
   export type FeedbackCreateWithoutUserInput = {
-    id: string
+    id?: string
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
-    Course: CourseCreateNestedOneWithoutFeedbackInput
+    updatedAt?: Date | string
+    Course?: CourseCreateNestedOneWithoutFeedbackInput
   }
 
   export type FeedbackUncheckedCreateWithoutUserInput = {
-    id: string
-    courseId: string
+    id?: string
+    courseId?: string | null
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type FeedbackCreateOrConnectWithoutUserInput = {
@@ -27731,6 +29649,49 @@ export namespace Prisma {
   export type UserAwardCreateManyUserInputEnvelope = {
     data: UserAwardCreateManyUserInput | UserAwardCreateManyUserInput[]
     skipDuplicates?: boolean
+  }
+
+  export type InstituteUpsertWithoutUsersInput = {
+    update: XOR<InstituteUpdateWithoutUsersInput, InstituteUncheckedUpdateWithoutUsersInput>
+    create: XOR<InstituteCreateWithoutUsersInput, InstituteUncheckedCreateWithoutUsersInput>
+    where?: InstituteWhereInput
+  }
+
+  export type InstituteUpdateToOneWithWhereWithoutUsersInput = {
+    where?: InstituteWhereInput
+    data: XOR<InstituteUpdateWithoutUsersInput, InstituteUncheckedUpdateWithoutUsersInput>
+  }
+
+  export type InstituteUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    established?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type InstituteUncheckedUpdateWithoutUsersInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    domain?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    address?: NullableStringFieldUpdateOperationsInput | string | null
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    email?: NullableStringFieldUpdateOperationsInput | string | null
+    website?: NullableStringFieldUpdateOperationsInput | string | null
+    logo?: NullableStringFieldUpdateOperationsInput | string | null
+    established?: NullableStringFieldUpdateOperationsInput | string | null
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type CourseUpsertWithWhereUniqueWithoutUserInput = {
@@ -27929,6 +29890,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
@@ -27950,6 +29914,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
@@ -27987,6 +29954,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
@@ -28008,6 +29978,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
@@ -28029,6 +30002,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
@@ -28050,6 +30026,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
@@ -28162,6 +30141,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
@@ -28183,6 +30165,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
@@ -28313,6 +30298,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Institute?: InstituteCreateNestedOneWithoutUsersInput
     Course?: CourseCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
@@ -28334,6 +30322,9 @@ export namespace Prisma {
     emailVerified?: Date | string | null
     referralCode?: string | null
     referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    instituteId?: string | null
     Course?: CourseUncheckedCreateNestedManyWithoutUserInput
     CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
     Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
@@ -28396,6 +30387,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Institute?: InstituteUpdateOneWithoutUsersNestedInput
     Course?: CourseUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
@@ -28417,6 +30411,9 @@ export namespace Prisma {
     emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     referralCode?: NullableStringFieldUpdateOperationsInput | string | null
     referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    instituteId?: NullableStringFieldUpdateOperationsInput | string | null
     Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
     CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
     Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
@@ -28458,6 +30455,99 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type UserCreateWithoutInstituteInput = {
+    id?: string
+    name: string
+    email: string
+    password: string
+    role: $Enums.Role
+    approvalStatus?: string
+    createdAt?: Date | string
+    emailVerified?: Date | string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Course?: CourseCreateNestedManyWithoutUserInput
+    CourseProgress?: CourseProgressCreateNestedManyWithoutUserInput
+    Enrollment?: EnrollmentCreateNestedManyWithoutUserInput
+    Feedback?: FeedbackCreateNestedManyWithoutUserInput
+    QuizSubmission?: QuizSubmissionCreateNestedManyWithoutUserInput
+    EmailVerification?: EmailVerificationCreateNestedManyWithoutUserInput
+    ModuleProgress?: ModuleProgressCreateNestedManyWithoutUserInput
+    Payment?: PaymentCreateNestedManyWithoutUserInput
+    UserAwards?: UserAwardCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutInstituteInput = {
+    id?: string
+    name: string
+    email: string
+    password: string
+    role: $Enums.Role
+    approvalStatus?: string
+    createdAt?: Date | string
+    emailVerified?: Date | string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+    Course?: CourseUncheckedCreateNestedManyWithoutUserInput
+    CourseProgress?: CourseProgressUncheckedCreateNestedManyWithoutUserInput
+    Enrollment?: EnrollmentUncheckedCreateNestedManyWithoutUserInput
+    Feedback?: FeedbackUncheckedCreateNestedManyWithoutUserInput
+    QuizSubmission?: QuizSubmissionUncheckedCreateNestedManyWithoutUserInput
+    EmailVerification?: EmailVerificationUncheckedCreateNestedManyWithoutUserInput
+    ModuleProgress?: ModuleProgressUncheckedCreateNestedManyWithoutUserInput
+    Payment?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    UserAwards?: UserAwardUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutInstituteInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutInstituteInput, UserUncheckedCreateWithoutInstituteInput>
+  }
+
+  export type UserCreateManyInstituteInputEnvelope = {
+    data: UserCreateManyInstituteInput | UserCreateManyInstituteInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithWhereUniqueWithoutInstituteInput = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutInstituteInput, UserUncheckedUpdateWithoutInstituteInput>
+    create: XOR<UserCreateWithoutInstituteInput, UserUncheckedCreateWithoutInstituteInput>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutInstituteInput = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutInstituteInput, UserUncheckedUpdateWithoutInstituteInput>
+  }
+
+  export type UserUpdateManyWithWhereWithoutInstituteInput = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutInstituteInput>
+  }
+
+  export type UserScalarWhereInput = {
+    AND?: UserScalarWhereInput | UserScalarWhereInput[]
+    OR?: UserScalarWhereInput[]
+    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
+    id?: StringFilter<"User"> | string
+    name?: StringFilter<"User"> | string
+    email?: StringFilter<"User"> | string
+    password?: StringFilter<"User"> | string
+    role?: EnumRoleFilter<"User"> | $Enums.Role
+    approvalStatus?: StringFilter<"User"> | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
+    emailVerified?: DateTimeNullableFilter<"User"> | Date | string | null
+    referralCode?: StringNullableFilter<"User"> | string | null
+    referredBy?: StringNullableFilter<"User"> | string | null
+    isVIP?: BoolFilter<"User"> | boolean
+    vipGrantedAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    instituteId?: StringNullableFilter<"User"> | string | null
+  }
+
   export type CourseContentCreateManyCourseInput = {
     id: string
     title: string
@@ -28486,11 +30576,14 @@ export namespace Prisma {
   }
 
   export type FeedbackCreateManyCourseInput = {
-    id: string
+    id?: string
     userId: string
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type ModuleCreateManyCourseInput = {
@@ -28622,26 +30715,35 @@ export namespace Prisma {
 
   export type FeedbackUpdateWithoutCourseInput = {
     id?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     User?: UserUpdateOneRequiredWithoutFeedbackNestedInput
   }
 
   export type FeedbackUncheckedUpdateWithoutCourseInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FeedbackUncheckedUpdateManyWithoutCourseInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ModuleUpdateWithoutCourseInput = {
@@ -28994,11 +31096,14 @@ export namespace Prisma {
   }
 
   export type FeedbackCreateManyUserInput = {
-    id: string
-    courseId: string
+    id?: string
+    courseId?: string | null
+    teacherId?: string | null
     rating: number
     comment: string
+    type?: $Enums.FeedbackType
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type QuizSubmissionCreateManyUserInput = {
@@ -29169,26 +31274,35 @@ export namespace Prisma {
 
   export type FeedbackUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    Course?: CourseUpdateOneRequiredWithoutFeedbackNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    Course?: CourseUpdateOneWithoutFeedbackNestedInput
   }
 
   export type FeedbackUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    courseId?: StringFieldUpdateOperationsInput | string
+    courseId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type FeedbackUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
-    courseId?: StringFieldUpdateOperationsInput | string
+    courseId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     rating?: IntFieldUpdateOperationsInput | number
     comment?: StringFieldUpdateOperationsInput | string
+    type?: EnumFeedbackTypeFieldUpdateOperationsInput | $Enums.FeedbackType
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type QuizSubmissionUpdateWithoutUserInput = {
@@ -29400,6 +31514,84 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     achievedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserCreateManyInstituteInput = {
+    id?: string
+    name: string
+    email: string
+    password: string
+    role: $Enums.Role
+    approvalStatus?: string
+    createdAt?: Date | string
+    emailVerified?: Date | string | null
+    referralCode?: string | null
+    referredBy?: string | null
+    isVIP?: boolean
+    vipGrantedAt?: Date | string | null
+  }
+
+  export type UserUpdateWithoutInstituteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    approvalStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Course?: CourseUpdateManyWithoutUserNestedInput
+    CourseProgress?: CourseProgressUpdateManyWithoutUserNestedInput
+    Enrollment?: EnrollmentUpdateManyWithoutUserNestedInput
+    Feedback?: FeedbackUpdateManyWithoutUserNestedInput
+    QuizSubmission?: QuizSubmissionUpdateManyWithoutUserNestedInput
+    EmailVerification?: EmailVerificationUpdateManyWithoutUserNestedInput
+    ModuleProgress?: ModuleProgressUpdateManyWithoutUserNestedInput
+    Payment?: PaymentUpdateManyWithoutUserNestedInput
+    UserAwards?: UserAwardUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutInstituteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    approvalStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    Course?: CourseUncheckedUpdateManyWithoutUserNestedInput
+    CourseProgress?: CourseProgressUncheckedUpdateManyWithoutUserNestedInput
+    Enrollment?: EnrollmentUncheckedUpdateManyWithoutUserNestedInput
+    Feedback?: FeedbackUncheckedUpdateManyWithoutUserNestedInput
+    QuizSubmission?: QuizSubmissionUncheckedUpdateManyWithoutUserNestedInput
+    EmailVerification?: EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
+    ModuleProgress?: ModuleProgressUncheckedUpdateManyWithoutUserNestedInput
+    Payment?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    UserAwards?: UserAwardUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateManyWithoutInstituteInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    approvalStatus?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    emailVerified?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    referralCode?: NullableStringFieldUpdateOperationsInput | string | null
+    referredBy?: NullableStringFieldUpdateOperationsInput | string | null
+    isVIP?: BoolFieldUpdateOperationsInput | boolean
+    vipGrantedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
 

@@ -118,14 +118,17 @@ model Enrollment {
 }
 
 model Feedback {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String
-  courseId  String
-  rating    Int
+  courseId  String?  // Course feedback (optional)
+  teacherId String?  // Teacher feedback (optional)
+  rating    Int      // 1-5 stars
   comment   String
+  type      FeedbackType @default(COURSE) // COURSE or TEACHER
   createdAt DateTime @default(now())
-  Course    Course   @relation(fields: [courseId], references: [id])
-  User      User     @relation(fields: [userId], references: [id])
+  updatedAt DateTime @updatedAt
+  Course    Course?  @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Question {
@@ -187,6 +190,8 @@ model User {
   referredBy     String?
   isVIP          Boolean          @default(false)  // VIP status for 100+ completed courses
   vipGrantedAt   DateTime?        // When VIP status was granted
+  instituteId    String?          // Link to institute
+  Institute      Institute?       @relation(fields: [instituteId], references: [id])
   Course         Course[]
   CourseProgress CourseProgress[]
   Enrollment     Enrollment[]
@@ -278,4 +283,29 @@ enum Role {
   STUDENT
   TEACHER
   ADMIN
+}
+
+enum FeedbackType {
+  COURSE
+  TEACHER
+}
+
+model Institute {
+  id              String   @id @default(cuid())
+  name            String
+  domain          String   @unique // e.g., "viit.ac.in"
+  description     String?
+  address         String?
+  phone           String?
+  email           String?
+  website         String?
+  logo            String?
+  established     String?  // Year established
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  Users           User[]   // Students and teachers from this institute
+  
+  @@index([domain])
 }

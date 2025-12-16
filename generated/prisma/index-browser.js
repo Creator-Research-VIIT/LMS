@@ -199,9 +199,12 @@ exports.Prisma.FeedbackScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   courseId: 'courseId',
+  teacherId: 'teacherId',
   rating: 'rating',
   comment: 'comment',
-  createdAt: 'createdAt'
+  type: 'type',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.QuestionScalarFieldEnum = {
@@ -252,7 +255,10 @@ exports.Prisma.UserScalarFieldEnum = {
   createdAt: 'createdAt',
   emailVerified: 'emailVerified',
   referralCode: 'referralCode',
-  referredBy: 'referredBy'
+  referredBy: 'referredBy',
+  isVIP: 'isVIP',
+  vipGrantedAt: 'vipGrantedAt',
+  instituteId: 'instituteId'
 };
 
 exports.Prisma.EmailVerificationScalarFieldEnum = {
@@ -296,6 +302,22 @@ exports.Prisma.UserAwardScalarFieldEnum = {
   achievedAt: 'achievedAt'
 };
 
+exports.Prisma.InstituteScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  domain: 'domain',
+  description: 'description',
+  address: 'address',
+  phone: 'phone',
+  email: 'email',
+  website: 'website',
+  logo: 'logo',
+  established: 'established',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -328,6 +350,11 @@ exports.Prisma.JsonNullValueFilter = {
 exports.ContentType = exports.$Enums.ContentType = {
   VIDEO: 'VIDEO',
   NOTE: 'NOTE'
+};
+
+exports.FeedbackType = exports.$Enums.FeedbackType = {
+  COURSE: 'COURSE',
+  TEACHER: 'TEACHER'
 };
 
 exports.QuestionType = exports.$Enums.QuestionType = {
@@ -366,7 +393,8 @@ exports.Prisma.ModelName = {
   EmailVerification: 'EmailVerification',
   Payment: 'Payment',
   Award: 'Award',
-  UserAward: 'UserAward'
+  UserAward: 'UserAward',
+  Institute: 'Institute'
 };
 
 /**
