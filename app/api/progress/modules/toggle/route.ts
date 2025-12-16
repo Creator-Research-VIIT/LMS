@@ -1,5 +1,6 @@
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { checkAndUpgradeVIPStatus } from '@/lib/vip-utils'
 import { getServerSession } from 'next-auth'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
@@ -99,6 +100,13 @@ export async function POST(req: NextRequest) {
       }
     })
 
+    // Check if student qualifies for VIP status when completing a course
+    let vipUpgraded = false
+    if (isFullyCompleted) {
+      const upgraded = await checkAndUpgradeVIPStatus(studentId)
+      vipUpgraded = !!upgraded
+    }
+
     return NextResponse.json({
       moduleId,
       completed: newCompletedState,
@@ -107,7 +115,8 @@ export async function POST(req: NextRequest) {
         totalModules,
         progressPercent,
         courseProgressId: courseProgress.id
-      }
+      },
+      vipUpgraded // Let frontend know if student was upgraded to VIP
     })
   } catch (error) {
     console.error('POST /api/progress/modules/toggle error', error)

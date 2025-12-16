@@ -185,6 +185,8 @@ model User {
   emailVerified  DateTime?
   referralCode   String?          @unique
   referredBy     String?
+  isVIP          Boolean          @default(false)  // VIP status for 100+ completed courses
+  vipGrantedAt   DateTime?        // When VIP status was granted
   Course         Course[]
   CourseProgress CourseProgress[]
   Enrollment     Enrollment[]

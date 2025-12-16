@@ -1,5 +1,6 @@
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isVIPStudent } from "@/lib/vip-utils";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
@@ -45,23 +46,32 @@ export async function POST(
       return NextResponse.json({ error: "Already enrolled in this course" }, { status: 400 });
     }
 
+    // Check if student has VIP status (100+ completed courses)
+    const isVIP = await isVIPStudent(session.user.id);
+    const shouldGetFreeAccess = isVIP || course.isFree;
+
     // Create enrollment
     const enrollment = await prisma.enrollment.create({
       data: {
         id: `${session.user.id}_${courseId}`,
         courseId,
-        studentId: session.user.id
+        studentId: session.user.id,
+        isPaid: shouldGetFreeAccess // VIP students get free access to all courses
       }
     });
 
-    console.log(`✅ User ${session.user.name} enrolled in course: ${course.title}`);
+    console.log(`✅ User ${session.user.name} enrolled in course: ${course.title}${isVIP ? ' (VIP Free Access)' : ''}`);
 
     return NextResponse.json({ 
       success: true,
-      message: "Successfully enrolled in course",
+      message: isVIP 
+        ? "Successfully enrolled in course (VIP Free Access)" 
+        : "Successfully enrolled in course",
       enrollment: {
         id: enrollment.id,
-        enrolledAt: enrollment.enrolledAt.toISOString()
+        enrolledAt: enrollment.enrolledAt.toISOString(),
+        isPaid: enrollment.isPaid,
+        vipAccess: isVIP
       }
     });
 
