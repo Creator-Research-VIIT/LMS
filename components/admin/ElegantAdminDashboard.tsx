@@ -12,6 +12,7 @@ import {
     BarChart3,
     Bell,
     BookOpen,
+    Building2,
     CheckCircle,
     Clock,
     DollarSign,
@@ -24,6 +25,7 @@ import {
     Users
 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface AdminStats {
@@ -67,6 +69,7 @@ const sidebarItems = [
   { id: "dashboard", label: "Dashboard", icon: BarChart3 },
   { id: "courses", label: "Courses", icon: BookOpen },
   { id: "students", label: "Students", icon: Users },
+  { id: "institutes", label: "Institutes", icon: Building2 },
   { id: "pending", label: "Pending", icon: Clock },
   { id: "certificates", label: "Certificates", icon: Award },
   { id: "analytics", label: "Analytics", icon: TrendingUp },
@@ -75,6 +78,7 @@ const sidebarItems = [
 
 export default function ElegantAdminDashboard() {
   const { user } = useAuth();
+  const router = useRouter();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [stats, setStats] = useState<AdminStats>({
     totalStudents: 12500,
@@ -603,7 +607,13 @@ export default function ElegantAdminDashboard() {
               return (
                 <li key={item.id}>
                   <button
-                    onClick={() => setActiveSection(item.id)}
+                    onClick={() => {
+                      if (item.id === "institutes") {
+                        router.push("/admin/institutes");
+                      } else {
+                        setActiveSection(item.id);
+                      }
+                    }}
                     className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-left transition-colors ${
                       isActive
                         ? "bg-blue-50 text-blue-600 font-medium"
