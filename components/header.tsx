@@ -2,10 +2,19 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { ChevronDown, Menu, Search, X } from "lucide-react"
+import { ChevronDown, Menu, Search, X, User, LogOut } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { useSession, signOut } from "next-auth/react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Header() {
   const courseCategories = [
@@ -30,6 +39,7 @@ export function Header() {
   
 const router = useRouter();
 const [searchQuery, setSearchQuery] = useState("")
+const { data: session, status } = useSession()
 
   const handleClick = () => {
     router.push("/login"); // navigates to /login
@@ -38,6 +48,23 @@ const [searchQuery, setSearchQuery] = useState("")
   const handlesign = () => {
     // alert("hello")
     router.push("/signup");
+  }
+
+  const handleDashboard = () => {
+    const role = (session?.user as any)?.role;
+    if (role === 'ADMIN') {
+      router.push('/admin');
+    } else if (role === 'TEACHER') {
+      router.push('/teacher');
+    } else if (role === 'STUDENT') {
+      router.push('/student');
+    } else if ((session?.user as any)?.instituteId) {
+      router.push('/institute');
+    }
+  }
+
+  const handleLogout = async () => {
+    await signOut({ callbackUrl: '/' });
   }
 
   const handleSearch = (e: React.FormEvent) => {
@@ -142,10 +169,47 @@ const [searchQuery, setSearchQuery] = useState("")
 
           {/* Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Button variant="ghost" className="text-foreground hover:text-primary" onClick={() => handleClick()}>
-              Login
-            </Button>
-            <Button className="bg-primary hover:bg-primary/90 text-white"onClick={() => handlesign()}>Sign Up</Button>
+            {status === "loading" ? (
+              <div className="h-10 w-24 bg-gray-200 animate-pulse rounded"></div>
+            ) : session?.user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span className="max-w-[150px] truncate">{session.user.name}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    <div className="flex flex-col">
+                      <span className="font-semibold">{session.user.name}</span>
+                      <span className="text-xs text-gray-500">{session.user.email}</span>
+                      <span className="text-xs text-blue-600 mt-1">
+                        {(session.user as any).role}
+                      </span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleDashboard}>
+                    <User className="h-4 w-4 mr-2" />
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button variant="ghost" className="text-foreground hover:text-primary" onClick={() => handleClick()}>
+                  Login
+                </Button>
+                <Button className="bg-primary hover:bg-primary/90 text-white" onClick={() => handlesign()}>Sign Up</Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -202,10 +266,32 @@ const [searchQuery, setSearchQuery] = useState("")
                 </a>
               </nav>
               <div className="flex flex-col space-y-2 pt-4 border-t">
-                <Button variant="ghost" className="justify-start" onClick={() => handleClick()}>
-                  Login
-                </Button>
-                <Button className="bg-primary hover:bg-primary/90 text-white" onClick={() => handlesign()}>Sign Up</Button>
+                {status === "loading" ? (
+                  <div className="h-10 bg-gray-200 animate-pulse rounded"></div>
+                ) : session?.user ? (
+                  <>
+                    <div className="px-3 py-2 border-b">
+                      <div className="font-semibold text-sm">{session.user.name}</div>
+                      <div className="text-xs text-gray-500">{session.user.email}</div>
+                      <div className="text-xs text-blue-600 mt-1">{(session.user as any).role}</div>
+                    </div>
+                    <Button variant="ghost" className="justify-start" onClick={handleDashboard}>
+                      <User className="h-4 w-4 mr-2" />
+                      Dashboard
+                    </Button>
+                    <Button variant="ghost" className="justify-start text-red-600" onClick={handleLogout}>
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Logout
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="ghost" className="justify-start" onClick={() => handleClick()}>
+                      Login
+                    </Button>
+                    <Button className="bg-primary hover:bg-primary/90 text-white" onClick={() => handlesign()}>Sign Up</Button>
+                  </>
+                )}
               </div>
             </div>
           </div>

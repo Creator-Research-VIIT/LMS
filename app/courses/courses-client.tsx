@@ -4,6 +4,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Header } from '@/components/header'
+import { Footer } from '@/components/footer'
 import { BookOpen, Clock, Filter, IndianRupee, Loader2, Search, Star, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
@@ -160,14 +162,16 @@ export default function CoursesPageClient() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Explore Courses</h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Discover amazing courses from expert instructors and enhance your skills
-        </p>
-      </div>
+    <div>
+      <Header />
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Explore Courses</h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Discover amazing courses from expert instructors and enhance your skills
+          </p>
+        </div>
 
       {/* Filters and Search */}
       <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
@@ -311,6 +315,8 @@ export default function CoursesPageClient() {
           </Button>
         </div>
       )}
+      </div>
+      <Footer />
     </div>
   )
 }

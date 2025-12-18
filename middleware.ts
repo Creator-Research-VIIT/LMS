@@ -42,7 +42,14 @@ export default withAuth(
     // If user is authenticated and trying to access auth pages, redirect based on role
     if (isAuthPage && isAuth) {
       const userRole = (token as any)?.role;
-      console.log("AUTH PAGE REDIRECT:", { userRole, pathname: req.nextUrl.pathname });
+      const instituteId = (token as any)?.instituteId;
+      console.log("AUTH PAGE REDIRECT:", { userRole, instituteId, pathname: req.nextUrl.pathname });
+      
+      // Institute users get priority redirect to /institute
+      if (instituteId) {
+        console.log("🏢 Institute user detected, redirecting to /institute");
+        return NextResponse.redirect(new URL("/institute", req.url));
+      }
       
       if (userRole === "ADMIN") {
         return NextResponse.redirect(new URL("/admin", req.url));
@@ -76,7 +83,14 @@ export default withAuth(
     // If user is authenticated and accessing home page, redirect based on role
     if (req.nextUrl.pathname === "/" && isAuth) {
       const userRole = (token as any)?.role;
-      console.log("HOME PAGE REDIRECT:", { userRole });
+      const instituteId = (token as any)?.instituteId;
+      console.log("HOME PAGE REDIRECT:", { userRole, instituteId });
+      
+      // Institute users get priority redirect to /institute
+      if (instituteId) {
+        console.log("🏢 Institute user detected, redirecting to /institute");
+        return NextResponse.redirect(new URL("/institute", req.url));
+      }
       
       if (userRole === "ADMIN") {
         return NextResponse.redirect(new URL("/admin", req.url));
@@ -185,7 +199,8 @@ export default withAuth(
           "/api/debug-middleware",
           "/teacher",
           "/admin", 
-          "/student"
+          "/student",
+          "/institute"
         ];
         
         // Check if this is a public route

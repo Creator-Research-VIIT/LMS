@@ -1734,7 +1734,7 @@ export function TeacherDashboard() {
           {currentEnhancedQuestion.questionType === 'MULTIPLE_CHOICE' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label>Answer Options *</Label>
+                <Label>Answer Options * <span className="text-sm text-gray-500">(Select the correct answer)</span></Label>
                 <Button 
                   type="button" 
                   variant="outline" 
@@ -1747,22 +1747,28 @@ export function TeacherDashboard() {
                 </Button>
               </div>
               {currentEnhancedQuestion.answers.map((answer, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="correct-answer"
-                    checked={answer.isCorrect}
-                    onChange={() => {
-                      const newAnswers = currentEnhancedQuestion.answers.map((a, i) => ({
-                        ...a,
-                        isCorrect: i === index
-                      }))
-                      setCurrentEnhancedQuestion({
-                        ...currentEnhancedQuestion,
-                        answers: newAnswers
-                      })
-                    }}
-                  />
+                <div key={index} className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-colors ${
+                  answer.isCorrect ? 'bg-green-50 border-green-500' : 'bg-gray-50 border-gray-200'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="correct-answer"
+                      checked={answer.isCorrect}
+                      onChange={() => {
+                        const newAnswers = currentEnhancedQuestion.answers.map((a, i) => ({
+                          ...a,
+                          isCorrect: i === index
+                        }))
+                        setCurrentEnhancedQuestion({
+                          ...currentEnhancedQuestion,
+                          answers: newAnswers
+                        })
+                      }}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+                    {answer.isCorrect && <span className="text-green-600 font-semibold text-xs">✓ Correct</span>}
+                  </div>
                   <Input
                     value={answer.answerText}
                     onChange={(e) => updateAnswer(index, 'answerText', e.target.value)}
@@ -1786,9 +1792,20 @@ export function TeacherDashboard() {
 
           {currentEnhancedQuestion.questionType === 'TRUE_FALSE' && (
             <div className="space-y-4">
-              <Label>Select Correct Answer *</Label>
+              <Label>Select Correct Answer * <span className="text-sm text-gray-500">(Choose True or False)</span></Label>
               {currentEnhancedQuestion.answers.map((answer, index) => (
-                <div key={index} className="flex items-center gap-3">
+                <div key={index} className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-colors cursor-pointer ${
+                  answer.isCorrect ? 'bg-green-50 border-green-500' : 'bg-gray-50 border-gray-200 hover:border-gray-300'
+                }`} onClick={() => {
+                  const newAnswers = currentEnhancedQuestion.answers.map((a, i) => ({
+                    ...a,
+                    isCorrect: i === index
+                  }))
+                  setCurrentEnhancedQuestion({
+                    ...currentEnhancedQuestion,
+                    answers: newAnswers
+                  })
+                }}>
                   <input
                     type="radio"
                     name="tf-correct-answer"
@@ -1803,8 +1820,12 @@ export function TeacherDashboard() {
                         answers: newAnswers
                       })
                     }}
+                    className="w-4 h-4 cursor-pointer"
                   />
-                  <span className="font-medium">{answer.answerText}</span>
+                  <span className={`font-medium text-lg ${answer.isCorrect ? 'text-green-700' : 'text-gray-700'}`}>
+                    {answer.answerText}
+                  </span>
+                  {answer.isCorrect && <span className="ml-auto text-green-600 font-semibold">✓ Correct Answer</span>}
                 </div>
               ))}
             </div>
@@ -1924,11 +1945,32 @@ export function TeacherDashboard() {
             </Button>
             <Button 
               onClick={() => editingQuiz?.id && addEnhancedQuestion(editingQuiz.id)}
-              disabled={loading || !currentEnhancedQuestion.questionText || !currentEnhancedQuestion.answers.some(a => a.answerText)}
+              disabled={
+                loading || 
+                !currentEnhancedQuestion.questionText || 
+                !currentEnhancedQuestion.answers.some(a => a.answerText) ||
+                !currentEnhancedQuestion.answers.some(a => a.isCorrect) // Must have at least one correct answer
+              }
+              title={
+                !currentEnhancedQuestion.answers.some(a => a.isCorrect) 
+                  ? "Please mark at least one answer as correct" 
+                  : ""
+              }
             >
               {loading ? 'Adding...' : 'Add Question'}
             </Button>
           </div>
+          
+          {/* Validation warning */}
+          {currentEnhancedQuestion.questionText && 
+           currentEnhancedQuestion.answers.some(a => a.answerText) &&
+           !currentEnhancedQuestion.answers.some(a => a.isCorrect) && (
+            <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800">
+                ⚠️ <strong>Warning:</strong> Please mark at least one answer as correct by selecting the radio button.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

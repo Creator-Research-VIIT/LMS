@@ -43,7 +43,8 @@ export const authOptions: NextAuthOptions = {
               password: true,
               role: true,
               approvalStatus: true,
-              emailVerified: true
+              emailVerified: true,
+              instituteId: true
             }
           });
           
@@ -101,6 +102,7 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             role: user.role,
             approvalStatus: user.approvalStatus,
+            instituteId: user.instituteId,
           };
         } catch (error) {
           console.error('❌ Authentication error:', error);
@@ -186,6 +188,7 @@ export const authOptions: NextAuthOptions = {
               token.role = dbUser.role;
               token.id = dbUser.id;
               token.approvalStatus = dbUser.approvalStatus;
+              token.instituteId = dbUser.instituteId;
               console.log('✅ OAuth user role set:', dbUser.role);
             }
           } else {
@@ -193,6 +196,7 @@ export const authOptions: NextAuthOptions = {
             token.role = (user as any).role;
             token.id = user.id;
             token.approvalStatus = (user as any).approvalStatus;
+            token.instituteId = (user as any).instituteId;
             console.log('✅ Credentials user role set:', (user as any).role);
           }
         } catch (error) {
@@ -213,11 +217,13 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).id = token.id;
         (session.user as any).role = token.role;
         (session.user as any).approvalStatus = token.approvalStatus;
+        (session.user as any).instituteId = token.instituteId;
         
         console.log('✅ Session established:', {
           id: token.id,
           role: token.role,
-          email: session.user.email
+          email: session.user.email,
+          instituteId: token.instituteId
         });
       }
       return session;
