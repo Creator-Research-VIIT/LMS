@@ -1563,6 +1563,12 @@ export function TeacherDashboard() {
                         {quiz.description && (
                           <p className="text-sm text-gray-600 mb-2">{quiz.description}</p>
                         )}
+                        <div className="flex items-center gap-2 mb-2">
+                          <BookOpen className="h-4 w-4 text-blue-600" />
+                          <span className="text-sm font-medium text-blue-600">
+                            Course: {realCourses.find(c => c.id === quiz.courseId)?.title || 'Unknown Course'}
+                          </span>
+                        </div>
                         <div className="flex items-center gap-4 text-sm text-gray-500">
                           <span>⏱️ {quiz.timeLimit ? `${quiz.timeLimit} min` : 'No limit'}</span>
                           <span>🔄 {quiz.maxAttempts} attempts</span>
