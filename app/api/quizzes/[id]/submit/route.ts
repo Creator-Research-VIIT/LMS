@@ -68,6 +68,15 @@ export async function POST(
     // Calculate score
     const scoreResult = calculateScore(quiz.Question, answers);
     
+    console.log('Quiz Submission Debug:', {
+      quizId: params.id,
+      studentId: session.user.id,
+      totalQuestions: quiz.Question.length,
+      answersProvided: Object.keys(answers).length,
+      scoreResult,
+      answers
+    });
+    
     // Prevent division by zero
     const percentage = scoreResult.maxScore > 0 
       ? (scoreResult.score / scoreResult.maxScore) * 100 
@@ -177,6 +186,13 @@ function calculateScore(questions: any[], studentAnswers: any) {
     maxScore += question.points;
     const studentAnswer = studentAnswers[question.id];
     
+    console.log('Processing Question:', {
+      questionId: question.id,
+      questionType: question.questionType,
+      studentAnswer,
+      correctAnswers: question.Answer.filter((a: any) => a.isCorrect)
+    });
+    
     if (!studentAnswer) {
       feedback.push({
         questionId: question.id,
@@ -194,6 +210,7 @@ function calculateScore(questions: any[], studentAnswers: any) {
       case 'TRUE_FALSE': {
         const correctAnswerId = question.Answer.find((a: any) => a.isCorrect)?.id;
         isCorrect = studentAnswer === correctAnswerId;
+        console.log('MC/TF Check:', { correctAnswerId, studentAnswer, isCorrect });
         break;
       }
       case 'MATCH_COLUMN': {

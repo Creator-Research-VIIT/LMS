@@ -278,6 +278,13 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
     if (!finalQuiz) return
     setQuizSubmitting(true)
     setQuizMessage(null)
+    
+    console.log('Submitting Quiz:', {
+      quizId: finalQuiz.id,
+      answers: quizAnswers,
+      totalQuestions: finalQuiz.Question?.length
+    })
+    
     try {
       const res = await fetch(`/api/quizzes/${finalQuiz.id}/submit`, {
         method: 'POST',
@@ -285,8 +292,11 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         body: JSON.stringify({ answers: quizAnswers })
       })
       const data = await res.json()
+      
+      console.log('Quiz Result:', data)
+      
       if (res.ok) {
-        setQuizMessage(`Your score: ${data.result.percentage}%`) 
+        setQuizMessage(`Your score: ${data.result.percentage}% ${data.result.isPassed ? '✓ Passed!' : '✗ Failed'}`) 
         if (data.result.isPassed) {
           setCertificateReady(true)
           
