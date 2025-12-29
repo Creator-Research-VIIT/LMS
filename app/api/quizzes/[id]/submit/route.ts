@@ -28,7 +28,16 @@ export async function POST(
       include: {
         Question: {
           include: {
-            Answer: true
+            Answer: {
+              select: {
+                id: true,
+                answerText: true,
+                isCorrect: true,
+                matchPair: true,
+                blankPosition: true,
+                orderIndex: true
+              }
+            }
           }
         }
       }
@@ -58,7 +67,11 @@ export async function POST(
 
     // Calculate score
     const scoreResult = calculateScore(quiz.Question, answers);
-    const percentage = (scoreResult.score / scoreResult.maxScore) * 100;
+    
+    // Prevent division by zero
+    const percentage = scoreResult.maxScore > 0 
+      ? (scoreResult.score / scoreResult.maxScore) * 100 
+      : 0;
     const isPassed = percentage >= quiz.passingScore;
 
     // Create submission

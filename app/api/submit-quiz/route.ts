@@ -43,7 +43,16 @@ export async function POST(request: Request) {
         Course: true,
         Question: {
           include: {
-            Answer: true
+            Answer: {
+              select: {
+                id: true,
+                answerText: true,
+                isCorrect: true,
+                matchPair: true,
+                blankPosition: true,
+                orderIndex: true
+              }
+            }
           },
           orderBy: {
             orderIndex: 'asc'

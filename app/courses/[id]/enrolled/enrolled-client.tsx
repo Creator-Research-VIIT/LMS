@@ -71,6 +71,10 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
   const [courseCompletedAt, setCourseCompletedAt] = useState<Date | null>(null)
   const [showAwardCelebration, setShowAwardCelebration] = useState(false)
   const [awardData, setAwardData] = useState<{ name: string; description: string; icon: string; color: string } | null>(null)
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false)
+  const [feedbackRating, setFeedbackRating] = useState(0)
+  const [feedbackComment, setFeedbackComment] = useState('')
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false)
   
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -222,6 +226,9 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
       const res = await fetch(`/api/quizzes/course/${courseId}`)
       if (!res.ok) {
         setFinalQuiz(null)
+        setQuizLoading(false)
+        // No quiz, certificate ready immediately
+        setCertificateReady(true)
         return
       }
       const data = await res.json()
@@ -236,10 +243,14 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         }
       } else {
         setFinalQuiz(null)
+        // No quiz, certificate ready immediately
+        setCertificateReady(true)
       }
     } catch (e) {
       console.warn('Failed to fetch quizzes', e)
       setFinalQuiz(null)
+      // On error, assume no quiz and allow certificate
+      setCertificateReady(true)
     } finally {
       setQuizLoading(false)
     }
@@ -796,6 +807,216 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   <ArrowRight className="h-4 w-4 mr-2" />
                   Go to Dashboard
                 </Button>
+              </CardContent>
+            </Card>
+
+            {/* Course Feedback */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Rate This Course</CardTitle>
+                <CardDescription>
+                  Share your experience with others
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {!showFeedbackForm ? (
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowFeedbackForm(true)}
+                    className="w-full"
+                  >
+                    <Star className="h-4 w-4 mr-2" />
+                    Leave Feedback
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Rating</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setFeedbackRating(star)}
+                            className="focus:outline-none"
+                          >
+                            <Star
+                              className={`h-6 w-6 ${
+                                star <= feedbackRating
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-gray-300 hover:text-yellow-300'
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Comment (Optional)</label>
+                      <textarea
+                        placeholder="Share your thoughts..."
+                        value={feedbackComment}
+                        onChange={(e) => setFeedbackComment(e.target.value)}
+                        rows={3}
+                        className="w-full p-2 border rounded-md resize-none"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={async () => {
+                          if (feedbackRating === 0) return;
+                          setFeedbackSubmitting(true);
+                          try {
+                            const response = await fetch('/api/feedback', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                courseId: courseId,
+                                rating: feedbackRating,
+                                comment: feedbackComment,
+                                type: 'COURSE'
+                              }),
+                            });
+                            if (response.ok) {
+                              alert('Thank you for your feedback!');
+                              setShowFeedbackForm(false);
+                              setFeedbackRating(0);
+                              setFeedbackComment('');
+                            } else {
+                              const error = await response.json();
+                              alert(error.error || 'Failed to submit feedback');
+                            }
+                          } catch (error) {
+                            console.error('Error submitting feedback:', error);
+                            alert('Failed to submit feedback');
+                          } finally {
+                            setFeedbackSubmitting(false);
+                          }
+                        }}
+                        disabled={feedbackRating === 0 || feedbackSubmitting}
+                        className="flex-1"
+                      >
+                        {feedbackSubmitting ? 'Submitting...' : 'Submit'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowFeedbackForm(false);
+                          setFeedbackRating(0);
+                          setFeedbackComment('');
+                        }}
+                        disabled={feedbackSubmitting}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Course Feedback */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Rate This Course</CardTitle>
+                <CardDescription>
+                  Share your experience with others
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {!showFeedbackForm ? (
+                  <Button 
+                    variant="outline"
+                    onClick={() => setShowFeedbackForm(true)}
+                    className="w-full"
+                  >
+                    <Star className="h-4 w-4 mr-2" />
+                    Leave Feedback
+                  </Button>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Rating</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <button
+                            key={star}
+                            type="button"
+                            onClick={() => setFeedbackRating(star)}
+                            className="focus:outline-none"
+                          >
+                            <Star
+                              className={`h-6 w-6 ${
+                                star <= feedbackRating
+                                  ? 'fill-yellow-400 text-yellow-400'
+                                  : 'text-gray-300 hover:text-yellow-300'
+                              }`}
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Comment (Optional)</label>
+                      <textarea
+                        placeholder="Share your thoughts..."
+                        value={feedbackComment}
+                        onChange={(e) => setFeedbackComment(e.target.value)}
+                        rows={3}
+                        className="w-full p-2 border rounded-md resize-none"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={async () => {
+                          if (feedbackRating === 0) return;
+                          setFeedbackSubmitting(true);
+                          try {
+                            const response = await fetch('/api/feedback', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                courseId: courseId,
+                                rating: feedbackRating,
+                                comment: feedbackComment,
+                                type: 'COURSE'
+                              }),
+                            });
+                            if (response.ok) {
+                              alert('Thank you for your feedback!');
+                              setShowFeedbackForm(false);
+                              setFeedbackRating(0);
+                              setFeedbackComment('');
+                            } else {
+                              const error = await response.json();
+                              alert(error.error || 'Failed to submit feedback');
+                            }
+                          } catch (error) {
+                            console.error('Error submitting feedback:', error);
+                            alert('Failed to submit feedback');
+                          } finally {
+                            setFeedbackSubmitting(false);
+                          }
+                        }}
+                        disabled={feedbackRating === 0 || feedbackSubmitting}
+                        className="flex-1"
+                      >
+                        {feedbackSubmitting ? 'Submitting...' : 'Submit'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setShowFeedbackForm(false);
+                          setFeedbackRating(0);
+                          setFeedbackComment('');
+                        }}
+                        disabled={feedbackSubmitting}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
