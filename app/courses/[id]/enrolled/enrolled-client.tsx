@@ -104,6 +104,13 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
     }
   }, [success, hasPlayedConfetti, course])
 
+  // Allow certificate download when course is complete (100%), regardless of quiz
+  useEffect(() => {
+    if (progressPercent === 100 || courseCompletedAt) {
+      setCertificateReady(true)
+    }
+  }, [progressPercent, courseCompletedAt])
+
   const fetchCourse = async () => {
     try {
       setIsLoading(true)
@@ -241,6 +248,7 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         if (last.QuizSubmission?.some((s: any) => s.isPassed)) {
           setCertificateReady(true)
         }
+        // Note: certificateReady stays true from useEffect if course is complete
       } else {
         setFinalQuiz(null)
         // No quiz, certificate ready immediately
