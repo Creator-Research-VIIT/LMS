@@ -6,9 +6,10 @@ import { NextRequest, NextResponse } from "next/server";
 // POST - Submit quiz attempt
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session || session.user.role !== "STUDENT") {
@@ -24,7 +25,7 @@ export async function POST(
 
     // Get quiz with questions and correct answers
     const quiz = await prisma.quiz.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         Question: {
           include: {
@@ -54,7 +55,7 @@ export async function POST(
     // Check if student has exceeded max attempts
     const previousAttempts = await prisma.quizSubmission.findMany({
       where: {
-        quizId: params.id,
+        quizId: id,
         studentId: session.user.id
       }
     });
@@ -69,7 +70,7 @@ export async function POST(
     const scoreResult = calculateScore(quiz.Question, answers);
     
     console.log('Quiz Submission Debug:', {
-      quizId: params.id,
+      quizId: id,
       studentId: session.user.id,
       totalQuestions: quiz.Question.length,
       answersProvided: Object.keys(answers).length,
@@ -86,7 +87,7 @@ export async function POST(
     // Create submission
     const submission = await prisma.quizSubmission.create({
       data: {
-        quizId: params.id,
+        quizId: id,
         studentId: session.user.id,
         answers: answers,
         score: scoreResult.score,
@@ -127,9 +128,10 @@ export async function POST(
 // GET - Get student's quiz results
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session) {
@@ -148,7 +150,7 @@ export async function GET(
 
     const submissions = await prisma.quizSubmission.findMany({
       where: {
-        quizId: params.id,
+        quizId: id,
         studentId: targetStudentId
       },
       include: {

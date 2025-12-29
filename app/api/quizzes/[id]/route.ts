@@ -6,9 +6,10 @@ import { NextRequest, NextResponse } from "next/server";
 // GET - Fetch specific quiz with questions
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session) {
@@ -16,7 +17,7 @@ export async function GET(
     }
 
     const quiz = await prisma.quiz.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         Course: {
           select: { title: true, teacherId: true }
@@ -82,9 +83,10 @@ export async function GET(
 // PUT - Update quiz details
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session || (session.user.role !== "TEACHER" && session.user.role !== "ADMIN")) {
@@ -98,7 +100,7 @@ export async function PUT(
     if (session.user.role === "TEACHER") {
       const quiz = await prisma.quiz.findFirst({
         where: { 
-          id: params.id,
+          id,
           Course: {
             teacherId: session.user.id
           }
@@ -111,7 +113,7 @@ export async function PUT(
     }
 
     const updatedQuiz = await prisma.quiz.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         title,
         description,
@@ -145,9 +147,10 @@ export async function PUT(
 // DELETE - Delete quiz
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const session = await getServerSession(authOptions);
     
     if (!session || (session.user.role !== "TEACHER" && session.user.role !== "ADMIN")) {
@@ -158,7 +161,7 @@ export async function DELETE(
     if (session.user.role === "TEACHER") {
       const quiz = await prisma.quiz.findFirst({
         where: { 
-          id: params.id,
+          id,
           Course: {
             teacherId: session.user.id
           }
@@ -171,7 +174,7 @@ export async function DELETE(
     }
 
     await prisma.quiz.delete({
-      where: { id: params.id }
+      where: { id }
     });
 
     return NextResponse.json({
