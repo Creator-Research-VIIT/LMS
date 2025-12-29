@@ -8,6 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
     Bell,
     BookOpen,
     Calendar,
@@ -17,6 +26,7 @@ import {
     Home,
     LogOut,
     Search,
+    Star,
     TrendingUp,
     User
 } from "lucide-react";
@@ -95,6 +105,11 @@ export default function StudentDashboard() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [feedbackRating, setFeedbackRating] = useState(0);
+  const [feedbackComment, setFeedbackComment] = useState('');
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   useEffect(() => {
     if (activeView === 'dashboard') {
@@ -433,12 +448,21 @@ export default function StudentDashboard() {
                       </div>
                       <Progress value={course.progress} className="h-2" />
                     </div>
-                    <Button 
-                      className="w-full"
-                      onClick={() => router.push(`/courses/${course.id}/enrolled`)}
-                    >
-                      Continue Learning
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        className="flex-1"
+                        onClick={() => router.push(`/courses/${course.id}/enrolled`)}
+                      >
+                        Continue Learning
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => handleOpenFeedback(course)}
+                        title="Give Feedback"
+                      >
+                        <Star className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
@@ -653,6 +677,77 @@ export default function StudentDashboard() {
           </div>
         )}
       </div>
+
+      {/* Feedback Dialog */}
+      <Dialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Give Feedback</DialogTitle>
+            <DialogDescription>
+              Share your experience with {selectedCourse?.title}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Rating *</label>
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setFeedbackRating(star)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <Star
+                      className={`h-8 w-8 ${
+                        star <= feedbackRating
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-gray-300 hover:text-yellow-300'
+                      }`}
+                    />
+                  </button>
+                ))}
+              </div>
+              {feedbackRating > 0 && (
+                <p className="text-sm text-gray-600 mt-2">
+                  {feedbackRating === 1 && 'Poor'}
+                  {feedbackRating === 2 && 'Fair'}
+                  {feedbackRating === 3 && 'Good'}
+                  {feedbackRating === 4 && 'Very Good'}
+                  {feedbackRating === 5 && 'Excellent'}
+                </p>
+              )}
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">
+                Comment (Optional)
+              </label>
+              <Textarea
+                placeholder="Share your thoughts about this course..."
+                value={feedbackComment}
+                onChange={(e) => setFeedbackComment(e.target.value)}
+                rows={4}
+                className="resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowFeedbackDialog(false)}
+              disabled={feedbackSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitFeedback}
+              disabled={feedbackRating === 0 || feedbackSubmitting}
+            >
+              {feedbackSubmitting ? 'Submitting...' : 'Submit Feedback'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

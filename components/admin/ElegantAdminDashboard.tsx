@@ -81,16 +81,18 @@ export default function ElegantAdminDashboard() {
   const router = useRouter();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [stats, setStats] = useState<AdminStats>({
-    totalStudents: 12500,
-    totalCourses: 45,
-    certificates: 8900,
-    revenue: 125000,
+    totalStudents: 0,
+    totalCourses: 0,
+    certificates: 0,
+    revenue: 0,
     pendingTeachers: 0,
     pendingCourses: 0
   });
   const [pendingTeachers, setPendingTeachers] = useState<PendingTeacher[]>([]);
   const [pendingCourses, setPendingCourses] = useState<PendingCourse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [analytics, setAnalytics] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [notifications] = useState<Notification[]>([
     { id: "1", message: "You have 5 new messages", time: "12 min ago", type: "info" },
     { id: "2", message: "3 new course submissions pending approval", time: "12 min ago", type: "warning" },
@@ -102,8 +104,39 @@ export default function ElegantAdminDashboard() {
   useEffect(() => {
     if (user?.role === "ADMIN") {
       fetchPendingData();
+      fetchAnalytics();
     }
   }, [user]);
+
+  const fetchAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true);
+      const response = await fetch('/api/admin/analytics', { 
+        credentials: 'include',
+        cache: 'no-store'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAnalytics(data);
+        
+        // Update stats with real data
+        setStats(prev => ({
+          ...prev,
+          totalStudents: data.totalStudents || 0,
+          totalCourses: data.totalCourses || 0,
+          certificates: data.totalCertificates || 0,
+          revenue: data.totalRevenue || 0,
+          pendingTeachers: data.pendingTeachers || 0,
+          pendingCourses: data.pendingCourses || 0
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  };
 
   const fetchPendingData = async () => {
     try {
@@ -269,10 +302,18 @@ export default function ElegantAdminDashboard() {
             <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
               <Users className="w-6 h-6 text-blue-600" />
             </div>
+            {analyticsLoading && (
+              <div className="w-2 h-2 bg-blue-600 rounded-full animate-pulse"></div>
+            )}
           </div>
           <div>
             <p className="text-gray-600 text-sm mb-1">Total Students</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.totalStudents.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {analyticsLoading ? '...' : stats.totalStudents.toLocaleString()}
+            </p>
+            {analytics?.recentStudents > 0 && (
+              <p className="text-xs text-green-600 mt-1">+{analytics.recentStudents} this month</p>
+            )}
           </div>
         </div>
 
@@ -281,10 +322,20 @@ export default function ElegantAdminDashboard() {
             <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
               <BookOpen className="w-6 h-6 text-green-600" />
             </div>
+            {analyticsLoading && (
+              <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse"></div>
+            )}
           </div>
           <div>
             <p className="text-gray-600 text-sm mb-1">Total Courses</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.totalCourses}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {analyticsLoading ? '...' : stats.totalCourses}
+            </p>
+            {analytics && (
+              <p className="text-xs text-gray-600 mt-1">
+                {analytics.approvedCourses} approved · {analytics.pendingCourses} pending
+              </p>
+            )}
           </div>
         </div>
 
@@ -293,10 +344,20 @@ export default function ElegantAdminDashboard() {
             <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
               <Award className="w-6 h-6 text-purple-600" />
             </div>
+            {analyticsLoading && (
+              <div className="w-2 h-2 bg-purple-600 rounded-full animate-pulse"></div>
+            )}
           </div>
           <div>
             <p className="text-gray-600 text-sm mb-1">Certificates</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.certificates.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {analyticsLoading ? '...' : stats.certificates.toLocaleString()}
+            </p>
+            {analytics && (
+              <p className="text-xs text-gray-600 mt-1">
+                Avg Rating: {analytics.avgRating}/5.0
+              </p>
+            )}
           </div>
         </div>
 
@@ -305,10 +366,20 @@ export default function ElegantAdminDashboard() {
             <div className="w-12 h-12 bg-yellow-100 rounded-xl flex items-center justify-center">
               <DollarSign className="w-6 h-6 text-yellow-600" />
             </div>
+            {analyticsLoading && (
+              <div className="w-2 h-2 bg-yellow-600 rounded-full animate-pulse"></div>
+            )}
           </div>
           <div>
             <p className="text-gray-600 text-sm mb-1">Revenue</p>
-            <p className="text-2xl font-bold text-gray-900">₹{stats.revenue.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {analyticsLoading ? '...' : `₹${stats.revenue.toLocaleString()}`}
+            </p>
+            {analytics?.recentRevenue > 0 && (
+              <p className="text-xs text-green-600 mt-1">
+                +₹{analytics.recentRevenue.toLocaleString()} this month
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -402,6 +473,141 @@ export default function ElegantAdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Teachers Analytics */}
+      {!analyticsLoading && analytics?.teachers && (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900">Teachers Overview</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {analytics.totalTeachers} total \u00b7 {analytics.approvedTeachers} approved \u00b7 {analytics.pendingTeachers} pending
+              </p>
+            </div>
+            <button 
+              onClick={() => setActiveSection('pending')}
+              className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+            >
+              View Pending ({analytics.pendingTeachers})
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">
+            {analytics.teachers.slice(0, 12).map((teacher: any) => (
+              <div key={teacher.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <UserCheck className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    teacher.approvalStatus === 'approved' ? 'bg-green-100 text-green-700' :
+                    teacher.approvalStatus === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-red-100 text-red-700'
+                  }`}>
+                    {teacher.approvalStatus}
+                  </span>
+                </div>
+                <h4 className="font-semibold text-gray-900 truncate">{teacher.name}</h4>
+                <p className="text-sm text-gray-600 truncate">{teacher.email}</p>
+                <div className="mt-3 flex items-center justify-between text-xs">
+                  <span className="text-gray-500">{teacher.coursesCount} courses</span>
+                  <span className="text-gray-500">
+                    {new Date(teacher.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Institutes Analytics */}
+      {!analyticsLoading && analytics?.institutes && analytics.institutes.length > 0 && (
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900">Institutes</h3>
+              <p className="text-sm text-gray-600 mt-1">
+                {analytics.totalInstitutes} registered institutes
+              </p>
+            </div>
+            <button 
+              onClick={() => setActiveSection('institutes')}
+              className="text-blue-600 hover:text-blue-700 font-medium text-sm"
+            >
+              View All
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {analytics.institutes.map((institute: any) => (
+              <div key={institute.id} className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                <div className="flex items-start gap-3 mb-3">
+                  <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Building2 className="w-5 h-5 text-purple-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-semibold text-gray-900 truncate">{institute.name}</h4>
+                    <p className="text-sm text-gray-600 truncate">@{institute.domain}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">{institute.userCount} users</span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(institute.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Additional Stats */}
+      {!analyticsLoading && analytics && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Total Enrollments</p>
+                <p className="text-2xl font-bold text-gray-900">{analytics.totalEnrollments.toLocaleString()}</p>
+              </div>
+            </div>
+            {analytics.recentEnrollments > 0 && (
+              <p className="text-xs text-green-600">+{analytics.recentEnrollments} this month</p>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                <UserCheck className="w-6 h-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Total Teachers</p>
+                <p className="text-2xl font-bold text-gray-900">{analytics.totalTeachers}</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-600">
+              {analytics.approvedTeachers} active \u00b7 {analytics.pendingTeachers} pending
+            </p>
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                <MessageSquare className="w-6 h-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm">Total Feedbacks</p>
+                <p className="text-2xl font-bold text-gray-900">{analytics.totalFeedbacks}</p>
+              </div>
+            </div>
+            <p className="text-xs text-gray-600">Average: {analytics.avgRating}/5.0</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 

@@ -160,10 +160,20 @@ export function TeacherDashboard() {
   })
 
   const [realCourses, setRealCourses] = useState<Course[]>([])
+  const [analytics, setAnalytics] = useState({
+    totalStudents: 0,
+    activeCourses: 0,
+    totalRevenue: 0,
+    avgRating: "0.0"
+  })
+  const [analyticsLoading, setAnalyticsLoading] = useState(true)
+  const [feedbacks, setFeedbacks] = useState<any[]>([])
+  const [feedbacksLoading, setFeedbacksLoading] = useState(false)
 
   // Fetch real courses data
   useEffect(() => {
     fetchCourses()
+    fetchAnalytics()
   }, [])
 
   // Fetch quizzes when examining section is active
@@ -172,6 +182,48 @@ export function TeacherDashboard() {
       fetchQuizzes()
     }
   }, [activeSection])
+
+  // Fetch feedbacks when feedback section is active
+  useEffect(() => {
+    if (activeSection === 'feedback') {
+      fetchFeedbacks()
+    }
+  }, [activeSection])
+
+  const fetchFeedbacks = async () => {
+    try {
+      setFeedbacksLoading(true)
+      const response = await fetch('/api/feedback')
+      if (response.ok) {
+        const data = await response.json()
+        setFeedbacks(data.feedbacks || [])
+      }
+    } catch (error) {
+      console.error('Error fetching feedbacks:', error)
+    } finally {
+      setFeedbacksLoading(false)
+    }
+  }
+
+  const fetchAnalytics = async () => {
+    try {
+      setAnalyticsLoading(true)
+      const response = await fetch('/api/teacher/analytics')
+      if (response.ok) {
+        const data = await response.json()
+        setAnalytics({
+          totalStudents: data.totalStudents || 0,
+          activeCourses: data.activeCourses || 0,
+          totalRevenue: data.totalRevenue || 0,
+          avgRating: data.avgRating || "0.0"
+        })
+      }
+    } catch (error) {
+      console.error('Error fetching analytics:', error)
+    } finally {
+      setAnalyticsLoading(false)
+    }
+  }
 
   const fetchCourses = async () => {
     try {
@@ -321,16 +373,34 @@ export function TeacherDashboard() {
   ]
 
   const dashboardStats = [
-    { title: "Total Students", value: "590", icon: Users, bgColor: "bg-blue-50", iconColor: "text-blue-600" },
-    { title: "Active Courses", value: "3", icon: BookOpen, bgColor: "bg-green-50", iconColor: "text-green-600" },
+    { 
+      title: "Total Students", 
+      value: analyticsLoading ? "..." : analytics.totalStudents.toString(), 
+      icon: Users, 
+      bgColor: "bg-blue-50", 
+      iconColor: "text-blue-600" 
+    },
+    { 
+      title: "Active Courses", 
+      value: analyticsLoading ? "..." : analytics.activeCourses.toString(), 
+      icon: BookOpen, 
+      bgColor: "bg-green-50", 
+      iconColor: "text-green-600" 
+    },
     {
       title: "Total Revenue",
-      value: "₹30,140",
+      value: analyticsLoading ? "..." : `₹${analytics.totalRevenue.toLocaleString('en-IN')}`,
       icon: DollarSign,
       bgColor: "bg-yellow-50",
       iconColor: "text-yellow-600",
     },
-    { title: "Avg. Rating", value: "4.7", icon: Star, bgColor: "bg-purple-50", iconColor: "text-purple-600" },
+    { 
+      title: "Avg. Rating", 
+      value: analyticsLoading ? "..." : analytics.avgRating, 
+      icon: Star, 
+      bgColor: "bg-purple-50", 
+      iconColor: "text-purple-600" 
+    },
   ]
 
   const recentActivities = [
@@ -2055,6 +2125,79 @@ export function TeacherDashboard() {
     </div>
   )
 
+  const renderFeedback = () => (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-2xl font-bold">Course Feedback</h2>
+      </div>
+
+      {feedbacksLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading feedback...</p>
+          </div>
+        </div>
+      ) : feedbacks.length === 0 ? (
+        <Card className="p-12 text-center">
+          <MessageSquare className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Feedback Yet</h3>
+          <p className="text-gray-600 max-w-md mx-auto">
+            You haven't received any feedback from students yet. Once students complete your courses and provide feedback, it will appear here.
+          </p>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {feedbacks.map((feedback) => (
+            <Card key={feedback.id} className="p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                    <User className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">{feedback.User.name}</h3>
+                    <p className="text-sm text-gray-500">{feedback.User.email}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-5 w-5 ${
+                        i < feedback.rating
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                  <span className="ml-2 text-sm font-semibold text-gray-700">
+                    {feedback.rating}/5
+                  </span>
+                </div>
+              </div>
+              <div className="mb-3">
+                <p className="text-sm font-medium text-gray-700 mb-1">Course: {feedback.Course.title}</p>
+              </div>
+              {feedback.comment && (
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <p className="text-gray-700">{feedback.comment}</p>
+                </div>
+              )}
+              <div className="mt-4 text-xs text-gray-500">
+                {new Date(feedback.createdAt).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+
   const renderContent = () => {
     if (showAddQuiz) {
       return renderAddQuiz()
@@ -2077,6 +2220,8 @@ export function TeacherDashboard() {
         return renderExaminations()
       case "courses":
         return renderCourses()
+      case "feedback":
+        return renderFeedback()
       default:
         return renderDashboard()
     }
