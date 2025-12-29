@@ -229,9 +229,11 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
 
   const fetchFinalQuiz = async () => {
     setQuizLoading(true)
+    console.log('Fetching quizzes for course:', courseId)
     try {
       const res = await fetch(`/api/quizzes/course/${courseId}`)
       if (!res.ok) {
+        console.log('Quiz fetch failed:', res.status, res.statusText)
         setFinalQuiz(null)
         setQuizLoading(false)
         // No quiz, certificate ready immediately
@@ -239,9 +241,11 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         return
       }
       const data = await res.json()
+      console.log('Quiz data received:', data)
       const quizzes = data.quizzes || []
       // Treat the latest quiz (sorted desc) as final
       const last = quizzes[0] || null
+      console.log('Final quiz selected:', last?.title, 'Total quizzes:', quizzes.length)
       if (last) {
         setFinalQuiz(last)
         // If any submission for this quiz is passed, unlock certificate
@@ -250,6 +254,7 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
         }
         // Note: certificateReady stays true from useEffect if course is complete
       } else {
+        console.log('No quiz found for this course')
         setFinalQuiz(null)
         // No quiz, certificate ready immediately
         setCertificateReady(true)

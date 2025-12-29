@@ -72,6 +72,19 @@ export async function GET(
       }
     })
 
+    console.log('Quizzes found for course:', {
+      courseId,
+      userId: session.user.id,
+      role: session.user.role,
+      totalQuizzes: quizzes.length,
+      quizzes: quizzes.map(q => ({
+        id: q.id,
+        title: q.title,
+        isPublished: q.isPublished,
+        questionCount: q.Question.length
+      }))
+    })
+
     return NextResponse.json({ quizzes })
 
   } catch (error) {
