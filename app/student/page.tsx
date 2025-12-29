@@ -186,6 +186,43 @@ export default function StudentDashboard() {
     }
   };
 
+  const handleSubmitFeedback = async () => {
+    if (!selectedCourse || feedbackRating === 0) return;
+    
+    setFeedbackSubmitting(true);
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          courseId: selectedCourse.id,
+          rating: feedbackRating,
+          comment: feedbackComment,
+        }),
+      });
+
+      if (response.ok) {
+        // Success - close dialog and reset
+        setShowFeedbackDialog(false);
+        setFeedbackRating(0);
+        setFeedbackComment('');
+        setSelectedCourse(null);
+        // You could show a success toast here
+        alert('Thank you for your feedback!');
+      } else {
+        const error = await response.json();
+        alert(error.message || 'Failed to submit feedback');
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      alert('Failed to submit feedback. Please try again.');
+    } finally {
+      setFeedbackSubmitting(false);
+    }
+  };
+
   const formatRelativeTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
