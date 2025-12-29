@@ -378,7 +378,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "c:\\Users\\Ayush\\Desktop\\LMS@\\LMS\\generated\\prisma",
+      "value": "C:\\Users\\Ayush\\Desktop\\LMS@\\LMS\\generated\\prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -392,7 +392,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "c:\\Users\\Ayush\\Desktop\\LMS@\\LMS\\prisma\\schema.prisma",
+    "sourceFilePath": "C:\\Users\\Ayush\\Desktop\\LMS@\\LMS\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

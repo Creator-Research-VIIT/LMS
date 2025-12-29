@@ -678,19 +678,20 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                       </div>
                     )}
                   </div>
-                  {/* Quiz & Certificate Section */}
-                  <div id="final-quiz-section" className="mt-8 border-t pt-6 space-y-4">
-                    <h3 className="text-lg font-semibold">Final Quiz & Certificate</h3>
-                    <p className="text-sm text-gray-600">
-                      {getQuizCertificateMessage()}
-                    </p>
-                    {progressPercent < 100 && (
-                      <div className="text-sm text-yellow-600 flex items-center gap-2">
-                        <Award className="h-4 w-4" />
-                        Finish remaining modules to unlock the quiz.
-                      </div>
-                    )}
-                    {(progressPercent === 100 || courseCompletedAt) && (
+                  {/* Quiz & Certificate Section - Only show if quiz exists or certificate is ready */}
+                  {(finalQuiz || (!quizLoading && certificateReady)) && (
+                    <div id="final-quiz-section" className="mt-8 border-t pt-6 space-y-4">
+                      <h3 className="text-lg font-semibold">Final Quiz & Certificate</h3>
+                      <p className="text-sm text-gray-600">
+                        {getQuizCertificateMessage()}
+                      </p>
+                      {progressPercent < 100 && (
+                        <div className="text-sm text-yellow-600 flex items-center gap-2">
+                          <Award className="h-4 w-4" />
+                          Finish remaining modules to unlock the quiz.
+                        </div>
+                      )}
+                      {(progressPercent === 100 || courseCompletedAt) && (
                       <div className="space-y-3">
                         {/* If there's a quiz and it's not completed, show quiz button */}
                         {finalQuiz && !certificateReady && (
@@ -764,7 +765,8 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                         )}
                       </div>
                     )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -789,7 +791,8 @@ export default function CourseEnrolledClient({ params }: CourseEnrolledClientPro
                   <Play className="h-4 w-4 mr-2" />
                   Start Learning
                 </Button>
-                {(progressPercent === 100 || courseCompletedAt) && (certificateReady || !finalQuiz) && (
+                {/* Only show certificate if quiz exists and is passed, OR if no quiz exists and course is complete */}
+                {(progressPercent === 100 || courseCompletedAt) && certificateReady && !quizLoading && (
                   <Button 
                     onClick={generateCertificate}
                     className="w-full bg-green-600 hover:bg-green-700 text-white"
